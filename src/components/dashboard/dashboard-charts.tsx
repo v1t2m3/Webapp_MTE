@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/GlassCard";
 import { Schedule } from "@/types";
 import {
     BarChart,
@@ -24,11 +24,11 @@ export function DashboardCharts({ schedules }: { schedules: Schedule[] }) {
     ];
 
     return (
-        <Card className="col-span-4">
-            <CardHeader>
-                <CardTitle>Biểu đồ công việc tuần này</CardTitle>
-            </CardHeader>
-            <CardContent className="pl-2">
+        <GlassCard className="col-span-4">
+            <div className="mb-4">
+                <h3 className="font-semibold text-lg text-gray-800">Biểu đồ công việc tuần này</h3>
+            </div>
+            <div className="pl-0">
                 <ResponsiveContainer width="100%" height={350}>
                     <BarChart data={data}>
                         <XAxis
@@ -52,7 +52,7 @@ export function DashboardCharts({ schedules }: { schedules: Schedule[] }) {
                         <Bar dataKey="schedules" fill="currentColor" radius={[4, 4, 0, 0]} className="fill-primary" />
                     </BarChart>
                 </ResponsiveContainer>
-            </CardContent>
-        </Card>
+            </div>
+        </GlassCard>
     );
 }

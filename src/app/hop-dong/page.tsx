@@ -6,7 +6,6 @@ import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Contract } from "@/types";
 import { ContractForm } from "@/components/ContractForm";
-import { GlassCard, GlassPageHeader } from "@/components/ui/GlassCard";
 
 export default function ContractPage() {
     const [data, setData] = useState<Contract[]>([]);
@@ -89,38 +88,37 @@ export default function ContractPage() {
     };
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <GlassPageHeader
-                title="Quản lý Hợp đồng"
-                description="Danh sách hợp đồng và tiến độ (Dữ liệu từ Google Sheets)."
-            >
+        <div className="p-8 space-y-8 animate-fade-in">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-3xl font-bold tracking-tight text-primary">Quản lý Hợp đồng</h2>
+                    <p className="text-muted-foreground mt-2">
+                        Danh sách hợp đồng và tiến độ (Dữ liệu từ Google Sheets).
+                    </p>
+                </div>
                 <div className="flex items-center gap-2">
                     <Button
                         variant="default"
-                        className="bg-[#3a0ca3] hover:bg-[#3a0ca3]/90 text-white shadow-lg shadow-blue-900/20 transition-all hover:scale-105"
+                        className="bg-secondary hover:bg-secondary/90 text-white shadow-lg shadow-secondary/20"
                         onClick={handleAdd}
                     >
                         <Plus className="mr-2 h-4 w-4" /> Thêm hợp đồng
                     </Button>
-                    <Button variant="outline" className="border-indigo-100 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800">
+                    <Button variant="outline" className="border-accent text-accent-foreground hover:bg-accent/10">
                         Xuất Excel
                     </Button>
                 </div>
-            </GlassPageHeader>
+            </div>
 
-            <GlassCard>
-                {loading ? (
-                    <div className="flex justify-center p-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    </div>
-                ) : (
-                    <ContractTable
-                        data={data}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                    />
-                )}
-            </GlassCard>
+            {loading ? (
+                <div className="flex justify-center p-8">Đang tải dữ liệu...</div>
+            ) : (
+                <ContractTable
+                    data={data}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                />
+            )}
 
             <ContractForm
                 open={isDialogOpen}

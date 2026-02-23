@@ -6,7 +6,7 @@ export function Header() {
         <header className="flex items-center p-4 border-b h-16 bg-white/50 backdrop-blur-md sticky top-0 z-10 w-full">
             <MobileSidebar />
             <div className="flex w-full justify-between items-center">
-                <h2 className="text-lg font-semibold ml-4 md:ml-0">
+                <h2 className="text-lg font-semibold ml-4 lg:ml-0">
                     Dashboard
                 </h2>
                 <div className="flex items-center gap-x-2">
