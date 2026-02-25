@@ -802,4 +802,68 @@ export const googleSheetsService = {
             return false;
         }
     },
+
+    // --- SUPPLEMENTAL REPORTS (BC_BoSung) ---
+    getSupplementalReports: async (): Promise<any[]> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return [];
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'BC_BoSung!A2:G',
+            });
+
+            const rows = response.data.values;
+            if (!rows || rows.length === 0) return [];
+
+            return rows
+                .filter(row => row[0]) // Filter empty ID rows
+                .map(row => ({
+                    id: row[0],
+                    reportType: row[1] || '',
+                    referenceId: row[2] || '',
+                    startDate: row[3] || '',
+                    endDate: row[4] || '',
+                    unit: row[5] || '',
+                    content: row[6] || ''
+                }));
+        } catch (error) {
+            console.error('Error fetching supplemental reports:', error);
+            return [];
+        }
+    },
+
+    addSupplementalReport: async (report: any): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const values = [
+                [
+                    report.id,
+                    report.reportType || '',
+                    report.referenceId || '',
+                    report.startDate || '',
+                    report.endDate || '',
+                    report.unit || '',
+                    report.content || ''
+                ],
+            ];
+
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'BC_BoSung!A:G',
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values },
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error adding supplemental report:', error);
+            return false;
+        }
+    },
 };

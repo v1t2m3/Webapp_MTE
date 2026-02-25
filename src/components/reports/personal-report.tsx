@@ -43,7 +43,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
         });
 
         // Map wo -> personnelAssignment
-        const results: Array<any> = []; // Changed type to any
+        const results: Array<any> = [];
 
         monthMatches.forEach(wo => {
             const assignment = wo.personnelAssignments?.find(pa => pa.personnelId === selectedPersonId);
@@ -51,21 +51,41 @@ export function PersonalReport({ data }: { data: ReportData }) {
                 const sched = schedules.find(s => s.id === wo.scheduleId);
                 if (sched) {
                     results.push({
-                        id: sched.id, // Added id for easier tracking
+                        id: sched.id,
                         startDate: sched.startDate,
                         endDate: sched.endDate,
                         unit: sched.unit,
                         content: sched.content,
                         type: sched.type,
-                        isCustomReport: false, // Flag for original reports
-                        assignment: assignment // Keep assignment for time calculation
+                        isCustomReport: false,
+                        assignment: assignment
                     });
                 }
             }
         });
 
+        // Add Supplemental Reports specifically assigned to this person
+        if (data.supplementalReports) {
+            const supps = data.supplementalReports.filter(sr =>
+                sr.reportType === 'PERSONAL' &&
+                sr.referenceId === selectedPersonId
+            );
+
+            supps.forEach(sr => {
+                const d = new Date(sr.startDate);
+                if (d.getMonth() + 1 === parseInt(selectedMonth) && d.getFullYear() === parseInt(selectedYear)) {
+                    results.push({
+                        ...sr,
+                        isCustomReport: true, // Mark it so UI renders the badge
+                        isNewOrEditing: false, // It's from DB, so not editing yet
+                        bucket: '' // Wil be calculated natively
+                    });
+                }
+            });
+        }
+
         return results.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-    }, [workOutlines, schedules, selectedPersonId, selectedMonth, selectedYear]);
+    }, [workOutlines, schedules, data.supplementalReports, selectedPersonId, selectedMonth, selectedYear]);
 
     useEffect(() => {
         setEditableWorkloads(personWorkloads.map(pw => ({
@@ -114,19 +134,23 @@ export function PersonalReport({ data }: { data: ReportData }) {
         try {
             const newCustomRows = editableWorkloads.filter(s => s.isCustomReport && s.isNewOrEditing);
 
-            // Send to actual backend
             for (const row of newCustomRows) {
                 const payload = {
-                    ...row,
-                    personnelAssignments: [selectedPersonId],
-                    contractId: "CUSTOM_PERSONAL",
+                    id: row.id,
+                    reportType: 'PERSONAL',
+                    referenceId: selectedPersonId,
+                    startDate: row.startDate,
+                    endDate: row.endDate,
+                    unit: row.unit,
+                    content: row.content,
                 };
 
-                const response = await fetch('/api/schedules', {
+                const response = await fetch('/api/supplemental-reports', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+
                 if (!response.ok) {
                     console.error("Failed to save personal row:", row.id);
                 }

@@ -31,9 +31,24 @@ export function ContractReport({ data }: { data: ReportData }) {
     // Filter schedules linked to the selected contract
     const linkedSchedules = useMemo(() => {
         if (!selectedContractId) return [];
-        return schedules.filter(s => s.contractId === selectedContractId)
-            .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-    }, [schedules, selectedContractId]);
+        const baseSchedules = schedules.filter(s => s.contractId === selectedContractId)
+            .map(s => ({ ...s, isCustomReport: false }));
+
+        if (data.supplementalReports) {
+            const supps = data.supplementalReports.filter(sr =>
+                sr.reportType === 'CONTRACT' &&
+                sr.referenceId === selectedContractId
+            ).map(sr => ({
+                ...sr,
+                isCustomReport: true, // Mark it so UI renders the badge
+                isNewOrEditing: false, // It's from DB, so not editing yet
+                bucket: ''
+            }));
+            return [...baseSchedules, ...supps].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        }
+
+        return baseSchedules.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    }, [schedules, data.supplementalReports, selectedContractId]);
 
     useEffect(() => {
         setEditableSchedules(linkedSchedules.map(s => ({ ...s })));
@@ -80,18 +95,23 @@ export function ContractReport({ data }: { data: ReportData }) {
         try {
             const newCustomRows = editableSchedules.filter(s => s.isCustomReport && s.isNewOrEditing);
 
-            // Send to actual backend
             for (const row of newCustomRows) {
                 const payload = {
-                    ...row,
-                    contractId: selectedContractId || "CUSTOM",
+                    id: row.id,
+                    reportType: 'CONTRACT',
+                    referenceId: selectedContractId || "CUSTOM",
+                    startDate: row.startDate,
+                    endDate: row.endDate,
+                    unit: row.unit,
+                    content: row.content,
                 };
 
-                const response = await fetch('/api/schedules', {
+                const response = await fetch('/api/supplemental-reports', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+
                 if (!response.ok) {
                     console.error("Failed to save row:", row.id);
                 }

@@ -9,13 +9,14 @@ import { WeeklyMonthlyReport } from "./weekly-monthly-report";
 import { ContractReport } from "./contract-report";
 import { PersonalReport } from "./personal-report";
 import { OverviewReport } from "./overview-report";
-import { Schedule, Contract, Personnel, WorkOutline } from "@/types";
+import { Schedule, Contract, Personnel, WorkOutline, SupplementalReport } from "@/types";
 
 export interface ReportData {
     schedules: Schedule[];
     contracts: Contract[];
     personnel: Personnel[];
     workOutlines: WorkOutline[];
+    supplementalReports: SupplementalReport[];
 }
 
 export function ReportsManager() {
@@ -26,18 +27,25 @@ export function ReportsManager() {
     const fetchData = useCallback(async () => {
         try {
             setLoading(true);
-            const [woRes, schedRes, persRes, contRes] = await Promise.all([
+            const [woRes, schedRes, persRes, contRes, suppRes] = await Promise.all([
                 fetch("/api/work-outlines").catch(() => ({ json: () => [] })),
                 fetch("/api/schedules").catch(() => ({ json: () => [] })),
                 fetch("/api/personnel").catch(() => ({ json: () => [] })),
-                fetch("/api/contracts").catch(() => ({ json: () => [] }))
+                fetch("/api/contracts").catch(() => ({ json: () => [] })),
+                fetch("/api/supplemental-reports").catch(() => ({ json: () => [] }))
             ]);
 
-            const [workOutlines, schedules, personnel, contracts] = await Promise.all([
-                woRes.json(), schedRes.json(), persRes.json(), contRes.json()
+            const [workOutlines, schedules, personnel, contracts, supplementalReports] = await Promise.all([
+                woRes.json(), schedRes.json(), persRes.json(), contRes.json(), suppRes.json()
             ]);
 
-            setData({ workOutlines: workOutlines || [], schedules: schedules || [], personnel: personnel || [], contracts: contracts || [] });
+            setData({
+                workOutlines: workOutlines || [],
+                schedules: schedules || [],
+                personnel: personnel || [],
+                contracts: contracts || [],
+                supplementalReports: supplementalReports || []
+            });
         } catch (error) {
             console.error("Failed to fetch report data:", error);
         } finally {

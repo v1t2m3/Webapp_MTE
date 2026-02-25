@@ -33,7 +33,7 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
 
     // Initialize/Update editable schedules based on filters
     useEffect(() => {
-        let filtered = schedules.filter(s => {
+        let filtered: any[] = schedules.filter(s => {
             if (!s.startDate) return false;
             const d = new Date(s.startDate);
 
@@ -42,11 +42,32 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
             } else {
                 return getISOWeek(d) === parseInt(selectedWeek) && d.getFullYear() === parseInt(selectedYear);
             }
-        });
+        }).map(s => ({ ...s, isCustomReport: false }));
+
+        if (data.supplementalReports) {
+            const supps = data.supplementalReports.filter(sr => {
+                if (sr.reportType !== 'WEEKLY_MONTHLY') return false;
+                if (!sr.startDate) return false;
+                const d = new Date(sr.startDate);
+
+                if (reportType === "month") {
+                    return d.getMonth() + 1 === parseInt(selectedMonth) && d.getFullYear() === parseInt(selectedYear);
+                } else {
+                    return getISOWeek(d) === parseInt(selectedWeek) && d.getFullYear() === parseInt(selectedYear);
+                }
+            }).map(sr => ({
+                ...sr,
+                isCustomReport: true, // Mark it so UI renders the badge
+                isNewOrEditing: false, // It's from DB, so not editing yet
+                bucket: ''
+            }));
+
+            filtered = [...filtered, ...supps];
+        }
 
         filtered = filtered.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-        setEditableSchedules(filtered.map(s => ({ ...s }))); // clone objects for editing
-    }, [schedules, selectedMonth, selectedWeek, selectedYear, reportType]);
+        setEditableSchedules(filtered); // mapped directly to array values
+    }, [schedules, data.supplementalReports, selectedMonth, selectedWeek, selectedYear, reportType]);
 
     // Handle inline input change for multiple fields
     const handleChange = (id: string, field: string, value: string) => {
@@ -90,18 +111,23 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
         try {
             const newCustomRows = editableSchedules.filter(s => s.isCustomReport && s.isNewOrEditing);
 
-            // Send to actual backend
             for (const row of newCustomRows) {
                 const payload = {
-                    ...row,
-                    contractId: "CUSTOM", // Differentiate from actual contracts
+                    id: row.id,
+                    reportType: 'WEEKLY_MONTHLY',
+                    referenceId: "NONE", // No specific reference for general reports
+                    startDate: row.startDate,
+                    endDate: row.endDate,
+                    unit: row.unit,
+                    content: row.content,
                 };
 
-                const response = await fetch('/api/schedules', {
+                const response = await fetch('/api/supplemental-reports', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+
                 if (!response.ok) {
                     console.error("Failed to save row:", row.id);
                 }

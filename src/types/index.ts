@@ -89,9 +89,20 @@ export interface WorkOutline {
     vehicleIds: string[]; // JSON stringified in Sheet
 }
 
+export interface SupplementalReport {
+    id: string;
+    reportType: 'PERSONAL' | 'CONTRACT' | 'WEEKLY_MONTHLY'; // Type constraints
+    referenceId: string; // Personnel ID or Contract ID, empty if Week/Month
+    startDate: string;
+    endDate: string;
+    unit: string;
+    content: string;
+}
+
 export interface ReportData {
     schedules: Schedule[];
     contracts: Contract[];
     personnel: Personnel[];
     workOutlines: WorkOutline[];
+    supplementalReports: SupplementalReport[]; // Add supplemental storage array
 }
