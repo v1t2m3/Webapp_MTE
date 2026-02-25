@@ -857,12 +857,23 @@ export const googleSheetsService = {
                 ],
             ];
 
-            await sheets.spreadsheets.values.append({
-                spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'BC_BoSung!A:G',
-                valueInputOption: 'USER_ENTERED',
-                requestBody: { values },
-            });
+            const rowIndex = await googleSheetsService.findSupplementalReportRowIndex(report.id);
+
+            if (rowIndex) {
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                    range: `BC_BoSung!A${rowIndex}:G${rowIndex}`,
+                    valueInputOption: 'USER_ENTERED',
+                    requestBody: { values },
+                });
+            } else {
+                await sheets.spreadsheets.values.append({
+                    spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                    range: 'BC_BoSung!A:G',
+                    valueInputOption: 'USER_ENTERED',
+                    requestBody: { values },
+                });
+            }
 
             return true;
         } catch (error) {
