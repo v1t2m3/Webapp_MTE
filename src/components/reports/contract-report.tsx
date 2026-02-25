@@ -66,7 +66,7 @@ export function ContractReport({ data }: { data: ReportData }) {
             d.setDate(d.getDate() + 1); // tomorrow maps to future table
         }
         const dateStr = format(d, 'yyyy-MM-dd');
-        const newId = `custom-${Date.now()}`;
+        const newId = `custom-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
         setEditableSchedules(prev => [
             ...prev,
             {
