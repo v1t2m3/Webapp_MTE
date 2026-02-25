@@ -67,19 +67,31 @@ export function PersonnelTable({ data, onEdit, onDelete }: PersonnelTableProps) 
                                 </Badge>
                             </TableCell>
                             <TableCell>
-                                {item.leaveDates && item.leaveDates.length > 0 ? (
-                                    <Badge
-                                        variant="outline"
-                                        className={`whitespace-nowrap ${item.leaveType === "phép" ? "bg-amber-100/50 text-amber-700 border-amber-200" :
-                                            item.leaveType === "bù" ? "bg-orange-100/50 text-orange-700 border-orange-200" :
-                                                "bg-red-100/50 text-red-700 border-red-200"
-                                            }`}
-                                    >
-                                        Nghỉ {item.leaveType} - {item.leaveDates.length} ngày
-                                    </Badge>
-                                ) : (
-                                    <span className="text-muted-foreground text-sm">-</span>
-                                )}
+                                {(() => {
+                                    const currentYear = new Date().getFullYear().toString();
+                                    const leavesThisYear = item.leaveDates?.filter(d => d.startsWith(currentYear)).length || 0;
+                                    const isOnLeaveToday = item.status === "On Leave";
+
+                                    if (isOnLeaveToday) {
+                                        return (
+                                            <Badge
+                                                variant="outline"
+                                                className={`whitespace-nowrap ${item.leaveType === "phép" ? "bg-amber-100/50 text-amber-700 border-amber-200" :
+                                                    item.leaveType === "bù" ? "bg-orange-100/50 text-orange-700 border-orange-200" :
+                                                        "bg-red-100/50 text-red-700 border-red-200"
+                                                    }`}
+                                            >
+                                                Nghỉ {item.leaveType} - {leavesThisYear}
+                                            </Badge>
+                                        );
+                                    }
+
+                                    return (
+                                        <span className="text-muted-foreground font-medium text-sm">
+                                            {leavesThisYear > 0 ? leavesThisYear : "-"}
+                                        </span>
+                                    );
+                                })()}
                             </TableCell>
                             <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
