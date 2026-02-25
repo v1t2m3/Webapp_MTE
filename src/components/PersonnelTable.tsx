@@ -40,7 +40,7 @@ export function PersonnelTable({ data, onEdit, onDelete }: PersonnelTableProps) 
                     {data.map((item, index) => (
                         <TableRow
                             key={item.id}
-                            className="hover:bg-muted/50 transition-colors animate-slide-up"
+                            className={`hover:bg-muted/50 transition-colors animate-slide-up ${item.leaveDates && item.leaveDates.length > 0 ? "bg-amber-50/30" : ""}`}
                             style={{ animationDelay: `${index * 0.05}s` }}
                         >
                             <TableCell className="font-medium">{item.id}</TableCell>
@@ -55,15 +55,27 @@ export function PersonnelTable({ data, onEdit, onDelete }: PersonnelTableProps) 
                             <TableCell>{item.safetyLevel}</TableCell>
                             <TableCell>{item.education}</TableCell>
                             <TableCell>
-                                <Badge
-                                    variant="outline"
-                                    className={`whitespace-nowrap ${item.contractType === "Không thời hạn" ? "bg-[#4cc9f0]/10 text-[#3a0ca3] border-[#4cc9f0]/20" :
-                                        item.contractType === "Thử việc" ? "bg-[#f72585]/10 text-[#f72585] border-[#f72585]/20" :
-                                            "bg-[#4361ee]/10 text-[#4361ee] border-[#4361ee]/20"
-                                        }`}
-                                >
-                                    {item.contractType}
-                                </Badge>
+                                {item.leaveType ? (
+                                    <Badge
+                                        variant="outline"
+                                        className={`whitespace-nowrap ${item.leaveType === "phép" ? "bg-amber-100/50 text-amber-700 border-amber-200" :
+                                            item.leaveType === "bù" ? "bg-orange-100/50 text-orange-700 border-orange-200" :
+                                                "bg-red-100/50 text-red-700 border-red-200"
+                                            }`}
+                                    >
+                                        Nghỉ {item.leaveType}
+                                    </Badge>
+                                ) : (
+                                    <Badge
+                                        variant="outline"
+                                        className={`whitespace-nowrap ${item.contractType === "Không thời hạn" ? "bg-[#4cc9f0]/10 text-[#3a0ca3] border-[#4cc9f0]/20" :
+                                            item.contractType === "Thử việc" ? "bg-[#f72585]/10 text-[#f72585] border-[#f72585]/20" :
+                                                "bg-[#4361ee]/10 text-[#4361ee] border-[#4361ee]/20"
+                                            }`}
+                                    >
+                                        {item.contractType}
+                                    </Badge>
+                                )}
                             </TableCell>
                             <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">

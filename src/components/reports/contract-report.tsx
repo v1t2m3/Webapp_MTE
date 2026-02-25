@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { ReportData } from "@/types";
 import { format, parseISO } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { formatScheduleTime } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Plus, Save, PenSquare, Trash2, Edit2 } from "lucide-react";
 
 const COLORS = ['#4361ee', '#4cc9f0', '#3a0ca3'];
 
@@ -21,6 +25,9 @@ export function ContractReport({ data }: { data: ReportData }) {
         return contracts.find(c => c.id === selectedContractId) || null;
     }, [contracts, selectedContractId]);
 
+    // Editable state
+    const [editableSchedules, setEditableSchedules] = useState<any[]>([]);
+
     // Filter schedules linked to the selected contract
     const linkedSchedules = useMemo(() => {
         if (!selectedContractId) return [];
@@ -28,8 +35,101 @@ export function ContractReport({ data }: { data: ReportData }) {
             .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     }, [schedules, selectedContractId]);
 
+    useEffect(() => {
+        setEditableSchedules(linkedSchedules.map(s => ({ ...s })));
+    }, [linkedSchedules]);
+
+    const handleChange = (id: string, field: string, value: string) => {
+        setEditableSchedules(prev =>
+            prev.map(s => s.id === id ? { ...s, [field]: value } : s)
+        );
+    };
+
+    const handleAddCustomRow = (isPast: boolean) => {
+        const d = new Date();
+        if (!isPast) {
+            d.setDate(d.getDate() + 1); // tomorrow maps to future table
+        }
+        const dateStr = format(d, 'yyyy-MM-dd');
+        const newId = `custom-${Date.now()}`;
+        setEditableSchedules(prev => [
+            ...prev,
+            {
+                id: newId,
+                startDate: dateStr,
+                endDate: dateStr,
+                unit: "",
+                content: "",
+                type: "Khác",
+                isCustomReport: true,
+                isNewOrEditing: true,
+                bucket: isPast ? 'past' : 'future'
+            }
+        ]);
+    };
+
+    const handleDeleteCustomRow = (id: string) => {
+        setEditableSchedules(prev => prev.filter(s => s.id !== id));
+    };
+
+    const handleEditCustomRow = (id: string) => {
+        setEditableSchedules(prev => prev.map(s => s.id === id ? { ...s, isNewOrEditing: true } : s));
+    };
+
+    const handleSaveReports = async () => {
+        try {
+            const newCustomRows = editableSchedules.filter(s => s.isCustomReport && s.isNewOrEditing);
+
+            // Send to actual backend
+            for (const row of newCustomRows) {
+                const payload = {
+                    ...row,
+                    contractId: selectedContractId || "CUSTOM",
+                };
+
+                const response = await fetch('/api/schedules', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    console.error("Failed to save row:", row.id);
+                }
+            }
+
+            setEditableSchedules(prev => prev.map(s => s.isCustomReport ? { ...s, isNewOrEditing: false } : s));
+            alert("Báo cáo đã được lưu thành công!");
+        } catch (error) {
+            console.error(error);
+            alert("Lỗi khi lưu báo cáo!");
+        }
+    };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const pastSchedules = editableSchedules.filter(s => {
+        if (s.isCustomReport && s.isNewOrEditing) {
+            return s.bucket === 'past';
+        }
+        if (!s.startDate) return false;
+        const d = new Date(s.startDate);
+        d.setHours(0, 0, 0, 0);
+        return d <= today;
+    });
+
+    const futureSchedules = editableSchedules.filter(s => {
+        if (s.isCustomReport && s.isNewOrEditing) {
+            return s.bucket === 'future';
+        }
+        if (!s.startDate) return false;
+        const d = new Date(s.startDate);
+        d.setHours(0, 0, 0, 0);
+        return d > today;
+    });
+
     // KPIs
-    const totalLinkedSchedules = linkedSchedules.length;
+    const totalLinkedSchedules = editableSchedules.length;
 
     // Format currency
     const formatCurrency = (valueStr: string | undefined) => {
@@ -88,6 +188,9 @@ export function ContractReport({ data }: { data: ReportData }) {
                             <span className="text-xs block text-muted-foreground uppercase tracking-wider mb-1">Số Lịch thực hiện</span>
                             <span className="text-sm font-bold">{totalLinkedSchedules}</span>
                         </div>
+                        <Button onClick={handleSaveReports} className="bg-green-600 hover:bg-green-700 text-white shadow-md flex-none self-end h-[52px]">
+                            <Save className="w-4 h-4 mr-2" /> Lưu Báo Cáo
+                        </Button>
                     </div>
                 )}
             </GlassCard>
@@ -122,10 +225,10 @@ export function ContractReport({ data }: { data: ReportData }) {
                     )}
                 </GlassCard>
 
-                {/* Data Table Segment - 2/3 width */}
+                {/* Data Table Segment */}
                 <GlassCard className="overflow-hidden lg:col-span-2 flex flex-col h-[400px]">
                     <div className="p-4 border-b bg-white/50 flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-gray-800">Danh sách Lịch công tác liên kết</h3>
+                        <h3 className="text-lg font-bold text-gray-800">1. Công việc đã thực hiện</h3>
                         {selectedContract && (
                             <Badge variant="outline" className="border-[#4361ee] text-[#4361ee] bg-[#4361ee]/5">
                                 {selectedContract.code}
@@ -136,35 +239,148 @@ export function ContractReport({ data }: { data: ReportData }) {
                         <Table>
                             <TableHeader className="bg-slate-50/80 sticky top-0 z-10 backdrop-blur-sm">
                                 <TableRow>
-                                    <TableHead className="w-[120px] text-[#3a0ca3] font-bold">Ngày TC</TableHead>
+                                    <TableHead className="w-[120px] text-[#3a0ca3] font-bold">Thời gian</TableHead>
                                     <TableHead className="w-[120px] text-[#3a0ca3] font-bold">Đơn vị</TableHead>
-                                    <TableHead className="min-w-[200px] text-[#3a0ca3] font-bold">Nội dung</TableHead>
+                                    <TableHead className="min-w-[200px] text-[#3a0ca3] font-bold">Nội dung (Bấm để sửa)</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {linkedSchedules.length > 0 ? (
-                                    linkedSchedules.map((s) => (
-                                        <TableRow key={s.id} className="hover:bg-blue-50/50 transition-colors">
+                                {pastSchedules.length > 0 ? (
+                                    pastSchedules.map((s) => (
+                                        <TableRow key={`past-${s.id}`} className="hover:bg-blue-50/50 transition-colors">
                                             <TableCell className="font-medium whitespace-nowrap">
-                                                {format(parseISO(s.startDate), 'dd/MM/yyyy')}
+                                                {s.isCustomReport && s.isNewOrEditing ? (
+                                                    <div className="flex flex-col gap-1 items-start">
+                                                        <div className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-6">Từ:</span> <Input type="date" value={s.startDate} onChange={(e) => handleChange(s.id, 'startDate', e.target.value)} className="w-[110px] h-6 text-xs bg-white focus:border-[#4361ee] px-1" /></div>
+                                                        <div className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-6">Đến:</span> <Input type="date" value={s.endDate} onChange={(e) => handleChange(s.id, 'endDate', e.target.value)} className="w-[110px] h-6 text-xs bg-white focus:border-[#4361ee] px-1" /></div>
+                                                    </div>
+                                                ) : (
+                                                    formatScheduleTime(s.startDate, s.endDate)
+                                                )}
                                             </TableCell>
                                             <TableCell>
-                                                <span className="font-semibold text-gray-700">{s.unit}</span>
+                                                {s.isCustomReport && s.isNewOrEditing ? (
+                                                    <Input value={s.unit} onChange={(e) => handleChange(s.id, 'unit', e.target.value)} placeholder="Nhập Đơn vị" className="w-full h-8 text-xs bg-white focus:border-[#4361ee]" />
+                                                ) : (
+                                                    <span className="font-semibold text-gray-700">{s.unit || "Chưa nhập"}</span>
+                                                )}
                                             </TableCell>
-                                            <TableCell>
-                                                <p className="text-gray-600 line-clamp-2" title={s.content}>{s.content}</p>
+                                            <TableCell className="p-2">
+                                                <div className="flex items-center gap-2">
+                                                    {s.isCustomReport && <span title="Báo cáo thêm bằng tay"><PenSquare className="w-4 h-4 min-w-4 text-orange-500" /></span>}
+                                                    <Input
+                                                        value={s.content}
+                                                        onChange={(e) => handleChange(s.id, 'content', e.target.value)}
+                                                        placeholder="Nhập nội dung công việc..."
+                                                        className={`w-full bg-transparent border-transparent hover:border-gray-300 focus:bg-white focus:border-[#4361ee] shadow-none h-auto py-1 px-2 ${s.isCustomReport ? 'font-semibold text-orange-700' : ''}`}
+                                                    />
+                                                    {s.isCustomReport && (
+                                                        <div className="flex gap-1 ml-auto shrink-0">
+                                                            {!s.isNewOrEditing && (
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-500 hover:bg-blue-50" onClick={() => handleEditCustomRow(s.id)}>
+                                                                    <Edit2 className="w-3 h-3" />
+                                                                </Button>
+                                                            )}
+                                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-50" onClick={() => handleDeleteCustomRow(s.id)}>
+                                                                <Trash2 className="w-3 h-3" />
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
                                         <TableCell colSpan={3} className="h-32 text-center text-muted-foreground">
-                                            Không có Lịch công tác nào được liên kết với Hợp đồng này.
+                                            Không có Lịch công tác đã thực hiện.
                                         </TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
                         </Table>
+                    </div>
+                    <div className="p-3 bg-slate-50 border-t flex justify-end">
+                        <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(true)} className="text-[#3a0ca3] border-[#3a0ca3] hover:bg-[#3a0ca3]/10">
+                            <Plus className="w-4 h-4 mr-2" /> Bổ sung công việc
+                        </Button>
+                    </div>
+                </GlassCard>
+
+                {/* Future Table Segment */}
+                <GlassCard className="overflow-hidden lg:col-span-3 flex flex-col max-h-[400px]">
+                    <div className="p-4 border-b bg-white/50 flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-[#f72585]">2. Kế hoạch thực hiện</h3>
+                    </div>
+                    <div className="overflow-y-auto flex-1">
+                        <Table>
+                            <TableHeader className="bg-slate-50/80 sticky top-0 z-10 backdrop-blur-sm">
+                                <TableRow>
+                                    <TableHead className="w-[120px] text-[#f72585] font-bold">Thời gian</TableHead>
+                                    <TableHead className="w-[120px] text-[#f72585] font-bold">Đơn vị</TableHead>
+                                    <TableHead className="min-w-[200px] text-[#f72585] font-bold">Nội dung (Bấm để sửa)</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {futureSchedules.length > 0 ? (
+                                    futureSchedules.map((s) => (
+                                        <TableRow key={`future-${s.id}`} className="hover:bg-pink-50/50 transition-colors">
+                                            <TableCell className="font-medium whitespace-nowrap">
+                                                {s.isCustomReport && s.isNewOrEditing ? (
+                                                    <div className="flex flex-col gap-1 items-start">
+                                                        <div className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-6">Từ:</span> <Input type="date" value={s.startDate} onChange={(e) => handleChange(s.id, 'startDate', e.target.value)} className="w-[110px] h-6 text-xs bg-white focus:border-[#f72585] px-1" /></div>
+                                                        <div className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-6">Đến:</span> <Input type="date" value={s.endDate} onChange={(e) => handleChange(s.id, 'endDate', e.target.value)} className="w-[110px] h-6 text-xs bg-white focus:border-[#f72585] px-1" /></div>
+                                                    </div>
+                                                ) : (
+                                                    formatScheduleTime(s.startDate, s.endDate)
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {s.isCustomReport && s.isNewOrEditing ? (
+                                                    <Input value={s.unit} onChange={(e) => handleChange(s.id, 'unit', e.target.value)} placeholder="Nhập Đơn vị" className="w-full h-8 text-xs bg-white focus:border-[#f72585]" />
+                                                ) : (
+                                                    <span className="font-semibold text-gray-700">{s.unit || "Chưa nhập"}</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="p-2">
+                                                <div className="flex items-center gap-2">
+                                                    {s.isCustomReport && <span title="Báo cáo thêm bằng tay"><PenSquare className="w-4 h-4 min-w-4 text-orange-500" /></span>}
+                                                    <Input
+                                                        value={s.content}
+                                                        onChange={(e) => handleChange(s.id, 'content', e.target.value)}
+                                                        placeholder="Nhập nội dung công việc..."
+                                                        className={`w-full bg-transparent border-transparent hover:border-gray-300 focus:bg-white focus:border-[#f72585] shadow-none h-auto py-1 px-2 ${s.isCustomReport ? 'font-semibold text-orange-700' : ''}`}
+                                                    />
+                                                    {s.isCustomReport && (
+                                                        <div className="flex gap-1 ml-auto shrink-0">
+                                                            {!s.isNewOrEditing && (
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-pink-500 hover:bg-pink-50" onClick={() => handleEditCustomRow(s.id)}>
+                                                                    <Edit2 className="w-3 h-3" />
+                                                                </Button>
+                                                            )}
+                                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-50" onClick={() => handleDeleteCustomRow(s.id)}>
+                                                                <Trash2 className="w-3 h-3" />
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={3} className="h-32 text-center text-muted-foreground">
+                                            Không có kế hoạch công việc nào.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                    <div className="p-3 bg-slate-50 border-t flex justify-end">
+                        <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(false)} className="text-[#f72585] border-[#f72585] hover:bg-[#f72585]/10">
+                            <Plus className="w-4 h-4 mr-2" /> Bổ sung kế hoạch liên kết
+                        </Button>
                     </div>
                 </GlassCard>
             </div>

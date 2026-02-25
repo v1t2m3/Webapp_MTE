@@ -98,3 +98,46 @@
     background-size: 20px 20px;
   }
 }
+
+/* Base print styles for A4 landscape */
+@page {
+  size: A4 landscape;
+  margin: 15mm 15mm 15mm 15mm;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-color: white !important;
+  }
+
+  /* Hide elements not needed in print */
+  .no-print, nav, header:not(.print-header), footer:not(.print-footer), aside, .sidebar {
+    display: none !important;
+  }
+
+  /* Reset main container for printing */
+  main, .page-container, #__next, body, html {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    background: white !important;
+  }
+
+  /* Print specific element classes */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Force table headers to repeat on every page */
+  thead {
+    display: table-header-group;
+  }
+  
+  /* Prevent rows from breaking across pages */
+  tr {
+    page-break-inside: avoid;
+  }
+}

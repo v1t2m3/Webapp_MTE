@@ -52,11 +52,10 @@ export default function PersonnelPage() {
             if (res.ok) {
                 fetchData();
             } else {
-                alert("Xóa thất bại");
+                console.error("Xóa thất bại");
             }
         } catch (error) {
             console.error("Failed to delete:", error);
-            alert("Lỗi khi xóa");
         }
     };
 
@@ -84,7 +83,6 @@ export default function PersonnelPage() {
             fetchData();
         } catch (error) {
             console.error("Form submit error:", error);
-            alert("Lỗi khi lưu dữ liệu");
             throw error;
         }
     };

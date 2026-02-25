@@ -1,11 +1,11 @@
 import { Contract, Personnel, Schedule, Vehicle } from "@/types";
 
 export const mockPersonnel: Personnel[] = [
-    { id: 'P001', name: 'Nguyễn Văn A', position: 'Kỹ sư', department: 'Kỹ thuật', status: 'Active' },
-    { id: 'P002', name: 'Trần Thị B', position: 'Kế toán', department: 'Tài chính', status: 'Active' },
-    { id: 'P003', name: 'Lê Văn C', position: 'Lái xe', department: 'Vận hành', status: 'Active' },
-    { id: 'P004', name: 'Phạm Văn D', position: 'Công nhân', department: 'Vận hành', status: 'On Leave' },
-    { id: 'P005', name: 'Hoàng Thị E', position: 'Giám sát', department: 'Kỹ thuật', status: 'Active' },
+    { id: 'P001', name: 'Nguyễn Văn A', position: 'Kỹ sư', department: 'Kỹ thuật', status: 'Active', fullName: 'Nguyễn Văn A', birthYear: '1990', job: 'Kỹ sư', skillLevel: 'Chuyên gia', safetyLevel: 'Bậc 5', education: 'Đại học', contractType: 'Không thời hạn' },
+    { id: 'P002', name: 'Trần Thị B', position: 'Kế toán', department: 'Tài chính', status: 'Active', fullName: 'Trần Thị B', birthYear: '1992', job: 'Kế toán', skillLevel: 'Khá', safetyLevel: 'Bậc 3', education: 'Đại học', contractType: 'Không thời hạn' },
+    { id: 'P003', name: 'Lê Văn C', position: 'Lái xe', department: 'Vận hành', status: 'Active', fullName: 'Lê Văn C', birthYear: '1988', job: 'Lái xe', skillLevel: 'Giỏi', safetyLevel: 'Bậc 4', education: 'Cao đẳng', contractType: 'Không thời hạn' },
+    { id: 'P004', name: 'Phạm Văn D', position: 'Công nhân', department: 'Vận hành', status: 'On Leave', fullName: 'Phạm Văn D', birthYear: '1995', job: 'Công nhân', skillLevel: 'Trung bình', safetyLevel: 'Bậc 2', education: 'Trung cấp', contractType: 'Có thời hạn', leaveType: 'phép', leaveDates: [new Date().toISOString()] },
+    { id: 'P005', name: 'Hoàng Thị E', position: 'Giám sát', department: 'Kỹ thuật', status: 'Active', fullName: 'Hoàng Thị E', birthYear: '1985', job: 'Giám sát', skillLevel: 'Chuyên gia', safetyLevel: 'Bậc 5', education: 'Đại học', contractType: 'Không thời hạn' },
 ];
 
 export const mockVehicles: Vehicle[] = [

@@ -39,23 +39,34 @@ export const googleSheetsService = {
 
             return rows
                 .filter(row => row[0]) // Filter out empty rows (cleared rows)
-                .map((row) => ({
-                    id: row[0],
-                    // Dashboard fields
-                    name: row[1],
-                    position: row[3],
-                    department: 'N/A',
-                    status: 'Active',
-                    // Personnel Page fields
-                    fullName: row[1],
-                    birthYear: row[2],
-                    job: row[3],
-                    skillLevel: row[4],
-                    safetyLevel: row[5],
-                    education: row[6],
-                    contractType: row[7],
-                    section: row[8] || '', // Bộ phận
-                }));
+                .map((row) => {
+                    let leaveDates: string[] = [];
+                    try {
+                        leaveDates = row[10] ? JSON.parse(row[10]) : [];
+                    } catch (e) {
+                        leaveDates = [];
+                    }
+
+                    return {
+                        id: row[0],
+                        // Dashboard fields
+                        name: row[1],
+                        position: row[3],
+                        department: 'N/A',
+                        status: row[9] ? 'On Leave' : 'Active', // Column J for status (Active/On Leave, though usually derived from dates)
+                        // Personnel Page fields
+                        fullName: row[1],
+                        birthYear: row[2],
+                        job: row[3],
+                        skillLevel: row[4],
+                        safetyLevel: row[5],
+                        education: row[6],
+                        contractType: row[7],
+                        section: row[8] || '', // Bộ phận
+                        leaveType: row[9] || undefined, // Column J for Leave Type
+                        leaveDates: leaveDates // Column K for JSON formatted leave dates
+                    } as Personnel;
+                });
         } catch (error) {
             console.error('Error fetching personnel:', error);
             return [];
@@ -103,12 +114,14 @@ export const googleSheetsService = {
                     personnel.education,
                     personnel.contractType,
                     personnel.section || '',
+                    personnel.leaveType || '',
+                    JSON.stringify(personnel.leaveDates || []),
                 ],
             ];
 
             await sheets.spreadsheets.values.append({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'NhanSu!A:I',
+                range: 'NhanSu!A:K',
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -140,12 +153,14 @@ export const googleSheetsService = {
                     personnel.education,
                     personnel.contractType,
                     personnel.section || '',
+                    personnel.leaveType || '',
+                    JSON.stringify(personnel.leaveDates || []),
                 ],
             ];
 
             await sheets.spreadsheets.values.update({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `NhanSu!A${rowIndex}:I${rowIndex}`,
+                range: `NhanSu!A${rowIndex}:K${rowIndex}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -499,6 +514,7 @@ export const googleSheetsService = {
                     type: row[9] || '',
                     voltage: row[10] || '',
                     contractId: row[11] || '',
+                    isCustomReport: String(row[12]).trim().toUpperCase() === 'TRUE',
                 }));
         } catch (error) {
             console.error('Error fetching schedules:', error);
@@ -549,12 +565,13 @@ export const googleSheetsService = {
                     schedule.type,
                     schedule.voltage,
                     schedule.contractId || '',
+                    schedule.isCustomReport ? 'TRUE' : 'FALSE',
                 ],
             ];
 
             await sheets.spreadsheets.values.append({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'LichCT!A:L',
+                range: 'LichCT!A:M',
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -589,12 +606,13 @@ export const googleSheetsService = {
                     schedule.type,
                     schedule.voltage,
                     schedule.contractId || '',
+                    schedule.isCustomReport ? 'TRUE' : 'FALSE',
                 ],
             ];
 
             await sheets.spreadsheets.values.update({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `LichCT!A${rowIndex}:L${rowIndex}`,
+                range: `LichCT!A${rowIndex}:M${rowIndex}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });

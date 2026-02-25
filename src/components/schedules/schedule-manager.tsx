@@ -9,6 +9,7 @@ import { ScheduleTable } from "@/components/ScheduleTable";
 import { ScheduleForm } from "@/components/ScheduleForm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 function getWeekNumber(d: Date) {
     const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -29,6 +30,7 @@ export function ScheduleManager() {
     const [filterTime, setFilterTime] = useState("Tất cả");
     const [filterUnit, setFilterUnit] = useState("Tất cả");
     const [filterType, setFilterType] = useState("Tất cả");
+    const [showPastSchedules, setShowPastSchedules] = useState(false);
 
     const overlapColors = [
         "bg-[#f72585]/10 text-[#f72585]", // Pink pale
@@ -133,11 +135,21 @@ export function ScheduleManager() {
         // Type Filter
         if (filterType !== "Tất cả" && s.type !== filterType) return false;
 
+        const sDateStr = s.startDate; // YYYY-MM-DD
+
+        // Past Schedules Filter
+        if (!showPastSchedules && sDateStr) {
+            const sDate = new Date(sDateStr);
+            sDate.setHours(0, 0, 0, 0);
+            const today = new Date(now);
+            today.setHours(0, 0, 0, 0);
+            if (sDate < today) return false;
+        }
+
         // Time Filter
         if (filterTime !== "Tất cả") {
             const currentWeekFilter = getWeekNumber(now);
             const currentYearFilter = now.getFullYear();
-            const sDateStr = s.startDate; // YYYY-MM-DD
             if (sDateStr) {
                 const sDate = new Date(sDateStr);
                 if (filterTime === "Tuần này") {
@@ -360,6 +372,15 @@ export function ScheduleManager() {
                                         <SelectItem value="Không cắt điện">Không cắt điện</SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+
+                            <div className="flex items-center space-x-2 pt-2 border-t border-gray-100">
+                                <Switch
+                                    id="show-past"
+                                    checked={showPastSchedules}
+                                    onCheckedChange={setShowPastSchedules}
+                                />
+                                <Label htmlFor="show-past" className="text-sm cursor-pointer select-none">Hiển thị lịch cũ</Label>
                             </div>
                         </div>
                     </GlassCard>

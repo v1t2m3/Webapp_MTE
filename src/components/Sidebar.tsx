@@ -6,15 +6,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
     LayoutDashboard,
-    Users,
-    Truck,
-    FileText,
-    CalendarDays,
-    FileBarChart,
+    Database,
+    Briefcase,
     Settings,
     Menu,
-    Shield,
-    ClipboardList
+    Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -28,41 +24,17 @@ const routes = [
         color: "text-[#4cc9f0]",
     },
     {
-        label: "Nhân sự",
-        icon: Users,
-        href: "/nhan-su",
+        label: "Nguồn lực",
+        icon: Database,
+        href: "/nguon-luc",
         color: "text-[#7209b7]",
     },
     {
-        label: "Xe & Thiết bị",
-        icon: Truck,
-        href: "/xe-thiet-bi",
+        label: "Công việc",
+        icon: Briefcase,
+        href: "/cong-viec",
         color: "text-[#f72585]",
-    },
-    {
-        label: "Hợp đồng",
-        icon: FileText,
-        href: "/contracts",
-        color: "text-[#4361ee]",
-    },
-    {
-        label: "Lịch công tác",
-        icon: CalendarDays,
-        href: "/schedules",
-        color: "text-[#480ca8]",
-    },
-    {
-        label: "Đề cương công tác",
-        icon: ClipboardList,
-        href: "/de-cuong",
-        color: "text-[#3f37c9]",
-    },
-    {
-        label: "Báo cáo",
-        icon: FileBarChart,
-        href: "/reports",
-        color: "text-[#b5179e]",
-    },
+    }
 ];
 
 export function Sidebar() {

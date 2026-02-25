@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Schedule, Personnel, Vehicle, Contract, WorkOutline } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2, Download } from "lucide-react";
+import { Plus, Edit, Trash2, Download, History, ListFilter } from "lucide-react";
 import { GlassCard, GlassPageHeader } from "@/components/ui/GlassCard";
 import { WorkOutlineForm } from "./work-outline-form";
 import { exportWorkOutlineDocx } from "@/lib/export-docx";
@@ -26,6 +26,7 @@ export function WorkOutlineManager() {
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingOutline, setEditingOutline] = useState<WorkOutline | null>(null);
+    const [showHistory, setShowHistory] = useState(false);
 
     const fetchData = useCallback(async () => {
         try {
@@ -144,15 +145,41 @@ export function WorkOutlineManager() {
         return dateString;
     };
 
+    const isPastDeadline = (endDateStr: string) => {
+        if (!endDateStr) return false;
+        const endDate = new Date(endDateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return endDate < today;
+    };
+
+    const filteredWorkOutlines = workOutlines.filter(wo => {
+        // Only hide if history toggle is off AND the endDate is before strictly today.
+        if (!showHistory && isPastDeadline(wo.endDate)) {
+            return false;
+        }
+        return true;
+    });
+
     return (
         <div className="flex flex-col space-y-6 animate-fade-in">
             <GlassPageHeader
                 title="Đề cương công tác"
                 description="Quản lý chi tiết giao việc, phân công nhân sự và phương tiện cho từng Lịch công tác."
             >
-                <Button onClick={handleOpenNew} className="bg-[#3f37c9] hover:bg-[#3f37c9]/90 text-white shadow-lg shadow-indigo-900/20 px-6 py-5 rounded-xl font-medium">
-                    <Plus className="mr-2 h-5 w-5" /> Thêm Đề Cương
-                </Button>
+                <div className="flex gap-3 mt-4 sm:mt-0">
+                    <Button
+                        onClick={() => setShowHistory(!showHistory)}
+                        variant={showHistory ? "default" : "outline"}
+                        className={`font-medium ${showHistory ? 'bg-slate-700 hover:bg-slate-800 text-white' : 'text-slate-600 bg-white hover:bg-slate-50 border-slate-200'}`}
+                    >
+                        {showHistory ? <ListFilter className="mr-2 h-4 w-4" /> : <History className="mr-2 h-4 w-4" />}
+                        {showHistory ? "Ẩn Đề Cương Cũ" : "Xem Đề Cương Cũ"}
+                    </Button>
+                    <Button onClick={handleOpenNew} className="bg-[#3f37c9] hover:bg-[#3f37c9]/90 text-white shadow-lg shadow-indigo-900/20 px-6 font-medium">
+                        <Plus className="mr-2 h-5 w-5" /> Thêm Đề Cương
+                    </Button>
+                </div>
             </GlassPageHeader>
 
             <div className="w-full">
@@ -175,12 +202,13 @@ export function WorkOutlineManager() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {workOutlines.map((item, index) => {
+                                    {filteredWorkOutlines.map((item, index) => {
                                         const scheduleInfo = getScheduleInfo(item);
+                                        const isOld = isPastDeadline(item.endDate);
                                         return (
                                             <TableRow
                                                 key={item.id}
-                                                className="hover:bg-muted/50 transition-colors animate-slide-up align-top"
+                                                className={`hover:bg-muted/50 transition-colors animate-slide-up align-top ${isOld ? 'opacity-60 bg-slate-50' : ''}`}
                                                 style={{ animationDelay: `${index * 0.05}s` }}
                                             >
                                                 <TableCell>
@@ -241,7 +269,7 @@ export function WorkOutlineManager() {
                                             </TableRow>
                                         );
                                     })}
-                                    {workOutlines.length === 0 && (
+                                    {filteredWorkOutlines.length === 0 && (
                                         <TableRow>
                                             <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
                                                 Chưa có dữ liệu Đề cương công tác.

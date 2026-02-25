@@ -1,16 +1,16 @@
-import { googleSheetsService } from "@/lib/google-sheets";
+import { dataService } from "@/lib/data-service";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-    const data = await googleSheetsService.getPersonnel();
+    const data = await dataService.getPersonnel();
     return NextResponse.json(data);
 }
 
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const success = await googleSheetsService.addPersonnel(body);
-        if (success) {
+        const data = await dataService.addPersonnel(body);
+        if (data) {
             return NextResponse.json({ message: "Personnel added successfully" }, { status: 201 });
         } else {
             return NextResponse.json({ message: "Failed to add personnel" }, { status: 500 });
@@ -23,12 +23,12 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
     try {
         const body = await req.json();
-        const { id, ...data } = body;
+        const { id, ...dataProps } = body;
         if (!id) {
             return NextResponse.json({ message: "ID is required" }, { status: 400 });
         }
-        const success = await googleSheetsService.updatePersonnel(id, data);
-        if (success) {
+        const data = await dataService.updatePersonnel(id, dataProps);
+        if (data) {
             return NextResponse.json({ message: "Personnel updated successfully" });
         } else {
             return NextResponse.json({ message: "Failed to update personnel" }, { status: 500 });
@@ -45,7 +45,7 @@ export async function DELETE(req: Request) {
         if (!id) {
             return NextResponse.json({ message: "ID is required" }, { status: 400 });
         }
-        const success = await googleSheetsService.deletePersonnel(id);
+        const success = await dataService.deletePersonnel(id);
         if (success) {
             return NextResponse.json({ message: "Personnel deleted successfully" });
         } else {

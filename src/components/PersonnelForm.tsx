@@ -23,6 +23,7 @@ export function PersonnelForm({ open, onOpenChange, initialData, onSubmit }: Per
         safetyLevel: "",
         education: "",
         contractType: "",
+        leaveType: undefined,
     });
     const [loading, setLoading] = useState(false);
 
@@ -39,6 +40,7 @@ export function PersonnelForm({ open, onOpenChange, initialData, onSubmit }: Per
                     safetyLevel: "",
                     education: "",
                     contractType: "",
+                    leaveType: undefined,
                 });
             }
         }
@@ -96,6 +98,53 @@ export function PersonnelForm({ open, onOpenChange, initialData, onSubmit }: Per
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="contractType" className="text-right">Loại HĐLĐ</Label>
                         <Input id="contractType" name="contractType" value={formData.contractType || ""} onChange={handleChange} className="col-span-3" placeholder="VD: 12 tháng, Không xác định..." />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="leaveType" className="text-right">Loại nghỉ</Label>
+                        <select
+                            id="leaveType"
+                            name="leaveType"
+                            value={formData.leaveType || ""}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, leaveType: e.target.value as any }))}
+                            className="col-span-3 h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                            <option value="">Không nghỉ</option>
+                            <option value="thường">Nghỉ thường</option>
+                            <option value="phép">Nghỉ phép</option>
+                            <option value="bù">Nghỉ bù</option>
+                        </select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label className="text-right">Ngày nghỉ</Label>
+                        <div className="col-span-3">
+                            <Input
+                                type="date"
+                                onChange={(e) => {
+                                    if (e.target.value) {
+                                        const newDates = [...(formData.leaveDates || [])];
+                                        if (!newDates.includes(e.target.value)) {
+                                            newDates.push(e.target.value);
+                                            setFormData((prev) => ({ ...prev, leaveDates: newDates, status: "On Leave" }));
+                                        }
+                                        e.target.value = ""; // Reset input after selection
+                                    }
+                                }}
+                            />
+                            <div className="mt-2 flex flex-wrap gap-2">
+                                {(formData.leaveDates || []).map((date) => (
+                                    <span key={date} className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded">
+                                        {new Date(date).toLocaleDateString("vi-VN")}
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData((prev) => ({ ...prev, leaveDates: (prev.leaveDates || []).filter((d) => d !== date) }))}
+                                            className="text-amber-600 hover:text-amber-900 font-bold ml-1"
+                                        >
+                                            &times;
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading}>

@@ -9,11 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Calendar as CalendarIcon, Plus, Trash2 } from "lucide-react";
-import { format } from "date-fns";
+import { Calendar as CalendarIcon, Plus, Trash2, AlertCircle } from "lucide-react";
+import { format, isWithinInterval, parseISO } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface WorkOutlineFormProps {
     open: boolean;
@@ -24,12 +25,14 @@ interface WorkOutlineFormProps {
     personnel: Personnel[];
     vehicles: Vehicle[];
     contracts: Contract[];
+    allWorkOutlines?: WorkOutline[];
 }
 
 export function WorkOutlineForm({
-    open, onOpenChange, initialData, onSubmit, schedules, personnel, vehicles, contracts
+    open, onOpenChange, initialData, onSubmit, schedules, personnel, vehicles, contracts, allWorkOutlines = []
 }: WorkOutlineFormProps) {
     const [loading, setLoading] = useState(false);
+    const [formError, setFormError] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<WorkOutline>>({
         id: "",
         scheduleId: "",
@@ -57,6 +60,11 @@ export function WorkOutlineForm({
         return options;
     };
     const timeOptions = generateTimeOptions();
+
+    // Reset error when form closes
+    useEffect(() => {
+        if (!open) setFormError(null);
+    }, [open]);
 
     useEffect(() => {
         if (open) {
@@ -145,6 +153,43 @@ export function WorkOutlineForm({
         });
     };
 
+    const getPersonnelStatusWarning = (personnelId: string, startDate?: string, endDate?: string) => {
+        if (!personnelId || !startDate) return null;
+
+        const pInfo = personnel.find(p => p.id === personnelId);
+        if (!pInfo) return null;
+
+        const checkDate = parseISO(startDate);
+
+        // 1. Check Leaves
+        if (pInfo.leaveDates && pInfo.leaveDates.length > 0) {
+            const isOnLeave = pInfo.leaveDates.some(leaveStr => {
+                const leaveDate = parseISO(leaveStr);
+                return leaveDate.getFullYear() === checkDate.getFullYear() &&
+                    leaveDate.getMonth() === checkDate.getMonth() &&
+                    leaveDate.getDate() === checkDate.getDate();
+            });
+
+            if (isOnLeave) {
+                return `Nhân sự đang có lịch nghỉ (${pInfo.leaveType}) vào ngày ${format(checkDate, 'dd/MM/yyyy')}.`;
+            }
+        }
+
+        // 2. Check Other Outlines (excluding current one if editing)
+        const activeOutlines = allWorkOutlines.filter(wo => wo.id !== formData.id);
+        for (const wo of activeOutlines) {
+            if (wo.startDate === startDate) {
+                const isAssigned = wo.personnelAssignments?.some(pa => pa.personnelId === personnelId);
+                if (isAssigned) {
+                    const title = wo.isCustom ? wo.customContent : schedules.find(s => s.id === wo.scheduleId)?.target || "Đề cương khác";
+                    return `Nhân sự đã được phân công vào thẻ: "${title}" trong cùng ngày.`;
+                }
+            }
+        }
+
+        return null;
+    };
+
     const handleVehicleChange = (vId: string, checked: boolean) => {
         setFormData(prev => {
             const current = [...(prev.vehicleIds || [])];
@@ -190,11 +235,24 @@ export function WorkOutlineForm({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setFormError(null);
+
+        // Validation 1: Check for duplicate personnel in the same outline
+        const assignedIds = formData.personnelAssignments?.map(pa => pa.personnelId).filter(id => id.trim() !== "");
+        if (assignedIds && assignedIds.length > 0) {
+            const uniqueIds = new Set(assignedIds);
+            if (uniqueIds.size !== assignedIds.length) {
+                setFormError("Có nhân sự bị trùng lặp trong danh sách phân công. Vui lòng kiểm tra lại.");
+                return;
+            }
+        }
+
         setLoading(true);
         try {
             await onSubmit(formData);
         } catch (error) {
             console.error(error);
+            setFormError("Lỗi hệ thống khi lưu đề cương.");
         } finally {
             setLoading(false);
         }
@@ -340,68 +398,102 @@ export function WorkOutlineForm({
                             </Button>
                         </div>
 
+                        {formError && (
+                            <Alert variant="destructive" className="bg-red-50 border-red-200">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertDescription>{formError}</AlertDescription>
+                            </Alert>
+                        )}
+
                         {(!formData.personnelAssignments || formData.personnelAssignments.length === 0) && (
                             <div className="text-center p-4 text-muted-foreground text-sm border border-dashed rounded-lg bg-white/50">
                                 Chưa phân công nhân sự nào.
                             </div>
                         )}
 
-                        {formData.personnelAssignments?.map((assignment, index) => (
-                            <div key={index} className="flex flex-col lg:flex-row gap-3 items-end bg-white p-3 rounded-lg border shadow-sm">
-                                <div className="flex gap-2 w-full">
-                                    <div className="flex-[2]">
-                                        <Label className="text-xs mb-1 block text-gray-500">Nhân sự</Label>
-                                        <Select value={assignment.personnelId} onValueChange={(v) => updatePersonnel(index, "personnelId", v)} required>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Chọn nhân sự" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {personnel.filter(p => p.status !== "Inactive").map(p => (
-                                                    <SelectItem key={p.id} value={p.id}>{p.fullName} - {p.job}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                        {formData.personnelAssignments?.map((assignment, index) => {
+                            // Extract assigned IDs excluding current row to disable them in dropdown
+                            const otherAssignedIds = formData.personnelAssignments
+                                ?.filter((_, i) => i !== index)
+                                ?.map(pa => pa.personnelId) || [];
+
+                            const warning = getPersonnelStatusWarning(assignment.personnelId, assignment.startDate, assignment.endDate);
+
+                            return (
+                                <div key={index} className="flex flex-col gap-2">
+                                    <div className={cn(
+                                        "flex flex-col lg:flex-row gap-3 items-end bg-white p-3 rounded-lg border shadow-sm transition-colors",
+                                        warning ? "border-amber-300 bg-amber-50/30" : ""
+                                    )}>
+                                        <div className="flex gap-2 w-full">
+                                            <div className="flex-[2]">
+                                                <Label className="text-xs mb-1 block text-gray-500">Nhân sự</Label>
+                                                <Select value={assignment.personnelId} onValueChange={(v) => updatePersonnel(index, "personnelId", v)} required>
+                                                    <SelectTrigger className={warning ? "border-amber-300" : ""}>
+                                                        <SelectValue placeholder="Chọn nhân sự" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {personnel.filter(p => p.status !== "Inactive").map(p => (
+                                                            <SelectItem
+                                                                key={p.id}
+                                                                value={p.id}
+                                                                disabled={otherAssignedIds.includes(p.id)}
+                                                            >
+                                                                {p.fullName} - {p.job}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="flex-1 max-w-[130px]">
+                                                <Label className="text-xs mb-1 block text-gray-500">Chức danh</Label>
+                                                <Select value={assignment.role || "NVCT - Nhân viên công tác"} onValueChange={(v) => updatePersonnel(index, "role", v)} required>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Chức danh" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="CHTT - Chỉ huy trực tiếp">CHTT</SelectItem>
+                                                        <SelectItem value="LĐCV - Lãnh đạo công việc">LĐCV</SelectItem>
+                                                        <SelectItem value="NVCT - Nhân viên công tác">NVCT</SelectItem>
+                                                        <SelectItem value="GSAT - Giám sát an toàn">GSAT</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col w-full lg:w-auto">
+                                            <Label className="text-xs mb-1 block text-gray-500">Từ</Label>
+                                            <div className="flex gap-1">
+                                                <Select value={assignment.startTime} onValueChange={(v) => updatePersonnel(index, "startTime", v)}>
+                                                    <SelectTrigger className="w-[80px] h-9"><SelectValue /></SelectTrigger>
+                                                    <SelectContent className="max-h-60">{timeOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                                {renderDatePicker(assignment.startDate, (val) => updatePersonnel(index, "startDate", val))}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col w-full lg:w-auto">
+                                            <Label className="text-xs mb-1 block text-gray-500">Đến</Label>
+                                            <div className="flex gap-1">
+                                                <Select value={assignment.endTime} onValueChange={(v) => updatePersonnel(index, "endTime", v)}>
+                                                    <SelectTrigger className="w-[80px] h-9"><SelectValue /></SelectTrigger>
+                                                    <SelectContent className="max-h-60">{timeOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                                {renderDatePicker(assignment.endDate, (val) => updatePersonnel(index, "endDate", val))}
+                                            </div>
+                                        </div>
+                                        <Button type="button" variant="ghost" size="icon" className="text-red-500 hover:bg-red-50 h-9 shrink-0" onClick={() => removePersonnel(index)}>
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
                                     </div>
-                                    <div className="flex-1 max-w-[130px]">
-                                        <Label className="text-xs mb-1 block text-gray-500">Chức danh</Label>
-                                        <Select value={assignment.role || "NVCT - Nhân viên công tác"} onValueChange={(v) => updatePersonnel(index, "role", v)} required>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Chức danh" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="CHTT - Chỉ huy trực tiếp">CHTT</SelectItem>
-                                                <SelectItem value="LĐCV - Lãnh đạo công việc">LĐCV</SelectItem>
-                                                <SelectItem value="NVCT - Nhân viên công tác">NVCT</SelectItem>
-                                                <SelectItem value="GSAT - Giám sát an toàn">GSAT</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+
+                                    {warning && (
+                                        <div className="text-xs text-amber-600 bg-amber-50 px-3 py-1.5 rounded-md flex items-center w-full">
+                                            <AlertCircle className="w-3.5 h-3.5 mr-1.5 inline" />
+                                            Chú ý: {warning}
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="flex flex-col w-full lg:w-auto">
-                                    <Label className="text-xs mb-1 block text-gray-500">Từ</Label>
-                                    <div className="flex gap-1">
-                                        <Select value={assignment.startTime} onValueChange={(v) => updatePersonnel(index, "startTime", v)}>
-                                            <SelectTrigger className="w-[80px] h-9"><SelectValue /></SelectTrigger>
-                                            <SelectContent className="max-h-60">{timeOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                        {renderDatePicker(assignment.startDate, (val) => updatePersonnel(index, "startDate", val))}
-                                    </div>
-                                </div>
-                                <div className="flex flex-col w-full lg:w-auto">
-                                    <Label className="text-xs mb-1 block text-gray-500">Đến</Label>
-                                    <div className="flex gap-1">
-                                        <Select value={assignment.endTime} onValueChange={(v) => updatePersonnel(index, "endTime", v)}>
-                                            <SelectTrigger className="w-[80px] h-9"><SelectValue /></SelectTrigger>
-                                            <SelectContent className="max-h-60">{timeOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                        {renderDatePicker(assignment.endDate, (val) => updatePersonnel(index, "endDate", val))}
-                                    </div>
-                                </div>
-                                <Button type="button" variant="ghost" size="icon" className="text-red-500 hover:bg-red-50 h-9 shrink-0" onClick={() => removePersonnel(index)}>
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     {/* Vehicles Section */}

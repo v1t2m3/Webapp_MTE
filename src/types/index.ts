@@ -16,6 +16,8 @@ export interface Personnel {
     education: string;
     contractType: string;
     section?: string; // Bộ phận
+    leaveType?: 'thường' | 'phép' | 'bù'; // Regular leave, Annual leave, Compensatory leave
+    leaveDates?: string[]; // Array of ISO date strings for the leave days
 }
 
 export type VehicleStatus = 'Available' | 'Maintenance' | 'In Use';
