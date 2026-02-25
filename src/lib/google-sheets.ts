@@ -47,13 +47,17 @@ export const googleSheetsService = {
                         leaveDates = [];
                     }
 
+                    const today = new Date();
+                    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    const isOnLeaveToday = leaveDates.some((d: string) => d.includes(todayStr));
+
                     return {
                         id: row[0],
                         // Dashboard fields
                         name: row[1],
                         position: row[3],
                         department: 'N/A',
-                        status: row[9] ? 'On Leave' : 'Active', // Column J for status (Active/On Leave, though usually derived from dates)
+                        status: isOnLeaveToday ? 'On Leave' : 'Active',
                         // Personnel Page fields
                         fullName: row[1],
                         birthYear: row[2],

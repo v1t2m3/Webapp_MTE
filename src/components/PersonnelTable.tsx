@@ -33,6 +33,7 @@ export function PersonnelTable({ data, onEdit, onDelete }: PersonnelTableProps) 
                         <TableHead>Bậc an toàn</TableHead>
                         <TableHead>Trình độ</TableHead>
                         <TableHead>Loại HĐLĐ</TableHead>
+                        <TableHead>Nghỉ phép</TableHead>
                         <TableHead className="text-right">Thao tác</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -55,7 +56,18 @@ export function PersonnelTable({ data, onEdit, onDelete }: PersonnelTableProps) 
                             <TableCell>{item.safetyLevel}</TableCell>
                             <TableCell>{item.education}</TableCell>
                             <TableCell>
-                                {item.leaveType ? (
+                                <Badge
+                                    variant="outline"
+                                    className={`whitespace-nowrap ${item.contractType === "Không thời hạn" ? "bg-[#4cc9f0]/10 text-[#3a0ca3] border-[#4cc9f0]/20" :
+                                        item.contractType === "Thử việc" ? "bg-[#f72585]/10 text-[#f72585] border-[#f72585]/20" :
+                                            "bg-[#4361ee]/10 text-[#4361ee] border-[#4361ee]/20"
+                                        }`}
+                                >
+                                    {item.contractType}
+                                </Badge>
+                            </TableCell>
+                            <TableCell>
+                                {item.leaveDates && item.leaveDates.length > 0 ? (
                                     <Badge
                                         variant="outline"
                                         className={`whitespace-nowrap ${item.leaveType === "phép" ? "bg-amber-100/50 text-amber-700 border-amber-200" :
@@ -63,18 +75,10 @@ export function PersonnelTable({ data, onEdit, onDelete }: PersonnelTableProps) 
                                                 "bg-red-100/50 text-red-700 border-red-200"
                                             }`}
                                     >
-                                        Nghỉ {item.leaveType}
+                                        Nghỉ {item.leaveType} - {item.leaveDates.length} ngày
                                     </Badge>
                                 ) : (
-                                    <Badge
-                                        variant="outline"
-                                        className={`whitespace-nowrap ${item.contractType === "Không thời hạn" ? "bg-[#4cc9f0]/10 text-[#3a0ca3] border-[#4cc9f0]/20" :
-                                            item.contractType === "Thử việc" ? "bg-[#f72585]/10 text-[#f72585] border-[#f72585]/20" :
-                                                "bg-[#4361ee]/10 text-[#4361ee] border-[#4361ee]/20"
-                                            }`}
-                                    >
-                                        {item.contractType}
-                                    </Badge>
+                                    <span className="text-muted-foreground text-sm">-</span>
                                 )}
                             </TableCell>
                             <TableCell className="text-right">

@@ -9,8 +9,14 @@ export default async function NguonLucPage() {
     const contracts = await dataService.getContracts();
 
     const activePersonnel = personnel.filter((p) => p.status === "Active").length;
-    // Count personnel on leave today. For now mock data has 'On Leave'
-    const onLeavePersonnel = personnel.filter((p) => p.status === "On Leave").length;
+
+    // Count personnel explicitly on leave exactly today
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const onLeavePersonnel = personnel.filter((p) => {
+        if (!p.leaveDates || !Array.isArray(p.leaveDates)) return false;
+        return p.leaveDates.some(d => d.includes(todayStr));
+    }).length;
 
     const availableVehicles = vehicles.filter((v) => v.status === "Available").length;
     const maintenanceVehicles = vehicles.filter((v) => v.status === "Maintenance").length;
