@@ -372,12 +372,18 @@ export function ContractReport({ data }: { data: ReportData }) {
                                             <TableCell className="p-2">
                                                 <div className="flex items-center gap-2">
                                                     {s.isCustomReport && <span title="Báo cáo thêm bằng tay"><PenSquare className="w-4 h-4 min-w-4 text-orange-500" /></span>}
-                                                    <Input
-                                                        value={s.content}
-                                                        onChange={(e) => handleChange(s.id, 'content', e.target.value)}
-                                                        placeholder="Nhập nội dung công việc..."
-                                                        className={`w-full bg-transparent border-transparent hover:border-gray-300 focus:bg-white focus:border-[#f72585] shadow-none h-auto py-1 px-2 ${s.isCustomReport ? 'font-semibold text-orange-700' : ''}`}
-                                                    />
+                                                    {s.isCustomReport && s.isNewOrEditing ? (
+                                                        <Input
+                                                            value={s.content}
+                                                            onChange={(e) => handleChange(s.id, 'content', e.target.value)}
+                                                            placeholder="Nhập nội dung công việc..."
+                                                            className={`w-full bg-transparent border-transparent hover:border-gray-300 focus:bg-white focus:border-[#f72585] shadow-none h-auto py-1 px-2 ${s.isCustomReport ? 'font-semibold text-orange-700' : ''}`}
+                                                        />
+                                                    ) : (
+                                                        <span className={`w-full py-1 px-2 block ${s.isCustomReport ? 'font-semibold text-orange-700' : ''}`}>
+                                                            {s.content}
+                                                        </span>
+                                                    )}
                                                     {s.isCustomReport && (
                                                         <div className="flex gap-1 ml-auto shrink-0">
                                                             {!s.isNewOrEditing && (
