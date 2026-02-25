@@ -14,7 +14,10 @@ export default async function Home() {
   const availableVehicles = vehicles.filter((v) => v.status === "Available").length;
   const totalContracts = contracts.length;
   // Simple check for today's schedules
-  const todaysSchedules = schedules.filter((s) => s.date === new Date().toISOString().split("T")[0]).length;
+  const todaysSchedules = schedules.filter((s) => {
+    if (!s.startDate) return false;
+    return s.startDate.split("T")[0] === new Date().toISOString().split("T")[0];
+  }).length;
 
   const stats = [
     {
@@ -97,11 +100,11 @@ export default async function Home() {
               {schedules.slice(0, 5).map((s, i) => (
                 <div key={i} className="flex items-center p-3 rounded-lg bg-gray-50/50 hover:bg-white transition-colors border border-transparent hover:border-gray-100">
                   <div className="ml-2 space-y-1">
-                    <p className="text-sm font-medium leading-none text-gray-800">{s.workContent}</p>
-                    <p className="text-xs text-muted-foreground">{s.date}</p>
+                    <p className="text-sm font-medium leading-none text-gray-800">{s.content || "Chưa có nội dung"}</p>
+                    <p className="text-xs text-muted-foreground">{s.startDate}</p>
                   </div>
                   <div className="ml-auto font-medium text-sm text-[#3a0ca3]">
-                    {s.contractId}
+                    {s.contractId || s.unit || ""}
                   </div>
                 </div>
               ))}
