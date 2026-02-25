@@ -99,8 +99,22 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
         ]);
     };
 
-    const handleDeleteCustomRow = (id: string) => {
-        setEditableSchedules(prev => prev.filter(s => s.id !== id));
+    const handleDeleteCustomRow = async (id: string) => {
+        if (id.startsWith('custom-')) {
+            setEditableSchedules(prev => prev.filter(s => s.id !== id));
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/supplemental-reports?id=${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                setEditableSchedules(prev => prev.filter(s => s.id !== id));
+            } else {
+                console.error("Failed to delete report.");
+            }
+        } catch (error) {
+            console.error("Error deleting report:", error);
+        }
     };
 
     const handleEditCustomRow = (id: string) => {
@@ -349,7 +363,7 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
                                         <TableCell>
                                             <div className="flex items-center justify-between gap-2">
                                                 <Badge variant={s.type === 'Cắt điện' ? 'destructive' : 'default'}
-                                                    className={s.isCustomReport ? 'bg-orange-500' : (s.type === 'Cắt điện' ? 'bg-[#f72585]' : 'bg-[#4cc9f0]')}
+                                                    className={`whitespace-nowrap ${s.isCustomReport ? 'bg-orange-500' : (s.type === 'Cắt điện' ? 'bg-[#f72585]' : 'bg-[#4cc9f0]')}`}
                                                 >
                                                     {s.isCustomReport ? 'Nhập tay' : s.type}
                                                 </Badge>
@@ -436,7 +450,7 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
                                         <TableCell>
                                             <div className="flex items-center justify-between gap-2">
                                                 <Badge variant={s.type === 'Cắt điện' ? 'destructive' : 'default'}
-                                                    className={s.isCustomReport ? 'bg-orange-500' : (s.type === 'Cắt điện' ? 'bg-[#f72585]' : 'bg-[#4cc9f0]')}
+                                                    className={`whitespace-nowrap ${s.isCustomReport ? 'bg-orange-500' : (s.type === 'Cắt điện' ? 'bg-[#f72585]' : 'bg-[#4cc9f0]')}`}
                                                 >
                                                     {s.isCustomReport ? 'Nhập tay' : s.type}
                                                 </Badge>

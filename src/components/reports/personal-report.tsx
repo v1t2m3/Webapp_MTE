@@ -122,8 +122,22 @@ export function PersonalReport({ data }: { data: ReportData }) {
         ]);
     };
 
-    const handleDeleteCustomRow = (id: string) => {
-        setEditableWorkloads(prev => prev.filter(s => s.id !== id));
+    const handleDeleteCustomRow = async (id: string) => {
+        if (id.startsWith('custom-')) {
+            setEditableWorkloads(prev => prev.filter(s => s.id !== id));
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/supplemental-reports?id=${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                setEditableWorkloads(prev => prev.filter(s => s.id !== id));
+            } else {
+                console.error("Failed to delete report.");
+            }
+        } catch (error) {
+            console.error("Error deleting report:", error);
+        }
     };
 
     const handleEditCustomRow = (id: string) => {
@@ -400,7 +414,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <Badge variant="outline" className={s.isCustomReport ? 'border-orange-500 text-orange-600 bg-orange-50' : 'border-[#4361ee] text-[#4361ee] bg-[#4361ee]/5'}>
+                                                    <Badge variant="outline" className={`whitespace-nowrap ${s.isCustomReport ? 'border-orange-500 text-orange-600 bg-orange-50' : 'border-[#4361ee] text-[#4361ee] bg-[#4361ee]/5'}`}>
                                                         {s.isCustomReport ? 'Nhập tay' : s.type}
                                                     </Badge>
                                                     {s.isCustomReport && (
@@ -485,7 +499,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <Badge variant="outline" className={s.isCustomReport ? 'border-orange-500 text-orange-600 bg-orange-50' : 'border-[#f72585] text-[#f72585] bg-[#f72585]/5'}>
+                                                    <Badge variant="outline" className={`whitespace-nowrap ${s.isCustomReport ? 'border-orange-500 text-orange-600 bg-orange-50' : 'border-[#f72585] text-[#f72585] bg-[#f72585]/5'}`}>
                                                         {s.isCustomReport ? 'Nhập tay' : s.type}
                                                     </Badge>
                                                     {s.isCustomReport && (

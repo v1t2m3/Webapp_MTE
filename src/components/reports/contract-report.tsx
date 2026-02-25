@@ -83,8 +83,22 @@ export function ContractReport({ data }: { data: ReportData }) {
         ]);
     };
 
-    const handleDeleteCustomRow = (id: string) => {
-        setEditableSchedules(prev => prev.filter(s => s.id !== id));
+    const handleDeleteCustomRow = async (id: string) => {
+        if (id.startsWith('custom-')) {
+            setEditableSchedules(prev => prev.filter(s => s.id !== id));
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/supplemental-reports?id=${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                setEditableSchedules(prev => prev.filter(s => s.id !== id));
+            } else {
+                console.error("Failed to delete report.");
+            }
+        } catch (error) {
+            console.error("Error deleting report:", error);
+        }
     };
 
     const handleEditCustomRow = (id: string) => {

@@ -870,4 +870,47 @@ export const googleSheetsService = {
             return false;
         }
     },
+
+    findSupplementalReportRowIndex: async (id: string): Promise<number | null> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return null;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'BC_BoSung!A:A',
+            });
+
+            const rows = response.data.values;
+            if (!rows) return null;
+
+            const index = rows.findIndex((row) => row[0] === id);
+            return index !== -1 ? index + 1 : null;
+        } catch (error) {
+            console.error('Error finding supplemental report row:', error);
+            return null;
+        }
+    },
+
+    deleteSupplementalReport: async (id: string): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findSupplementalReportRowIndex(id);
+            if (!rowIndex) return false;
+
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            await sheets.spreadsheets.values.clear({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `BC_BoSung!A${rowIndex}:G${rowIndex}`,
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error deleting supplemental report:', error);
+            return false;
+        }
+    },
 };

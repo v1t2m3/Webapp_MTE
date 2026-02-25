@@ -26,3 +26,25 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
     }
 }
+
+export async function DELETE(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+
+        if (!id) {
+            return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
+        }
+
+        const success = await googleSheetsService.deleteSupplementalReport(id);
+
+        if (success) {
+            return NextResponse.json({ message: 'Supplemental report deleted successfully' });
+        } else {
+            return NextResponse.json({ error: 'Failed to delete supplemental report' }, { status: 500 });
+        }
+    } catch (error) {
+        console.error('API Error:', error);
+        return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+    }
+}
