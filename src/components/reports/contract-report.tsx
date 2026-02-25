@@ -136,7 +136,7 @@ export function ContractReport({ data }: { data: ReportData }) {
     today.setHours(0, 0, 0, 0);
 
     const pastSchedules = editableSchedules.filter(s => {
-        if (s.isCustomReport && s.isNewOrEditing) {
+        if (s.isCustomReport && s.isNewOrEditing && s.bucket) {
             return s.bucket === 'past';
         }
         if (!s.startDate) return false;
@@ -146,7 +146,7 @@ export function ContractReport({ data }: { data: ReportData }) {
     });
 
     const futureSchedules = editableSchedules.filter(s => {
-        if (s.isCustomReport && s.isNewOrEditing) {
+        if (s.isCustomReport && s.isNewOrEditing && s.bucket) {
             return s.bucket === 'future';
         }
         if (!s.startDate) return false;

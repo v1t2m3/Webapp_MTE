@@ -175,7 +175,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
     today.setHours(0, 0, 0, 0);
 
     const pastWorkloads = editableWorkloads.filter(pw => {
-        if (pw.isCustomReport && pw.isNewOrEditing) {
+        if (pw.isCustomReport && pw.isNewOrEditing && pw.bucket) {
             return pw.bucket === 'past';
         }
         if (!pw.startDate) return false;
@@ -185,7 +185,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
     });
 
     const futureWorkloads = editableWorkloads.filter(pw => {
-        if (pw.isCustomReport && pw.isNewOrEditing) {
+        if (pw.isCustomReport && pw.isNewOrEditing && pw.bucket) {
             return pw.bucket === 'future';
         }
         if (!pw.startDate) return false;
