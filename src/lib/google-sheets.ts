@@ -31,7 +31,7 @@ export const googleSheetsService = {
 
             const response = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'NhanSu!A2:I', // id, fullName, birthYear, job, skillLevel, safetyLevel, education, contractType, section
+                range: 'NhanSu!A2:K', // id, fullName, birthYear, job, skillLevel, safetyLevel, education, contractType, section, leaveType, leaveDates
             });
 
             const rows = response.data.values;
@@ -184,7 +184,7 @@ export const googleSheetsService = {
             // Clearing the row content instead of deleting the dimension to avoid needing GID
             await sheets.spreadsheets.values.clear({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `NhanSu!A${rowIndex}:I${rowIndex}`,
+                range: `NhanSu!A${rowIndex}:K${rowIndex}`,
             });
 
             return true;
