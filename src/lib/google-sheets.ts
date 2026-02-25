@@ -896,18 +896,31 @@ export const googleSheetsService = {
     deleteSupplementalReport: async (id: string): Promise<boolean> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return false;
-            const rowIndex = await googleSheetsService.findSupplementalReportRowIndex(id);
-            if (!rowIndex) return false;
 
             const client = await getAuthClient();
             const sheets = google.sheets({ version: 'v4', auth: client });
 
-            await sheets.spreadsheets.values.clear({
+            const response = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `BC_BoSung!A${rowIndex}:G${rowIndex}`,
+                range: 'BC_BoSung!A:A',
             });
 
-            return true;
+            const rows = response.data.values;
+            if (!rows) return false;
+
+            let anyDeleted = false;
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i][0] === id) {
+                    const rowIndex = i + 1;
+                    await sheets.spreadsheets.values.clear({
+                        spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                        range: `BC_BoSung!A${rowIndex}:G${rowIndex}`,
+                    });
+                    anyDeleted = true;
+                }
+            }
+
+            return anyDeleted;
         } catch (error) {
             console.error('Error deleting supplemental report:', error);
             return false;

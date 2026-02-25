@@ -100,18 +100,11 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
     };
 
     const handleDeleteCustomRow = async (id: string) => {
-        if (id.startsWith('custom-')) {
-            setEditableSchedules(prev => prev.filter(s => s.id !== id));
-            return;
-        }
+        // Optimistic UI deletion
+        setEditableSchedules(prev => prev.filter(s => s.id !== id));
 
         try {
-            const res = await fetch(`/api/supplemental-reports?id=${id}`, { method: 'DELETE' });
-            if (res.ok) {
-                setEditableSchedules(prev => prev.filter(s => s.id !== id));
-            } else {
-                console.error("Failed to delete report.");
-            }
+            await fetch(`/api/supplemental-reports?id=${id}`, { method: 'DELETE' });
         } catch (error) {
             console.error("Error deleting report:", error);
         }
