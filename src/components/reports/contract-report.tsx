@@ -2,8 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { ReportData } from "@/types";
-import { format, parseISO } from "date-fns";
+import { ReportData, Schedule, EditableSchedule } from "@/types";
+import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +26,7 @@ export function ContractReport({ data }: { data: ReportData }) {
     }, [contracts, selectedContractId]);
 
     // Editable state
-    const [editableSchedules, setEditableSchedules] = useState<any[]>([]);
+    const [editableSchedules, setEditableSchedules] = useState<Array<Schedule & { isCustomReport?: boolean; isNewOrEditing?: boolean; bucket?: string }>>([]);
 
     // Filter schedules linked to the selected contract
     const linkedSchedules = useMemo(() => {
@@ -43,7 +43,7 @@ export function ContractReport({ data }: { data: ReportData }) {
                 isCustomReport: true, // Mark it so UI renders the badge
                 isNewOrEditing: false, // It's from DB, so not editing yet
                 bucket: ''
-            }));
+            } as unknown as EditableSchedule));
             return [...baseSchedules, ...supps].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
         }
 
@@ -52,7 +52,9 @@ export function ContractReport({ data }: { data: ReportData }) {
 
     useEffect(() => {
         setEditableSchedules(linkedSchedules.map(s => ({ ...s })));
-    }, [linkedSchedules]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+            }, [linkedSchedules]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleChange = (id: string, field: string, value: string) => {
         setEditableSchedules(prev =>
@@ -79,7 +81,7 @@ export function ContractReport({ data }: { data: ReportData }) {
                 isCustomReport: true,
                 isNewOrEditing: true,
                 bucket: isPast ? 'past' : 'future'
-            }
+            } as EditableSchedule
         ]);
     };
 
@@ -168,6 +170,7 @@ export function ContractReport({ data }: { data: ReportData }) {
     };
 
     // Chart Data (Schedules by Month for this contract)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const chartData = useMemo(() => {
         if (linkedSchedules.length === 0) return [];
 
@@ -183,7 +186,8 @@ export function ContractReport({ data }: { data: ReportData }) {
             name: key,
             'Số Lịch': monthMap[key]
         }));
-    }, [linkedSchedules]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+            }, [linkedSchedules]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div className="space-y-6 animate-fade-in">

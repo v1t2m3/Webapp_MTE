@@ -220,7 +220,7 @@ export function ScheduleManager() {
     const getDaysInMonth = (year: number, month: number) => {
         const date = new Date(year, month, 1);
         const days: Date[] = [];
-        let firstDayOfWeek = date.getDay() || 7; // 1 = Monday, 7 = Sunday
+        const firstDayOfWeek = date.getDay() || 7; // 1 = Monday, 7 = Sunday
         const prevMonthDays = new Date(year, month, 0).getDate();
 
         for (let i = 1; i < firstDayOfWeek; i++) {

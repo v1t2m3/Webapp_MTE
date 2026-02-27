@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { GlassCard, GlassPageHeader } from "@/components/ui/GlassCard";
+import { GlassPageHeader } from "@/components/ui/GlassCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PieChart, BarChart2, Briefcase, User as UserIcon, CalendarDays, Loader2, Printer } from "lucide-react";
+import { PieChart, Briefcase, User as UserIcon, CalendarDays, Loader2, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WeeklyMonthlyReport } from "./weekly-monthly-report";
 import { ContractReport } from "./contract-report";

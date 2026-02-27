@@ -1,5 +1,4 @@
 import PizZip from 'pizzip';
-import PizZipUtils from 'pizzip/utils/index.js';
 import Docxtemplater from 'docxtemplater';
 import { saveAs } from 'file-saver';
 import { WorkOutline, Schedule, Contract, Personnel } from '@/types';
@@ -19,6 +18,7 @@ export const exportWorkOutlineDocx = async (
         const content = await response.arrayBuffer();
 
         // Parse Zip
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const zip = new PizZip(content as any);
 
         // Initialize docxtemplater
@@ -56,7 +56,7 @@ export const exportWorkOutlineDocx = async (
             }
         }
 
-        const data: Record<string, any> = {
+        const data: Record<string, unknown> = {
             dd: String(date.getDate()).padStart(2, '0'),
             mm: String(date.getMonth() + 1).padStart(2, '0'),
             yyyy: String(date.getFullYear()),

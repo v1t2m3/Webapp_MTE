@@ -105,7 +105,7 @@ export function PersonnelForm({ open, onOpenChange, initialData, onSubmit }: Per
                             id="leaveType"
                             name="leaveType"
                             value={formData.leaveType || ""}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, leaveType: e.target.value as any }))}
+                            onChange={(e) => setFormData((prev) => ({ ...prev, leaveType: e.target.value as "thường" | "phép" | "bù" | undefined }))}
                             className="col-span-3 h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                             <option value="">Không nghỉ</option>

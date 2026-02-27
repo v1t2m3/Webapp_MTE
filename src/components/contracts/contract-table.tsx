@@ -17,20 +17,20 @@ export function ContractTable({ data }: { data: Contract[] }) {
                 <TableHeader>
                     <TableRow>
                         <TableHead>Tên Hợp đồng</TableHead>
-                        <TableHead>Khách hàng</TableHead>
+                        <TableHead>Đại diện CĐT</TableHead>
                         <TableHead>Ngày bắt đầu</TableHead>
                         <TableHead>Ngày kết thúc</TableHead>
-                        <TableHead>Mô tả</TableHead>
+                        <TableHead>Mã HĐ</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {data.map((item) => (
                         <TableRow key={item.id}>
                             <TableCell className="font-medium">{item.name}</TableCell>
-                            <TableCell>{item.client}</TableCell>
+                            <TableCell>{item.investorRep}</TableCell>
                             <TableCell>{item.startDate}</TableCell>
                             <TableCell>{item.endDate}</TableCell>
-                            <TableCell>{item.description}</TableCell>
+                            <TableCell>{item.code}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

@@ -10,7 +10,17 @@ import {
     Briefcase,
     Settings,
     Menu,
-    Shield
+    Shield,
+    Calculator,
+    ChevronDown,
+    ChevronRight,
+    Search,
+    TestTube,
+    AlertTriangle,
+    FileText as FileTextIcon,
+    CalendarDays,
+    ClipboardList,
+    FileBarChart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -34,11 +44,32 @@ const routes = [
         icon: Briefcase,
         href: "/cong-viec",
         color: "text-[#f72585]",
+    },
+    {
+        label: "Quản lý Thử nghiệm",
+        icon: TestTube,
+        color: "text-green-400",
+        isGroup: true,
+        subRoutes: [
+            { label: "Công cụ Tính toán", href: "/cong-cu", icon: Calculator },
+            { label: "Nhân sự (Mục 6.2)", href: "/personnel", icon: Shield },
+            { label: "Máy móc (Mục 6.4)", href: "/equipments", icon: Database },
+            { label: "Hóa chất (Mục 6.6)", href: "/consumables", icon: Search },
+            { label: "CAPA (Mục 8.7)", href: "/capa", icon: AlertTriangle },
+            { label: "Tài liệu (Mục 8.3)", href: "/documents", icon: FileTextIcon },
+        ]
     }
 ];
 
 export function Sidebar() {
     const pathname = usePathname();
+    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+        "Quản lý Thử nghiệm": true
+    });
+
+    const toggleGroup = (label: string) => {
+        setOpenGroups(prev => ({ ...prev, [label]: !prev[label] }));
+    };
 
     return (
         <div className="flex flex-col h-full w-full bg-[#3a0ca3] bg-sidebar-pattern text-white border-r border-white/20">
@@ -71,21 +102,61 @@ export function Sidebar() {
             <div className="flex-1 flex flex-col overflow-y-auto">
                 <div className="px-3 py-2 flex-1">
                     <div className="space-y-1">
-                        {routes.map((route) => (
-                            <Link
-                                key={route.href}
-                                href={route.href}
-                                className={cn(
-                                    "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:bg-white/10 rounded-lg transition",
-                                    pathname === route.href ? "bg-white/10 text-white shadow-sm" : "text-white/70 hover:text-white"
-                                )}
-                            >
-                                <div className="flex items-center flex-1">
-                                    <route.icon className={cn("h-5 w-5 mr-3 text-white drop-shadow-sm")} />
-                                    <span className="drop-shadow-sm font-semibold">{route.label}</span>
-                                </div>
-                            </Link>
-                        ))}
+                        {routes.map((route) => {
+                            if (route.isGroup) {
+                                const isOpen = openGroups[route.label];
+                                return (
+                                    <div key={route.label} className="mt-4 mb-2">
+                                        <button
+                                            onClick={() => toggleGroup(route.label)}
+                                            className="w-full flex items-center justify-between p-3 text-white/90 hover:bg-white/10 rounded-lg transition"
+                                        >
+                                            <div className="flex items-center">
+                                                <route.icon className={cn("h-5 w-5 mr-3 drop-shadow-sm", route.color)} />
+                                                <span className="font-bold text-sm uppercase tracking-wider">{route.label}</span>
+                                            </div>
+                                            {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                        </button>
+
+                                        {isOpen && route.subRoutes && (
+                                            <div className="mt-1 ml-4 space-y-1 border-l border-white/20 pl-4 py-2">
+                                                {route.subRoutes.map((subRoute) => (
+                                                    <Link
+                                                        key={subRoute.href}
+                                                        href={subRoute.href}
+                                                        className={cn(
+                                                            "text-sm group flex p-2 w-full justify-start font-medium cursor-pointer hover:bg-white/10 rounded-lg transition",
+                                                            pathname === subRoute.href ? "bg-white/20 text-white shadow-sm" : "text-white/60 hover:text-white"
+                                                        )}
+                                                    >
+                                                        <div className="flex items-center flex-1">
+                                                            <subRoute.icon className={cn("h-4 w-4 mr-3 text-white/80")} />
+                                                            <span className="drop-shadow-sm">{subRoute.label}</span>
+                                                        </div>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <Link
+                                    key={route.href}
+                                    href={route.href!}
+                                    className={cn(
+                                        "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:bg-white/10 rounded-lg transition",
+                                        pathname === route.href ? "bg-white/10 text-white shadow-sm" : "text-white/70 hover:text-white"
+                                    )}
+                                >
+                                    <div className="flex items-center flex-1">
+                                        <route.icon className={cn("h-5 w-5 mr-3 drop-shadow-sm", route.color)} />
+                                        <span className="drop-shadow-sm font-semibold">{route.label}</span>
+                                    </div>
+                                </Link>
+                            )
+                        })}
                     </div>
                 </div>
 

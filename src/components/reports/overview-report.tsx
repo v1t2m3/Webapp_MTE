@@ -11,7 +11,7 @@ import { Calendar, Briefcase, Users, Zap } from "lucide-react";
 const COLORS = ['#3a0ca3', '#4cc9f0', '#f72585', '#4361ee', '#7209b7', '#f8961e', '#f9c74f', '#90be6d'];
 
 export function OverviewReport({ data }: { data: ReportData }) {
-    const { schedules, contracts, workOutlines, personnel } = data;
+    const { schedules, contracts, workOutlines } = data; // use vehicles removed // use vehicles removed
 
     // --- KPI CALCULATION FOR CURRENT MONTH ---
     const now = new Date();
@@ -141,7 +141,7 @@ export function OverviewReport({ data }: { data: ReportData }) {
                                         outerRadius={100}
                                         paddingAngle={5}
                                         dataKey="value"
-                                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                        label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                                     >
                                         {pieData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

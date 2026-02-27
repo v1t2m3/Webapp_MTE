@@ -26,7 +26,8 @@ export default async function CongViecPage() {
     }).length;
 
     // Filter work outlines for today
-    const todaysOutlines = workOutlines.filter(w => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const todaysOutlines = workOutlines.filter((w: any) => {
         if (!w.startDate) return false;
         const oDate = startOfDay(new Date(w.startDate));
         return oDate.getTime() === today.getTime();

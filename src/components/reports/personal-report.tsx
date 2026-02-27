@@ -2,8 +2,9 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { ReportData } from "@/types";
-import { format, parseISO } from "date-fns";
+import { ReportData, Workload } from "@/types";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +26,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
     const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 
     // Editable state
-    const [editableWorkloads, setEditableWorkloads] = useState<Array<any>>([]); // Changed type to any for simplicity with custom rows
+    const [editableWorkloads, setEditableWorkloads] = useState<Array<Omit<Workload, 'startDate' | 'endDate'> & { startDate?: string; endDate?: string }>>([]);
 
     // 1. Find the selected person
     const selectedPerson = useMemo(() => {
@@ -36,53 +37,63 @@ export function PersonalReport({ data }: { data: ReportData }) {
     const personWorkloads = useMemo(() => {
         if (!selectedPersonId) return [];
 
-        const monthMatches = workOutlines.filter(wo => {
-            if (!wo.startDate) return false;
-            const d = new Date(wo.startDate);
-            return d.getMonth() + 1 === parseInt(selectedMonth) && d.getFullYear() === parseInt(selectedYear);
-        });
-
-        // Map wo -> personnelAssignment
-        const results: Array<any> = [];
-
-        monthMatches.forEach(wo => {
-            const assignment = wo.personnelAssignments?.find(pa => pa.personnelId === selectedPersonId);
-            if (assignment) {
-                const sched = schedules.find(s => s.id === wo.scheduleId);
-                if (sched) {
-                    results.push({
-                        id: sched.id,
-                        startDate: sched.startDate,
-                        endDate: sched.endDate,
-                        unit: sched.unit,
-                        content: sched.content,
-                        type: sched.type,
-                        isCustomReport: false,
-                        assignment: assignment
-                    });
+        // Filter workOutlines by month/year and assigned person
+        const baseWorkloads: Workload[] = workOutlines
+            .filter(wo => {
+                if (!wo.startDate) return false;
+                const d = new Date(wo.startDate);
+                return d.getMonth() + 1 === parseInt(selectedMonth) && d.getFullYear() === parseInt(selectedYear);
+            })
+            .map(wo => {
+                const assignment = wo.personnelAssignments?.find(pa => pa.personnelId === selectedPersonId);
+                if (assignment) {
+                    const sched = schedules.find(s => s.id === wo.scheduleId);
+                    if (sched) {
+                        return {
+                            id: sched.id,
+                            startDate: sched.startDate,
+                            endDate: sched.endDate,
+                            unit: sched.unit,
+                            content: sched.content,
+                            type: sched.type,
+                            isCustomReport: false,
+                            assignment: assignment
+                        } as Workload;
+                    }
                 }
-            }
-        });
+                return null; // Return null for items that don't match criteria
+            })
+            .filter((item): item is Workload => item !== null); // Filter out nulls and assert type
 
         // Add Supplemental Reports specifically assigned to this person
+        let supplementalWorkloads: Workload[] = [];
         if (data.supplementalReports) {
-            const supps = data.supplementalReports.filter(sr =>
-                sr.reportType === 'PERSONAL' &&
-                sr.referenceId === selectedPersonId
-            );
-
-            supps.forEach(sr => {
-                const d = new Date(sr.startDate);
-                if (d.getMonth() + 1 === parseInt(selectedMonth) && d.getFullYear() === parseInt(selectedYear)) {
-                    results.push({
-                        ...sr,
-                        isCustomReport: true, // Mark it so UI renders the badge
-                        isNewOrEditing: false, // It's from DB, so not editing yet
-                        bucket: '' // Wil be calculated natively
-                    });
-                }
-            });
+            supplementalWorkloads = data.supplementalReports
+                .filter(sr =>
+                    sr.reportType === 'PERSONAL' &&
+                    sr.referenceId === selectedPersonId
+                )
+                .map(sr => {
+                    const d = new Date(sr.startDate);
+                    if (d.getMonth() + 1 === parseInt(selectedMonth) && d.getFullYear() === parseInt(selectedYear)) {
+                        return {
+                            id: sr.id,
+                            startDate: sr.startDate,
+                            endDate: sr.endDate,
+                            unit: sr.unit,
+                            content: sr.content,
+                            type: "Khác", // Supplemental reports are typically 'Khác' or a custom type
+                            isCustomReport: true, // Mark it so UI renders the badge
+                            isNewOrEditing: false, // It's from DB, so not editing yet
+                            bucket: '' // Will be calculated natively
+                        } as Workload;
+                    }
+                    return null;
+                })
+                .filter((item): item is Workload => item !== null);
         }
+
+        const results = [...baseWorkloads, ...supplementalWorkloads];
 
         return results.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
     }, [workOutlines, schedules, data.supplementalReports, selectedPersonId, selectedMonth, selectedYear]);
@@ -215,7 +226,8 @@ export function PersonalReport({ data }: { data: ReportData }) {
     const totalHours = Math.round(totalMinutes / 60);
 
     // Chart Data (Pie Chart: Task Types)
-    const pieData = useMemo(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const pieData: { name: string; value: number }[] = useMemo(() => {
         const typeMap: Record<string, number> = {};
         personWorkloads.forEach(item => {
             const t = item.type || 'Khác';
@@ -380,11 +392,11 @@ export function PersonalReport({ data }: { data: ReportData }) {
                                             <TableCell className="font-medium whitespace-nowrap">
                                                 {s.isCustomReport && s.isNewOrEditing ? (
                                                     <div className="flex flex-col gap-1 items-start">
-                                                        <div className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-6">Từ:</span> <Input type="date" value={s.startDate} onChange={(e) => handleChange(s.id, 'startDate', e.target.value)} className="w-[110px] h-6 text-xs bg-white focus:border-[#4361ee] px-1" /></div>
-                                                        <div className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-6">Đến:</span> <Input type="date" value={s.endDate} onChange={(e) => handleChange(s.id, 'endDate', e.target.value)} className="w-[110px] h-6 text-xs bg-white focus:border-[#4361ee] px-1" /></div>
+                                                        <div className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-6">Từ:</span> <Input type="date" value={s.startDate || ""} onChange={(e) => handleChange(s.id, 'startDate', e.target.value)} className="w-[110px] h-6 text-xs bg-white focus:border-[#4361ee] px-1" /></div>
+                                                        <div className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-6">Đến:</span> <Input type="date" value={s.endDate || ""} onChange={(e) => handleChange(s.id, 'endDate', e.target.value)} className="w-[110px] h-6 text-xs bg-white focus:border-[#4361ee] px-1" /></div>
                                                     </div>
                                                 ) : (
-                                                    formatScheduleTime(s.startDate, s.endDate)
+                                                    formatScheduleTime(s.startDate || "", s.endDate || "")
                                                 )}
                                             </TableCell>
                                             <TableCell>
@@ -471,11 +483,11 @@ export function PersonalReport({ data }: { data: ReportData }) {
                                             <TableCell className="font-medium whitespace-nowrap">
                                                 {s.isCustomReport && s.isNewOrEditing ? (
                                                     <div className="flex flex-col gap-1 items-start">
-                                                        <div className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-6">Từ:</span> <Input type="date" value={s.startDate} onChange={(e) => handleChange(s.id, 'startDate', e.target.value)} className="w-[110px] h-6 text-xs bg-white focus:border-[#f72585] px-1" /></div>
-                                                        <div className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-6">Đến:</span> <Input type="date" value={s.endDate} onChange={(e) => handleChange(s.id, 'endDate', e.target.value)} className="w-[110px] h-6 text-xs bg-white focus:border-[#f72585] px-1" /></div>
+                                                        <div className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-6">Từ:</span> <Input type="date" value={s.startDate || ""} onChange={(e) => handleChange(s.id, 'startDate', e.target.value)} className="w-[110px] h-6 text-xs bg-white focus:border-[#f72585] px-1" /></div>
+                                                        <div className="flex items-center gap-1 text-[10px] text-gray-500"><span className="w-6">Đến:</span> <Input type="date" value={s.endDate || ""} onChange={(e) => handleChange(s.id, 'endDate', e.target.value)} className="w-[110px] h-6 text-xs bg-white focus:border-[#f72585] px-1" /></div>
                                                     </div>
                                                 ) : (
-                                                    formatScheduleTime(s.startDate, s.endDate)
+                                                    formatScheduleTime(s.startDate || "", s.endDate || "")
                                                 )}
                                             </TableCell>
                                             <TableCell>

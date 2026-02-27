@@ -9,35 +9,28 @@ export const mockPersonnel: Personnel[] = [
 ];
 
 export const mockVehicles: Vehicle[] = [
-    { id: 'V001', licensePlate: '29C-123.45', type: 'Xe tải 5 tấn', status: 'Available' },
-    { id: 'V002', licensePlate: '29H-987.65', type: 'Xe cẩu', status: 'Maintenance' },
-    { id: 'V003', licensePlate: '30E-555.55', type: 'Xe bán tải', status: 'In Use' },
-    { id: 'V004', licensePlate: '29A-111.22', type: 'Xe 7 chỗ', status: 'Available' },
+    { id: 'V001', licensePlate: '29C-123.45', type: 'Xe tải 5 tấn', status: 'Available', name: 'Xe tải', inspectionExpiry: '', insuranceExpiry: '' },
+    { id: 'V002', licensePlate: '29H-987.65', type: 'Xe cẩu', status: 'Maintenance', name: 'Xe cẩu', inspectionExpiry: '', insuranceExpiry: '' },
 ];
 
 export const mockContracts: Contract[] = [
-    { id: 'C001', name: 'Hợp đồng bảo trì trạm biến áp', client: 'EVN Hà Nội', startDate: '2023-01-01', endDate: '2023-12-31', description: 'Bảo trì định kỳ các trạm 110kV' },
-    { id: 'C002', name: 'Xây lắp đường dây 22kV', client: 'Vingroup', startDate: '2023-06-01', endDate: '2023-09-30', description: 'Kéo dây mới cho khu đô thị' },
-    { id: 'C003', name: 'Sửa chữa sự cố đột xuất', client: 'KCN Thăng Long', startDate: '2023-08-15', endDate: '2023-08-20', description: 'Thay thế máy biến áp bị hỏng' },
+    { id: 'C001', name: 'Hợp đồng bảo trì trạm biến áp', investorRep: 'EVN Hà Nội', startDate: '2023-01-01', endDate: '2023-12-31', code: 'HD01', value: '1 Tỷ' },
+    { id: 'C002', name: 'Xây lắp đường dây 22kV', investorRep: 'Vingroup', startDate: '2023-06-01', endDate: '2023-09-30', code: 'HD02', value: '2 Tỷ' },
 ];
 
 export const mockSchedules: Schedule[] = [
     {
         id: 'S001',
-        date: '2023-08-16',
-        contractId: 'C003',
-        personnelIds: ['P001', 'P003', 'P005'],
-        vehicleIds: ['V002', 'V003'],
-        workContent: 'Khảo sát hiện trường và lên phương án thay thế',
-        description: 'Cần mang theo máy đo điện trở'
-    },
-    {
-        id: 'S002',
-        date: '2023-08-17',
-        contractId: 'C001',
-        personnelIds: ['P002'],
-        vehicleIds: ['V004'],
-        workContent: 'Kiểm kê vật tư tại kho',
-        description: 'Chuẩn bị cho đợt bảo trì tháng 9'
+        unit: 'Đơn vị 1',
+        deviceName: 'Trạm 110kV',
+        startTime: '08:00',
+        startDate: '2023-08-16',
+        endTime: '17:00',
+        endDate: '2023-08-16',
+        target: 'Bảo trì',
+        content: 'Khảo sát hiện trường và lên phương án thay thế',
+        type: 'Cắt điện',
+        voltage: '110kV',
+        contractId: 'C003'
     }
 ];

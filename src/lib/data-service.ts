@@ -1,6 +1,6 @@
 import { googleSheetsService } from './google-sheets';
 import { mockContracts, mockPersonnel, mockSchedules, mockVehicles } from './mock-data';
-import { Contract, Personnel, Schedule, Vehicle } from '@/types';
+import { Contract, Personnel, Schedule, Vehicle, Equipment, Consumable, CAPA, Document } from '@/types';
 
 const USE_MOCK_DATA = !process.env.GOOGLE_SHEET_ID;
 
@@ -16,7 +16,7 @@ export const dataService = {
         }
     },
 
-    addPersonnel: async (data: any): Promise<boolean> => {
+    addPersonnel: async (data: Partial<Personnel>): Promise<boolean> => {
         try {
             if (!USE_MOCK_DATA) {
                 const success = await googleSheetsService.addPersonnel(data);
@@ -26,11 +26,11 @@ export const dataService = {
 
         // Fallback to mock
         const newId = `M${(mockPersonnel.length + 1).toString().padStart(3, '0')}`;
-        mockPersonnel.push({ id: newId, ...data });
+        mockPersonnel.push({ id: newId, name: data.name || '', position: data.position || '', department: data.department || '', status: data.status || 'Active', fullName: data.fullName || '', birthYear: data.birthYear || '', job: data.job || '', skillLevel: data.skillLevel || '', safetyLevel: data.safetyLevel || '', education: data.education || '', contractType: data.contractType || '', ...data } as Personnel);
         return true;
     },
 
-    updatePersonnel: async (id: string, data: any): Promise<boolean> => {
+    updatePersonnel: async (id: string, data: Partial<Personnel>): Promise<boolean> => {
         try {
             if (!USE_MOCK_DATA) {
                 const success = await googleSheetsService.updatePersonnel(id, data);
@@ -92,7 +92,7 @@ export const dataService = {
         }
     },
 
-    getWorkOutlines: async (): Promise<any[]> => {
+    getWorkOutlines: async (): Promise<unknown[]> => {
         if (USE_MOCK_DATA) return [];
         try {
             const data = await googleSheetsService.getWorkOutlines();
@@ -101,5 +101,35 @@ export const dataService = {
             console.error('Failed to fetch work outlines', error);
             return [];
         }
+    },
+
+    // ISO 17025
+    getEquipments: async (): Promise<Equipment[]> => {
+        if (USE_MOCK_DATA) return [];
+        try { return await googleSheetsService.getEquipments(); } catch { return []; }
+    },
+    addEquipment: async (data: Partial<Equipment>): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.addEquipment(data); } catch { return false; }
+    },
+    getIsoPersonnel: async (): Promise<Personnel[]> => {
+        if (USE_MOCK_DATA) return [];
+        try { return await googleSheetsService.getIsoPersonnel(); } catch { return []; }
+    },
+    addIsoPersonnel: async (data: Partial<Personnel>): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.addIsoPersonnel(data); } catch { return false; }
+    },
+    getConsumables: async (): Promise<Consumable[]> => {
+        if (USE_MOCK_DATA) return [];
+        try { return await googleSheetsService.getConsumables(); } catch { return []; }
+    },
+    getCapa: async (): Promise<CAPA[]> => {
+        if (USE_MOCK_DATA) return [];
+        try { return await googleSheetsService.getCapa(); } catch { return []; }
+    },
+    getDocuments: async (): Promise<Document[]> => {
+        if (USE_MOCK_DATA) return [];
+        try { return await googleSheetsService.getDocuments(); } catch { return []; }
     }
 };

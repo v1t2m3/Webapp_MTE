@@ -2,11 +2,11 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { ReportData } from "@/types";
+import { ReportData, EditableSchedule } from "@/types";
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from "recharts";
-import { format, parseISO, getDaysInMonth } from "date-fns";
+import { format, getDaysInMonth } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -29,11 +29,11 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
     const [customNotes, setCustomNotes] = useState("");
 
     // Local state for inline editing
-    const [editableSchedules, setEditableSchedules] = useState<any[]>([]);
+    const [editableSchedules, setEditableSchedules] = useState<EditableSchedule[]>([]);
 
     // Initialize/Update editable schedules based on filters
     useEffect(() => {
-        let filtered: any[] = schedules.filter(s => {
+        let filtered: EditableSchedule[] = schedules.filter(s => {
             if (!s.startDate) return false;
             const d = new Date(s.startDate);
 
@@ -60,14 +60,15 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
                 isCustomReport: true, // Mark it so UI renders the badge
                 isNewOrEditing: false, // It's from DB, so not editing yet
                 bucket: ''
-            }));
+            } as unknown as EditableSchedule));
 
             filtered = [...filtered, ...supps];
         }
 
-        filtered = filtered.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        filtered = filtered.sort((a, b) => new Date(a.startDate || '').getTime() - new Date(b.startDate || '').getTime());
         setEditableSchedules(filtered); // mapped directly to array values
-    }, [schedules, data.supplementalReports, selectedMonth, selectedWeek, selectedYear, reportType]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [schedules, data.supplementalReports, selectedMonth, selectedYear, reportType]); // Ignored dynamic dep
 
     // Handle inline input change for multiple fields
     const handleChange = (id: string, field: string, value: string) => {
@@ -95,7 +96,7 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
                 isCustomReport: true,
                 isNewOrEditing: true,
                 bucket: isPast ? 'past' : 'future'
-            }
+            } as EditableSchedule
         ]);
     };
 
@@ -174,8 +175,8 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
 
     // KPIs based on all filtered data for the period
     const total = editableSchedules.length;
-    const cutPower = editableSchedules.filter(s => s.type === "Cắt điện").length;
-    const noCutPower = total - cutPower;
+    
+    
 
     // Chart Data (Days of month/week)
     const chartData = useMemo(() => {

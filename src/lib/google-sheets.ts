@@ -2,7 +2,7 @@ import { google } from 'googleapis';
 import { JWT } from 'google-auth-library';
 
 // Types for our data
-import { Personnel, Vehicle, Contract, Schedule, Report } from '@/types';
+import { Contract, Personnel, Schedule, Vehicle, WorkOutline, SupplementalReport, Equipment, Consumable, CAPA, Document } from '@/types';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
@@ -43,7 +43,7 @@ export const googleSheetsService = {
                     let leaveDates: string[] = [];
                     try {
                         leaveDates = row[10] ? JSON.parse(row[10]) : [];
-                    } catch (e) {
+                    } catch {
                         leaveDates = [];
                     }
 
@@ -101,7 +101,7 @@ export const googleSheetsService = {
         }
     },
 
-    addPersonnel: async (personnel: any): Promise<boolean> => {
+    addPersonnel: async (personnel: Partial<Personnel>): Promise<boolean> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return false;
             const client = await getAuthClient();
@@ -137,7 +137,7 @@ export const googleSheetsService = {
         }
     },
 
-    updatePersonnel: async (id: string, personnel: any): Promise<boolean> => {
+    updatePersonnel: async (id: string, personnel: Partial<Personnel>): Promise<boolean> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return false;
             const rowIndex = await googleSheetsService.findPersonnelRowIndex(id);
@@ -223,7 +223,7 @@ export const googleSheetsService = {
                     licensePlate: row[3],
                     inspectionExpiry: row[4],
                     insuranceExpiry: row[5],
-                    status: (row[6] as any) || 'Available',
+                    status: row[6] || 'Available',
                     driverId: row[7],
                 }));
         } catch (error) {
@@ -254,7 +254,7 @@ export const googleSheetsService = {
         }
     },
 
-    addVehicle: async (vehicle: any): Promise<boolean> => {
+    addVehicle: async (vehicle: Partial<Vehicle>): Promise<boolean> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return false;
             const client = await getAuthClient();
@@ -287,7 +287,7 @@ export const googleSheetsService = {
         }
     },
 
-    updateVehicle: async (id: string, vehicle: any): Promise<boolean> => {
+    updateVehicle: async (id: string, vehicle: Partial<Vehicle>): Promise<boolean> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return false;
             const rowIndex = await googleSheetsService.findVehicleRowIndex(id);
@@ -399,7 +399,7 @@ export const googleSheetsService = {
         }
     },
 
-    addContract: async (contract: any): Promise<boolean> => {
+    addContract: async (contract: Partial<Contract>): Promise<boolean> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return false;
             const client = await getAuthClient();
@@ -431,7 +431,7 @@ export const googleSheetsService = {
         }
     },
 
-    updateContract: async (id: string, contract: any): Promise<boolean> => {
+    updateContract: async (id: string, contract: Partial<Contract>): Promise<boolean> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return false;
             const rowIndex = await googleSheetsService.findContractRowIndex(id);
@@ -549,7 +549,7 @@ export const googleSheetsService = {
         }
     },
 
-    addSchedule: async (schedule: any): Promise<boolean> => {
+    addSchedule: async (schedule: Partial<Schedule>): Promise<boolean> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return false;
             const client = await getAuthClient();
@@ -587,7 +587,7 @@ export const googleSheetsService = {
         }
     },
 
-    updateSchedule: async (id: string, schedule: any): Promise<boolean> => {
+    updateSchedule: async (id: string, schedule: Partial<Schedule>): Promise<boolean> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return false;
             const rowIndex = await googleSheetsService.findScheduleRowIndex(id);
@@ -651,7 +651,7 @@ export const googleSheetsService = {
 
     // --- WORK OUTLINE MANAGEMENT ---
 
-    getWorkOutlines: async (): Promise<any[]> => {
+    getWorkOutlines: async (): Promise<WorkOutline[]> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return [];
             const client = await getAuthClient();
@@ -709,7 +709,7 @@ export const googleSheetsService = {
         }
     },
 
-    addWorkOutline: async (workOutline: any): Promise<boolean> => {
+    addWorkOutline: async (workOutline: Partial<WorkOutline>): Promise<boolean> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return false;
             const client = await getAuthClient();
@@ -746,7 +746,7 @@ export const googleSheetsService = {
         }
     },
 
-    updateWorkOutline: async (id: string, workOutline: any): Promise<boolean> => {
+    updateWorkOutline: async (id: string, workOutline: Partial<WorkOutline>): Promise<boolean> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return false;
             const rowIndex = await googleSheetsService.findWorkOutlineRowIndex(id);
@@ -808,7 +808,7 @@ export const googleSheetsService = {
     },
 
     // --- SUPPLEMENTAL REPORTS (BC_BoSung) ---
-    getSupplementalReports: async (): Promise<any[]> => {
+    getSupplementalReports: async (): Promise<SupplementalReport[]> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return [];
             const client = await getAuthClient();
@@ -839,7 +839,7 @@ export const googleSheetsService = {
         }
     },
 
-    addSupplementalReport: async (report: any): Promise<boolean> => {
+    addSupplementalReport: async (report: Partial<SupplementalReport>): Promise<boolean> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return false;
             const client = await getAuthClient();
@@ -857,7 +857,7 @@ export const googleSheetsService = {
                 ],
             ];
 
-            const rowIndex = await googleSheetsService.findSupplementalReportRowIndex(report.id);
+            const rowIndex = await googleSheetsService.findSupplementalReportRowIndex(report.id as string);
 
             if (rowIndex) {
                 await sheets.spreadsheets.values.update({
@@ -935,6 +935,220 @@ export const googleSheetsService = {
         } catch (error) {
             console.error('Error deleting supplemental report:', error);
             return false;
+        }
+    },
+
+    // --- ISO 17025 MODULES ---
+
+    getEquipments: async (): Promise<Equipment[]> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return [];
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Equipments !A2:I', // Trailing space required
+            });
+            const rows = response.data.values;
+            if (!rows) return [];
+            return rows.filter(row => row[0]).map((row) => ({
+                id: row[0],
+                name: row[1] || '',
+                serialNumber: row[2] || '',
+                location: row[3] || '',
+                calibrationFrequency: parseInt(row[4]) || 12,
+                lastCalibrationDate: row[5] || '',
+                nextCalibrationDate: row[6] || '',
+                calibrationAgent: row[7] || '',
+                status: row[8] || 'Active',
+            }));
+        } catch (error) {
+            console.error('Error fetching Equipments:', error);
+            return [];
+        }
+    },
+
+    addEquipment: async (equipment: Partial<Equipment>): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const values = [
+                [
+                    equipment.id || `EQ-${Date.now()}`,
+                    equipment.name || '',
+                    equipment.serialNumber || '',
+                    equipment.location || '',
+                    (equipment.calibrationFrequency || 12).toString(),
+                    equipment.lastCalibrationDate || '',
+                    equipment.nextCalibrationDate || '',
+                    equipment.calibrationAgent || '',
+                    equipment.status || 'Active',
+                ],
+            ];
+
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Equipments !A:I',
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values },
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error adding equipment:', error);
+            return false;
+        }
+    },
+
+    getIsoPersonnel: async (): Promise<Personnel[]> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return [];
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Personel!A2:H',
+            });
+            const rows = response.data.values;
+            if (!rows) return [];
+            return rows.filter(row => row[0]).map((row) => ({
+                id: row[0],
+                name: row[1] || '',
+                fullName: row[1] || '',
+                department: row[2] || '',
+                position: row[3] || '',
+                job: row[3] || '',
+                authorizedMethods: row[4] || '',
+                authorizedEquipments: row[5] || '',
+                lastTrainingDate: row[6] || '',
+                status: (row[7] as 'Active' | 'Inactive' | 'On Leave') || 'Active',
+                // Stub out required fields
+                birthYear: '', skillLevel: '', safetyLevel: '', education: '', contractType: ''
+            }));
+        } catch (error) {
+            console.error('Error fetching ISO Personnel:', error);
+            return [];
+        }
+    },
+
+    addIsoPersonnel: async (personnel: Partial<Personnel>): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const values = [
+                [
+                    personnel.id || `ISO-${Date.now()}`,
+                    personnel.fullName || personnel.name || '',
+                    personnel.department || '',
+                    personnel.job || personnel.position || '',
+                    personnel.authorizedMethods || '',
+                    personnel.authorizedEquipments || '',
+                    personnel.lastTrainingDate || '',
+                    personnel.status || 'Active',
+                ],
+            ];
+
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Personel!A:H',
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values },
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error adding ISO personnel:', error);
+            return false;
+        }
+    },
+
+    getConsumables: async (): Promise<Consumable[]> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return [];
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Consumables!A2:K',
+            });
+            const rows = response.data.values;
+            if (!rows) return [];
+            return rows.filter(row => row[0]).map((row) => ({
+                id: row[0],
+                name: row[1] || '',
+                category: row[2] || '',
+                supplier: row[3] || '',
+                lotNumber: row[4] || '',
+                receiveDate: row[5] || '',
+                openDate: row[6] || '',
+                expiryDate: row[7] || '',
+                quantity: parseFloat(row[8]) || 0,
+                unit: row[9] || '',
+                status: row[10] || 'Còn hạn',
+            }));
+        } catch (error) {
+            console.error('Error fetching Consumables:', error);
+            return [];
+        }
+    },
+
+    getCapa: async (): Promise<CAPA[]> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return [];
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'CAPA!A2:I',
+            });
+            const rows = response.data.values;
+            if (!rows) return [];
+            return rows.filter(row => row[0]).map((row) => ({
+                id: row[0],
+                issueDate: row[1] || '',
+                source: row[2] || '',
+                description: row[3] || '',
+                assignee: row[4] || '',
+                actionPlan: row[5] || '',
+                deadline: row[6] || '',
+                closeDate: row[7] || '',
+                status: row[8] || 'Mở',
+            }));
+        } catch (error) {
+            console.error('Error fetching CAPA:', error);
+            return [];
+        }
+    },
+
+    getDocuments: async (): Promise<Document[]> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return [];
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Documents!A2:I',
+            });
+            const rows = response.data.values;
+            if (!rows) return [];
+            return rows.filter(row => row[0]).map((row) => ({
+                id: row[0],
+                docName: row[1] || '',
+                type: row[2] || '',
+                version: row[3] || '',
+                issueDate: row[4] || '',
+                author: row[5] || '',
+                approver: row[6] || '',
+                fileLink: row[7] || '',
+                status: row[8] || 'Hiệu lực',
+            }));
+        } catch (error) {
+            console.error('Error fetching Documents:', error);
+            return [];
         }
     },
 };

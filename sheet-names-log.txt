@@ -1,0 +1,13 @@
+[
+  "NhanSU",
+  "XeThietBi",
+  "HopDong",
+  "LichCT",
+  "DeCuongCongTac",
+  "BC_BoSung",
+  "Equipments ",
+  "Personel",
+  "Consumables",
+  "CAPA",
+  "Documents"
+]
