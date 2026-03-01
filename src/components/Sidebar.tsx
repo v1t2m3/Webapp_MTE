@@ -21,7 +21,8 @@ import {
     FileText as FileTextIcon,
     CalendarDays,
     ClipboardList,
-    FileBarChart
+    FileBarChart,
+    ChevronLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -83,26 +84,24 @@ export function Sidebar() {
     };
 
     return (
-        <div className="flex flex-col h-full w-full bg-[#3a0ca3] bg-sidebar-pattern text-white border-r border-white/20">
-            {/* Header Section - Gradient White to Transparent */}
-            <div className="bg-gradient-to-b from-white via-white/40 to-transparent px-3 pt-4 pb-8">
+        <div className="flex flex-col h-full w-full bg-[#3a0ca3] bg-sidebar-pattern text-white border-r border-white/20 transition-all duration-300">
+            {/* Header Section */}
+            <div className="bg-gradient-to-b from-white via-white/40 to-transparent px-3 pt-4 pb-8 flex items-center justify-center">
                 <Link href="/" className="block w-full">
-                    <div className="flex justify-between items-start">
+                    <div className="flex items-center justify-center transition-all duration-300 mb-4">
                         {/* EVNCPC Logo */}
-                        <div className="relative h-12 w-32">
+                        <div className="relative transition-all duration-300 h-12 w-32">
                             <Image
                                 src="/images/LogoEVN_v2.png"
                                 alt="EVNCPC"
                                 fill
-                                className="object-contain object-left"
+                                className="object-contain transition-all duration-300 object-left"
                                 unoptimized
                             />
                         </div>
-
-
                     </div>
-                    <div className="mt-4 text-center">
-                        <h2 className="text-[39px] font-bold text-white uppercase leading-tight tracking-wide">
+                    <div className="text-center overflow-hidden transition-all duration-300">
+                        <h2 className="text-[39px] font-bold text-white uppercase leading-tight tracking-wide whitespace-nowrap">
                             MTE-LAB
                         </h2>
                     </div>
@@ -175,7 +174,7 @@ export function Sidebar() {
                 </div>
 
                 {/* ISO Footer */}
-                <div className="px-3 py-8 mt-auto border-t border-white/10">
+                <div className="px-3 py-6 mt-auto border-t border-white/10 transition-all duration-300">
                     <div className="flex items-start justify-between px-1">
                         <div className="relative w-[70px] h-[70px] bg-white/95 rounded-full flex items-center justify-center overflow-hidden hover:scale-105 transition-transform duration-200 shadow-lg shadow-black/20">
                             <Image
@@ -224,9 +223,11 @@ export function MobileSidebar() {
                     <Menu />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 bg-[#111827] border-r-gray-800">
+            <SheetContent side="left" className="p-0 bg-[#3a0ca3] border-r-gray-800 w-72">
                 <SheetTitle className="hidden">Mobile Menu</SheetTitle>
-                <Sidebar />
+                <div className="h-full relative pb-10">
+                    <Sidebar />
+                </div>
             </SheetContent>
         </Sheet>
     );

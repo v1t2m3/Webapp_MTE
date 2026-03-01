@@ -23,7 +23,7 @@ export function Header() {
             <MobileSidebar />
             <div className="flex w-full justify-between items-center">
                 <h2 className="text-lg font-semibold ml-4 lg:ml-0">
-                    Dashboard
+
                 </h2>
                 <div className="flex items-center gap-x-2">
                     <div className="text-sm font-medium hidden md:block text-slate-700 dark:text-slate-200">
