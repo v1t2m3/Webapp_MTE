@@ -10,6 +10,8 @@ import { ScheduleForm } from "@/components/ScheduleForm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useSession } from "next-auth/react";
+import { hasAccess } from "@/lib/rbac";
 
 function getWeekNumber(d: Date) {
     const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -25,6 +27,11 @@ export function ScheduleManager() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
     const [hoveredScheduleId, setHoveredScheduleId] = useState<string | null>(null);
+
+    const { data: session } = useSession();
+    const canAdd = hasAccess(session?.user?.role, session?.user?.level, "create", "lich-cong-tac");
+    const canEdit = hasAccess(session?.user?.role, session?.user?.level, "update", "lich-cong-tac");
+    const canDelete = hasAccess(session?.user?.role, session?.user?.level, "delete", "lich-cong-tac");
 
     // Filters
     const [filterTime, setFilterTime] = useState("Tất cả");
@@ -266,9 +273,11 @@ export function ScheduleManager() {
                 title="Lịch công tác"
                 description="Quản lý lịch trình, cắt điện và phân công công việc."
             >
-                <Button onClick={handleOpenNew} className="bg-[#3a0ca3] hover:bg-[#3a0ca3]/90 text-white shadow-lg shadow-blue-900/20 px-6 py-5 rounded-xl font-medium">
-                    <Plus className="mr-2 h-5 w-5" /> Thêm Lịch Mới
-                </Button>
+                {canAdd && (
+                    <Button onClick={handleOpenNew} className="bg-[#3a0ca3] hover:bg-[#3a0ca3]/90 text-white shadow-lg shadow-blue-900/20 px-6 py-5 rounded-xl font-medium">
+                        <Plus className="mr-2 h-5 w-5" /> Thêm Lịch Mới
+                    </Button>
+                )}
             </GlassPageHeader>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
@@ -404,8 +413,8 @@ export function ScheduleManager() {
                             <ScheduleTable
                                 data={filteredSchedules}
                                 contracts={contracts}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
+                                onEdit={canEdit ? handleEdit : undefined}
+                                onDelete={canDelete ? handleDelete : undefined}
                                 overlapMap={overlapMap}
                                 overlapColors={overlapColors.map(c => c.split(' ')[0])} // Just the bg for the table rows
                                 onHover={setHoveredScheduleId}
@@ -415,13 +424,15 @@ export function ScheduleManager() {
                 </div>
             </div>
 
-            <ScheduleForm
-                open={isFormOpen}
-                onOpenChange={setIsFormOpen}
-                initialData={editingSchedule}
-                onSubmit={handleSubmit}
-                contracts={contracts}
-            />
+            {(canAdd || canEdit) && (
+                <ScheduleForm
+                    open={isFormOpen}
+                    onOpenChange={setIsFormOpen}
+                    initialData={editingSchedule}
+                    onSubmit={handleSubmit}
+                    contracts={contracts}
+                />
+            )}
         </div>
     );
 }

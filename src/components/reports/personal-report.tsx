@@ -13,15 +13,37 @@ import { Clock, CheckSquare, Plus, Save, PenSquare, Trash2, Edit2 } from "lucide
 import { formatScheduleTime } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card"; // Added Card import
+import { Card } from "@/components/ui/card";
+import { useSession } from "next-auth/react";
+import { hasAccess } from "@/lib/rbac";
 
 const COLORS = ['#f72585', '#4cc9f0', '#3a0ca3', '#f8961e'];
 
 export function PersonalReport({ data }: { data: ReportData }) {
     const { personnel, workOutlines, schedules } = data;
+    const { data: session } = useSession();
+
+    const currentUserFullName = session?.user?.name;
+    const isAdmin = session?.user?.role === "Admin";
+
+    const availablePersonnel = useMemo(() => {
+        const canViewOthers = hasAccess(session?.user?.role, session?.user?.level, "view", "bao-cao-nguoi-khac");
+        if (canViewOthers) return personnel;
+
+        if (!currentUserFullName) return [];
+        return personnel.filter(p => p.name === currentUserFullName || p.fullName === currentUserFullName);
+    }, [personnel, session, currentUserFullName]);
 
     // Default selections
-    const [selectedPersonId, setSelectedPersonId] = useState<string>(personnel.length > 0 ? personnel[0].id : "");
+    const [selectedPersonId, setSelectedPersonId] = useState<string>("");
+
+    useEffect(() => {
+        if (availablePersonnel.length > 0 && !selectedPersonId) {
+            const currentUser = availablePersonnel.find(p => p.name === currentUserFullName || p.fullName === currentUserFullName);
+            setSelectedPersonId(currentUser ? currentUser.id : availablePersonnel[0].id);
+        }
+    }, [availablePersonnel, selectedPersonId, currentUserFullName]);
+
     const [selectedMonth, setSelectedMonth] = useState<string>((new Date().getMonth() + 1).toString());
     const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 
@@ -30,8 +52,10 @@ export function PersonalReport({ data }: { data: ReportData }) {
 
     // 1. Find the selected person
     const selectedPerson = useMemo(() => {
-        return personnel.find(p => p.id === selectedPersonId) || null;
-    }, [personnel, selectedPersonId]);
+        return availablePersonnel.find(p => p.id === selectedPersonId) || null;
+    }, [availablePersonnel, selectedPersonId]);
+
+    const canEdit = (isAdmin || (selectedPerson?.name === currentUserFullName) || (selectedPerson?.fullName === currentUserFullName)) && hasAccess(session?.user?.role, session?.user?.level, "update", "bao-cao-ca-nhan");
 
     // 2. Find work outlines for this person in the selected month/year
     const personWorkloads = useMemo(() => {
@@ -266,7 +290,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                             <SelectValue placeholder="Chọn nhân sự" />
                         </SelectTrigger>
                         <SelectContent>
-                            {personnel.map(p => (
+                            {availablePersonnel.map(p => (
                                 <SelectItem key={p.id} value={p.id}>
                                     {p.name} - {p.department}
                                 </SelectItem>
@@ -325,9 +349,11 @@ export function PersonalReport({ data }: { data: ReportData }) {
                     <div className="px-4 py-2 bg-[#3a0ca3]/5 text-[#3a0ca3] rounded-lg border border-[#3a0ca3]/10">
                         <span className="text-sm font-bold">Tổng số công việc: {editableWorkloads.length}</span>
                     </div>
-                    <Button onClick={handleSaveReports} className="bg-green-600 hover:bg-green-700 text-white shadow-md">
-                        <Save className="w-4 h-4 mr-2" /> Lưu Báo Cáo
-                    </Button>
+                    {canEdit && (
+                        <Button onClick={handleSaveReports} className="bg-green-600 hover:bg-green-700 text-white shadow-md">
+                            <Save className="w-4 h-4 mr-2" /> Lưu Báo Cáo
+                        </Button>
+                    )}
                 </div>
             </GlassCard>
 
@@ -400,7 +426,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                {s.isCustomReport && s.isNewOrEditing ? (
+                                                {s.isCustomReport && s.isNewOrEditing && canEdit ? (
                                                     <Input value={s.unit} onChange={(e) => handleChange(s.id, 'unit', e.target.value)} placeholder="Nhập Đơn vị" className="w-full h-8 text-xs bg-white focus:border-[#4361ee]" />
                                                 ) : (
                                                     <span className="font-semibold text-gray-700">{s.unit || "Chưa nhập"}</span>
@@ -409,7 +435,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                                             <TableCell className="p-2">
                                                 <div className="flex items-center gap-2">
                                                     {s.isCustomReport && <span title="Báo cáo thêm bằng tay"><PenSquare className="w-4 h-4 min-w-4 text-orange-500" /></span>}
-                                                    {s.isCustomReport && s.isNewOrEditing ? (
+                                                    {s.isCustomReport && s.isNewOrEditing && canEdit ? (
                                                         <Input
                                                             value={s.content}
                                                             onChange={(e) => handleChange(s.id, 'content', e.target.value)}
@@ -428,7 +454,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                                                     <Badge variant="outline" className={`whitespace-nowrap ${s.isCustomReport ? 'border-orange-500 text-orange-600 bg-orange-50' : 'border-[#4361ee] text-[#4361ee] bg-[#4361ee]/5'}`}>
                                                         {s.isCustomReport ? 'Nhập tay' : s.type}
                                                     </Badge>
-                                                    {s.isCustomReport && (
+                                                    {s.isCustomReport && canEdit && (
                                                         <div className="flex gap-1">
                                                             {!s.isNewOrEditing && (
                                                                 <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-500 hover:bg-blue-50" onClick={() => handleEditCustomRow(s.id)}>
@@ -454,11 +480,13 @@ export function PersonalReport({ data }: { data: ReportData }) {
                             </TableBody>
                         </Table>
                     </div>
-                    <div className="p-3 bg-slate-50 border-t flex justify-end">
-                        <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(true)} className="text-[#3a0ca3] border-[#3a0ca3] hover:bg-[#3a0ca3]/10">
-                            <Plus className="w-4 h-4 mr-2" /> Bổ sung công việc
-                        </Button>
-                    </div>
+                    {canEdit && (
+                        <div className="p-3 bg-slate-50 border-t flex justify-end">
+                            <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(true)} className="text-[#3a0ca3] border-[#3a0ca3] hover:bg-[#3a0ca3]/10">
+                                <Plus className="w-4 h-4 mr-2" /> Bổ sung công việc
+                            </Button>
+                        </div>
+                    )}
                 </GlassCard>
 
                 {/* Future Table Segment */}
@@ -491,7 +519,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                {s.isCustomReport && s.isNewOrEditing ? (
+                                                {s.isCustomReport && s.isNewOrEditing && canEdit ? (
                                                     <Input value={s.unit} onChange={(e) => handleChange(s.id, 'unit', e.target.value)} placeholder="Nhập Đơn vị" className="w-full h-8 text-xs bg-white focus:border-[#f72585]" />
                                                 ) : (
                                                     <span className="font-semibold text-gray-700">{s.unit || "Chưa nhập"}</span>
@@ -500,7 +528,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                                             <TableCell className="p-2">
                                                 <div className="flex items-center gap-2">
                                                     {s.isCustomReport && <span title="Báo cáo thêm bằng tay"><PenSquare className="w-4 h-4 min-w-4 text-orange-500" /></span>}
-                                                    {s.isCustomReport && s.isNewOrEditing ? (
+                                                    {s.isCustomReport && s.isNewOrEditing && canEdit ? (
                                                         <Input
                                                             value={s.content}
                                                             onChange={(e) => handleChange(s.id, 'content', e.target.value)}
@@ -519,7 +547,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                                                     <Badge variant="outline" className={`whitespace-nowrap ${s.isCustomReport ? 'border-orange-500 text-orange-600 bg-orange-50' : 'border-[#f72585] text-[#f72585] bg-[#f72585]/5'}`}>
                                                         {s.isCustomReport ? 'Nhập tay' : s.type}
                                                     </Badge>
-                                                    {s.isCustomReport && (
+                                                    {s.isCustomReport && canEdit && (
                                                         <div className="flex gap-1">
                                                             {!s.isNewOrEditing && (
                                                                 <Button variant="ghost" size="icon" className="h-6 w-6 text-pink-500 hover:bg-pink-50" onClick={() => handleEditCustomRow(s.id)}>
@@ -545,11 +573,13 @@ export function PersonalReport({ data }: { data: ReportData }) {
                             </TableBody>
                         </Table>
                     </div>
-                    <div className="p-3 bg-slate-50 border-t flex justify-end">
-                        <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(false)} className="text-[#f72585] border-[#f72585] hover:bg-[#f72585]/10">
-                            <Plus className="w-4 h-4 mr-2" /> Bổ sung kế hoạch
-                        </Button>
-                    </div>
+                    {canEdit && (
+                        <div className="p-3 bg-slate-50 border-t flex justify-end">
+                            <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(false)} className="text-[#f72585] border-[#f72585] hover:bg-[#f72585]/10">
+                                <Plus className="w-4 h-4 mr-2" /> Bổ sung kế hoạch
+                            </Button>
+                        </div>
+                    )}
                 </GlassCard>
             </div>
             {/* INVISIBLE PRINT FOOTER */}

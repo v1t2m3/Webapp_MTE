@@ -11,6 +11,7 @@ import {
     Settings,
     Menu,
     Shield,
+    ShieldAlert,
     Calculator,
     ChevronDown,
     ChevronRight,
@@ -25,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 const routes = [
     {
@@ -58,11 +60,20 @@ const routes = [
             { label: "CAPA (Mục 8.7)", href: "/capa", icon: AlertTriangle },
             { label: "Tài liệu (Mục 8.3)", href: "/documents", icon: FileTextIcon },
         ]
+    },
+    {
+        label: "Quản trị Hệ thống",
+        icon: ShieldAlert,
+        href: "/admin/users",
+        color: "text-rose-400",
+        adminOnly: true,
     }
 ];
 
 export function Sidebar() {
     const pathname = usePathname();
+    const { data: session } = useSession();
+    const isAdmin = session?.user?.role === "Admin";
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
         "Quản lý Thử nghiệm": true
     });
@@ -103,6 +114,9 @@ export function Sidebar() {
                 <div className="px-3 py-2 flex-1">
                     <div className="space-y-1">
                         {routes.map((route) => {
+                            // @ts-ignore
+                            if (route.adminOnly && !isAdmin) return null;
+
                             if (route.isGroup) {
                                 const isOpen = openGroups[route.label];
                                 return (

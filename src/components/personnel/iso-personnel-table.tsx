@@ -10,8 +10,18 @@ import {
 } from "@/components/ui/table";
 import { Personnel } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2 } from "lucide-react";
 
-export function IsoPersonnelTable({ data }: { data: Personnel[] }) {
+export function IsoPersonnelTable({
+    data,
+    onEdit,
+    onDelete
+}: {
+    data: Personnel[];
+    onEdit?: (item: Personnel) => void;
+    onDelete?: (id: string) => void;
+}) {
     return (
         <div className="rounded-md border bg-white dark:bg-slate-900/50 dark:border-slate-800 shadow-sm overflow-hidden">
             <Table>
@@ -21,10 +31,13 @@ export function IsoPersonnelTable({ data }: { data: Personnel[] }) {
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap min-w-[150px]">Họ và Tên</TableHead>
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Phòng ban</TableHead>
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Chức vụ</TableHead>
-                        <TableHead className="text-slate-800 dark:text-slate-200 font-bold">Các phương pháp được phép</TableHead>
-                        <TableHead className="text-slate-800 dark:text-slate-200 font-bold">Các thiết bị được phép</TableHead>
-                        <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Ngày đào tạo gần nhất</TableHead>
+                        <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Các phương pháp<br />được phép</TableHead>
+                        <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Các thiết bị<br />được phép</TableHead>
+                        <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Ngày đào tạo<br />gần nhất</TableHead>
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Trạng thái</TableHead>
+                        {(onEdit || onDelete) && (
+                            <TableHead className="text-right text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Thao tác</TableHead>
+                        )}
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -60,6 +73,33 @@ export function IsoPersonnelTable({ data }: { data: Personnel[] }) {
                                         {item.status}
                                     </Badge>
                                 </TableCell>
+                                {(onEdit || onDelete) && (
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-1">
+                                            {onEdit && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-[#4361ee] hover:text-[#4361ee] hover:bg-[#4361ee]/10"
+                                                    onClick={() => onEdit(item)}
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                            {onDelete && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-[#f72585] hover:text-[#f72585] hover:bg-[#f72585]/10"
+                                                    onClick={() => onDelete(item.id)}
+                                                    title="Xoá"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                )}
                             </TableRow>
                         ))
                     )}

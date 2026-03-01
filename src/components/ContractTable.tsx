@@ -67,22 +67,26 @@ export function ContractTable({ data, onEdit, onDelete }: ContractTableProps) {
                             <TableCell>{item.investorRep}</TableCell>
                             <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-[#4361ee] hover:text-[#3a0ca3] hover:bg-[#4361ee]/10"
-                                        onClick={() => onEdit && onEdit(item)}
-                                    >
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-[#f72585] hover:text-[#b5179e] hover:bg-[#f72585]/10"
-                                        onClick={() => onDelete && onDelete(item.id)}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    {onEdit && (
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-[#4361ee] hover:text-[#3a0ca3] hover:bg-[#4361ee]/10"
+                                            onClick={() => onEdit(item)}
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                    {onDelete && (
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-[#f72585] hover:text-[#b5179e] hover:bg-[#f72585]/10"
+                                            onClick={() => onDelete(item.id)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
                                 </div>
                             </TableCell>
                         </TableRow>

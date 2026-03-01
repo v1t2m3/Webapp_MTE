@@ -956,7 +956,7 @@ export const googleSheetsService = {
                 name: row[1] || '',
                 serialNumber: row[2] || '',
                 location: row[3] || '',
-                calibrationFrequency: parseInt(row[4]) || 12,
+                calibrationFrequency: row[4] || '',
                 lastCalibrationDate: row[5] || '',
                 nextCalibrationDate: row[6] || '',
                 calibrationAgent: row[7] || '',
@@ -980,7 +980,7 @@ export const googleSheetsService = {
                     equipment.name || '',
                     equipment.serialNumber || '',
                     equipment.location || '',
-                    (equipment.calibrationFrequency || 12).toString(),
+                    (equipment.calibrationFrequency || '').toString(),
                     equipment.lastCalibrationDate || '',
                     equipment.nextCalibrationDate || '',
                     equipment.calibrationAgent || '',
@@ -998,6 +998,86 @@ export const googleSheetsService = {
             return true;
         } catch (error) {
             console.error('Error adding equipment:', error);
+            return false;
+        }
+    },
+
+    findEquipmentRowIndex: async (id: string): Promise<number | null> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return null;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Equipments !A:A', // Important: keep the space
+            });
+
+            const rows = response.data.values;
+            if (!rows) return null;
+
+            const index = rows.findIndex((row) => row[0] === id);
+            return index !== -1 ? index + 1 : null;
+        } catch (error) {
+            console.error('Error finding equipment row:', error);
+            return null;
+        }
+    },
+
+    updateEquipment: async (id: string, equipment: Partial<Equipment>): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findEquipmentRowIndex(id);
+            if (!rowIndex) return false;
+
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const values = [
+                [
+                    id,
+                    equipment.name || '',
+                    equipment.serialNumber || '',
+                    equipment.location || '',
+                    (equipment.calibrationFrequency || '').toString(),
+                    equipment.lastCalibrationDate || '',
+                    equipment.nextCalibrationDate || '',
+                    equipment.calibrationAgent || '',
+                    equipment.status || 'Active',
+                ],
+            ];
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Equipments !A${rowIndex}:I${rowIndex}`, // Important: keep the space
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values },
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error updating equipment:', error);
+            return false;
+        }
+    },
+
+    deleteEquipment: async (id: string): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findEquipmentRowIndex(id);
+            if (!rowIndex) return false;
+
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            await sheets.spreadsheets.values.clear({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Equipments !A${rowIndex}:I${rowIndex}`, // Important: keep the space
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error deleting equipment:', error);
             return false;
         }
     },
@@ -1066,6 +1146,79 @@ export const googleSheetsService = {
         }
     },
 
+    findIsoPersonnelRowIndex: async (id: string): Promise<number | null> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return null;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Personel!A:A',
+            });
+            const rows = response.data.values;
+            if (!rows) return null;
+            const index = rows.findIndex((row) => row[0] === id);
+            return index !== -1 ? index + 1 : null;
+        } catch (error) {
+            console.error('Error finding ISO personnel row:', error);
+            return null;
+        }
+    },
+
+    updateIsoPersonnel: async (id: string, personnel: Partial<Personnel>): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findIsoPersonnelRowIndex(id);
+            if (!rowIndex) return false;
+
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const values = [[
+                id,
+                personnel.fullName || personnel.name || '',
+                personnel.department || '',
+                personnel.job || personnel.position || '',
+                personnel.authorizedMethods || '',
+                personnel.authorizedEquipments || '',
+                personnel.lastTrainingDate || '',
+                personnel.status || 'Active',
+            ]];
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Personel!A${rowIndex}:H${rowIndex}`,
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values },
+            });
+            return true;
+        } catch (error) {
+            console.error('Error updating ISO personnel:', error);
+            return false;
+        }
+    },
+
+    deleteIsoPersonnel: async (id: string): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findIsoPersonnelRowIndex(id);
+            if (!rowIndex) return false;
+
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            // Using clear to avoid shifting rows and breaking references
+            await sheets.spreadsheets.values.clear({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Personel!A${rowIndex}:H${rowIndex}`,
+            });
+            return true;
+        } catch (error) {
+            console.error('Error deleting ISO personnel:', error);
+            return false;
+        }
+    },
+
     getConsumables: async (): Promise<Consumable[]> => {
         try {
             if (!process.env.GOOGLE_SHEET_ID) return [];
@@ -1103,7 +1256,7 @@ export const googleSheetsService = {
             const sheets = google.sheets({ version: 'v4', auth: client });
             const response = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'CAPA!A2:I',
+                range: 'CAPA!A2:K',
             });
             const rows = response.data.values;
             if (!rows) return [];
@@ -1116,13 +1269,140 @@ export const googleSheetsService = {
                 actionPlan: row[5] || '',
                 deadline: row[6] || '',
                 closeDate: row[7] || '',
-                status: row[8] || 'Mở',
+                status: row[8] || 'Yêu cầu xử lý',
+                level: row[9] || '',
+                linkFile: row[10] || '',
             }));
         } catch (error) {
             console.error('Error fetching CAPA:', error);
             return [];
         }
     },
+
+    findCapaRowIndex: async (id: string): Promise<number> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return -1;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'CAPA!A2:A',
+            });
+            const rows = response.data.values;
+            if (!rows) return -1;
+            const rowIndex = rows.findIndex(row => row[0] === id);
+            return rowIndex !== -1 ? rowIndex + 2 : -1;
+        } catch (error) {
+            console.error('Error finding CAPA row:', error);
+            return -1;
+        }
+    },
+
+    addCapa: async (data: Omit<CAPA, 'id'>): Promise<CAPA | null> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return null;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const newId = `CP_${Date.now()}`;
+            const values = [
+                newId,
+                data.issueDate,
+                data.source,
+                data.description,
+                data.assignee,
+                data.actionPlan,
+                data.deadline,
+                data.closeDate,
+                data.status,
+                data.level,
+                data.linkFile
+            ];
+
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'CAPA!A2:K2',
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values: [values] }
+            });
+
+            return { id: newId, ...data };
+        } catch (error) {
+            console.error('Error adding CAPA record:', error);
+            return null;
+        }
+    },
+
+    updateCapa: async (id: string, data: Partial<CAPA>): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findCapaRowIndex(id);
+            if (rowIndex === -1) {
+                console.error(`CAPA with ID ${id} not found.`);
+                return false;
+            }
+
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const getResponse = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `CAPA!A${rowIndex}:K${rowIndex}`
+            });
+
+            const existingRow = getResponse.data.values?.[0] || [];
+
+            const updatedValues = [
+                id,
+                data.issueDate !== undefined ? data.issueDate : (existingRow[1] || ''),
+                data.source !== undefined ? data.source : (existingRow[2] || ''),
+                data.description !== undefined ? data.description : (existingRow[3] || ''),
+                data.assignee !== undefined ? data.assignee : (existingRow[4] || ''),
+                data.actionPlan !== undefined ? data.actionPlan : (existingRow[5] || ''),
+                data.deadline !== undefined ? data.deadline : (existingRow[6] || ''),
+                data.closeDate !== undefined ? data.closeDate : (existingRow[7] || ''),
+                data.status !== undefined ? data.status : (existingRow[8] || 'Yêu cầu xử lý'),
+                data.level !== undefined ? data.level : (existingRow[9] || ''),
+                data.linkFile !== undefined ? data.linkFile : (existingRow[10] || ''),
+            ];
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `CAPA!A${rowIndex}:K${rowIndex}`,
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values: [updatedValues] }
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error updating CAPA:', error);
+            return false;
+        }
+    },
+
+    deleteCapa: async (id: string): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findCapaRowIndex(id);
+            if (rowIndex === -1) {
+                console.error(`CAPA with ID ${id} not found.`);
+                return false;
+            }
+
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            await sheets.spreadsheets.values.clear({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `CAPA!A${rowIndex}:K${rowIndex}`,
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error deleting CAPA:', error);
+            return false;
+        }
+    },
+
 
     getDocuments: async (): Promise<Document[]> => {
         try {

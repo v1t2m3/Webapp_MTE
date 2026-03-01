@@ -11,6 +11,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         '/cong-cu', '/personnel', '/equipments', '/consumables', '/capa', '/documents'
     ].some(route => pathname?.startsWith(route));
 
+    const isBareRoute = pathname === '/login';
+
+    if (isBareRoute) {
+        return (
+            <>
+                {children}
+                <Toaster />
+            </>
+        );
+    }
+
     return (
         <div className={`h-full relative transition-colors duration-500 ${isIsoRoute ? "dark bg-slate-950" : "bg-gray-50/50"}`}>
             <div className={`hidden h-full lg:flex lg:w-72 lg:flex-col lg:fixed lg:inset-y-0 z-50 border-r ${isIsoRoute ? "border-slate-800 bg-slate-950" : "border-gray-800 bg-[#3a0ca3]"}`}>

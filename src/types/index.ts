@@ -45,7 +45,7 @@ export interface Equipment {
     name: string;
     serialNumber: string;
     location: string;
-    calibrationFrequency: number;
+    calibrationFrequency: string | number;
     lastCalibrationDate: string;
     nextCalibrationDate: string;
     calibrationAgent: string;
@@ -69,7 +69,7 @@ export interface Consumable {
     status: ConsumableStatus;
 }
 
-export type CapaStatus = 'Mở' | 'Đang xử lý' | 'Chờ duyệt đóng' | 'Đã đóng' | string;
+export type CapaStatus = 'Yêu cầu xử lý' | 'Đang xử lý' | 'Đang quá hạn' | 'Hoàn thành' | string;
 
 export interface CAPA {
     id: string;
@@ -81,6 +81,8 @@ export interface CAPA {
     deadline: string;
     closeDate: string;
     status: CapaStatus;
+    level?: string;
+    linkFile?: string;
 }
 
 export type DocumentType = 'Sổ tay' | 'Quy trình' | 'Hướng dẫn công việc' | 'Biểu mẫu' | string;
@@ -191,3 +193,17 @@ export type EditableSchedule = Schedule & {
     isNewOrEditing?: boolean;
     bucket?: string;
 };
+
+// ROLE-BASED ACCESS CONTROL (RBAC)
+export type UserRole = 'Admin' | 'User' | 'Viewer';
+
+export interface User {
+    id: string; // Mã nhân sự hoặc UUID
+    username: string; // Tên đăng nhập hoặc Email
+    passwordHash?: string; // Băm mật khẩu (chỉ backend)
+    role: UserRole;
+    level?: 1 | 2 | 3 | 4; // Mức phân quyền dành riêng cho Role "User"
+    fullName: string;
+    avatarUrl?: string;
+    isActive: boolean;
+}

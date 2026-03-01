@@ -12,11 +12,15 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { formatScheduleTime } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Plus, Save, PenSquare, Trash2, Edit2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { hasAccess } from "@/lib/rbac";
 
 const COLORS = ['#4361ee', '#4cc9f0', '#3a0ca3'];
 
 export function ContractReport({ data }: { data: ReportData }) {
     const { contracts, schedules } = data;
+    const { data: session } = useSession();
+    const canEditReport = hasAccess(session?.user?.role, session?.user?.level, "update", "bao-cao-tuan-thang-hop-dong");
 
     // Default to the first contract if available
     const [selectedContractId, setSelectedContractId] = useState<string>(contracts.length > 0 ? contracts[0].id : "");
@@ -53,8 +57,8 @@ export function ContractReport({ data }: { data: ReportData }) {
     useEffect(() => {
         setEditableSchedules(linkedSchedules.map(s => ({ ...s })));
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-            }, [linkedSchedules]); // eslint-disable-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [linkedSchedules]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleChange = (id: string, field: string, value: string) => {
         setEditableSchedules(prev =>
@@ -186,8 +190,8 @@ export function ContractReport({ data }: { data: ReportData }) {
             name: key,
             'Số Lịch': monthMap[key]
         }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-            }, [linkedSchedules]); // eslint-disable-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [linkedSchedules]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -219,9 +223,11 @@ export function ContractReport({ data }: { data: ReportData }) {
                             <span className="text-xs block text-muted-foreground uppercase tracking-wider mb-1">Số Lịch thực hiện</span>
                             <span className="text-sm font-bold">{totalLinkedSchedules}</span>
                         </div>
-                        <Button onClick={handleSaveReports} className="bg-green-600 hover:bg-green-700 text-white shadow-md flex-none self-end h-[52px]">
-                            <Save className="w-4 h-4 mr-2" /> Lưu Báo Cáo
-                        </Button>
+                        {canEditReport && (
+                            <Button onClick={handleSaveReports} className="bg-green-600 hover:bg-green-700 text-white shadow-md flex-none self-end h-[52px]">
+                                <Save className="w-4 h-4 mr-2" /> Lưu Báo Cáo
+                            </Button>
+                        )}
                     </div>
                 )}
             </GlassCard>
@@ -307,14 +313,16 @@ export function ContractReport({ data }: { data: ReportData }) {
                                                     />
                                                     {s.isCustomReport && (
                                                         <div className="flex gap-1 ml-auto shrink-0">
-                                                            {!s.isNewOrEditing && (
+                                                            {canEditReport && !s.isNewOrEditing && (
                                                                 <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-500 hover:bg-blue-50" onClick={() => handleEditCustomRow(s.id)}>
                                                                     <Edit2 className="w-3 h-3" />
                                                                 </Button>
                                                             )}
-                                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-50" onClick={() => handleDeleteCustomRow(s.id)}>
-                                                                <Trash2 className="w-3 h-3" />
-                                                            </Button>
+                                                            {canEditReport && (
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-50" onClick={() => handleDeleteCustomRow(s.id)}>
+                                                                    <Trash2 className="w-3 h-3" />
+                                                                </Button>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
@@ -331,11 +339,13 @@ export function ContractReport({ data }: { data: ReportData }) {
                             </TableBody>
                         </Table>
                     </div>
-                    <div className="p-3 bg-slate-50 border-t flex justify-end">
-                        <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(true)} className="text-[#3a0ca3] border-[#3a0ca3] hover:bg-[#3a0ca3]/10">
-                            <Plus className="w-4 h-4 mr-2" /> Bổ sung công việc
-                        </Button>
-                    </div>
+                    {canEditReport && (
+                        <div className="p-3 bg-slate-50 border-t flex justify-end">
+                            <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(true)} className="text-[#3a0ca3] border-[#3a0ca3] hover:bg-[#3a0ca3]/10">
+                                <Plus className="w-4 h-4 mr-2" /> Bổ sung công việc
+                            </Button>
+                        </div>
+                    )}
                 </GlassCard>
 
                 {/* Future Table Segment */}
@@ -390,14 +400,16 @@ export function ContractReport({ data }: { data: ReportData }) {
                                                     )}
                                                     {s.isCustomReport && (
                                                         <div className="flex gap-1 ml-auto shrink-0">
-                                                            {!s.isNewOrEditing && (
+                                                            {canEditReport && !s.isNewOrEditing && (
                                                                 <Button variant="ghost" size="icon" className="h-6 w-6 text-pink-500 hover:bg-pink-50" onClick={() => handleEditCustomRow(s.id)}>
                                                                     <Edit2 className="w-3 h-3" />
                                                                 </Button>
                                                             )}
-                                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-50" onClick={() => handleDeleteCustomRow(s.id)}>
-                                                                <Trash2 className="w-3 h-3" />
-                                                            </Button>
+                                                            {canEditReport && (
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-50" onClick={() => handleDeleteCustomRow(s.id)}>
+                                                                    <Trash2 className="w-3 h-3" />
+                                                                </Button>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
@@ -414,11 +426,13 @@ export function ContractReport({ data }: { data: ReportData }) {
                             </TableBody>
                         </Table>
                     </div>
-                    <div className="p-3 bg-slate-50 border-t flex justify-end">
-                        <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(false)} className="text-[#f72585] border-[#f72585] hover:bg-[#f72585]/10">
-                            <Plus className="w-4 h-4 mr-2" /> Bổ sung kế hoạch liên kết
-                        </Button>
-                    </div>
+                    {canEditReport && (
+                        <div className="p-3 bg-slate-50 border-t flex justify-end">
+                            <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(false)} className="text-[#f72585] border-[#f72585] hover:bg-[#f72585]/10">
+                                <Plus className="w-4 h-4 mr-2" /> Bổ sung kế hoạch liên kết
+                            </Button>
+                        </div>
+                    )}
                 </GlassCard>
             </div>
         </div>

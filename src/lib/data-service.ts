@@ -112,6 +112,14 @@ export const dataService = {
         if (USE_MOCK_DATA) return true;
         try { return await googleSheetsService.addEquipment(data); } catch { return false; }
     },
+    updateEquipment: async (id: string, data: Partial<Equipment>): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.updateEquipment(id, data); } catch { return false; }
+    },
+    deleteEquipment: async (id: string): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.deleteEquipment(id); } catch { return false; }
+    },
     getIsoPersonnel: async (): Promise<Personnel[]> => {
         if (USE_MOCK_DATA) return [];
         try { return await googleSheetsService.getIsoPersonnel(); } catch { return []; }
@@ -120,6 +128,14 @@ export const dataService = {
         if (USE_MOCK_DATA) return true;
         try { return await googleSheetsService.addIsoPersonnel(data); } catch { return false; }
     },
+    updateIsoPersonnel: async (id: string, data: Partial<Personnel>): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.updateIsoPersonnel(id, data); } catch { return false; }
+    },
+    deleteIsoPersonnel: async (id: string): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.deleteIsoPersonnel(id); } catch { return false; }
+    },
     getConsumables: async (): Promise<Consumable[]> => {
         if (USE_MOCK_DATA) return [];
         try { return await googleSheetsService.getConsumables(); } catch { return []; }
@@ -127,6 +143,18 @@ export const dataService = {
     getCapa: async (): Promise<CAPA[]> => {
         if (USE_MOCK_DATA) return [];
         try { return await googleSheetsService.getCapa(); } catch { return []; }
+    },
+    addCapa: async (data: Omit<CAPA, 'id'>): Promise<CAPA | null> => {
+        if (USE_MOCK_DATA) return { id: `MOCK_${Date.now()}`, ...data };
+        try { return await googleSheetsService.addCapa(data); } catch { return null; }
+    },
+    updateCapa: async (id: string, data: Partial<CAPA>): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.updateCapa(id, data); } catch { return false; }
+    },
+    deleteCapa: async (id: string): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.deleteCapa(id); } catch { return false; }
     },
     getDocuments: async (): Promise<Document[]> => {
         if (USE_MOCK_DATA) return [];

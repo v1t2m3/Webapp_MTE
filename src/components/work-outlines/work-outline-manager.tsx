@@ -16,8 +16,16 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
+import { useSession } from "next-auth/react";
+import { hasAccess } from "@/lib/rbac";
 
 export function WorkOutlineManager() {
+    const { data: session } = useSession();
+    const canAdd = hasAccess(session?.user?.role, session?.user?.level, "create", "de-cuong");
+    const canEdit = hasAccess(session?.user?.role, session?.user?.level, "update", "de-cuong");
+    const canDelete = hasAccess(session?.user?.role, session?.user?.level, "delete", "de-cuong");
+    const canDownload = hasAccess(session?.user?.role, session?.user?.level, "download", "de-cuong");
+
     const [workOutlines, setWorkOutlines] = useState<WorkOutline[]>([]);
     const [schedules, setSchedules] = useState<Schedule[]>([]);
     const [personnel, setPersonnel] = useState<Personnel[]>([]);
@@ -176,9 +184,11 @@ export function WorkOutlineManager() {
                         {showHistory ? <ListFilter className="mr-2 h-4 w-4" /> : <History className="mr-2 h-4 w-4" />}
                         {showHistory ? "Ẩn Đề Cương Cũ" : "Xem Đề Cương Cũ"}
                     </Button>
-                    <Button onClick={handleOpenNew} className="bg-[#3f37c9] hover:bg-[#3f37c9]/90 text-white shadow-lg shadow-indigo-900/20 px-6 font-medium">
-                        <Plus className="mr-2 h-5 w-5" /> Thêm Đề Cương
-                    </Button>
+                    {canAdd && (
+                        <Button onClick={handleOpenNew} className="bg-[#3f37c9] hover:bg-[#3f37c9]/90 text-white shadow-lg shadow-indigo-900/20 px-6 font-medium">
+                            <Plus className="mr-2 h-5 w-5" /> Thêm Đề Cương
+                        </Button>
+                    )}
                 </div>
             </GlassPageHeader>
 
@@ -238,32 +248,38 @@ export function WorkOutlineManager() {
                                                 </TableCell>
                                                 <TableCell className="text-right sticky right-0 bg-white/95 shadow-[-4px_0_10px_rgba(0,0,0,0.05)]">
                                                     <div className="flex justify-end gap-1">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8 text-[#4361ee] hover:text-[#4361ee] hover:bg-[#4361ee]/10"
-                                                            onClick={() => handleEdit(item)}
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8 text-[#f72585] hover:text-[#f72585] hover:bg-[#f72585]/10"
-                                                            onClick={() => handleDelete(item.id)}
-                                                            title="Xoá"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8 text-[#3a0ca3] hover:text-[#3a0ca3] hover:bg-[#3a0ca3]/10"
-                                                            onClick={() => handleDownload(item)}
-                                                            title="Tải mẫu DOCX"
-                                                        >
-                                                            <Download className="h-4 w-4" />
-                                                        </Button>
+                                                        {canEdit && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-[#4361ee] hover:text-[#4361ee] hover:bg-[#4361ee]/10"
+                                                                onClick={() => handleEdit(item)}
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                        {canDelete && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-[#f72585] hover:text-[#f72585] hover:bg-[#f72585]/10"
+                                                                onClick={() => handleDelete(item.id)}
+                                                                title="Xoá"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                        {canDownload && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-[#3a0ca3] hover:text-[#3a0ca3] hover:bg-[#3a0ca3]/10"
+                                                                onClick={() => handleDownload(item)}
+                                                                title="Tải mẫu DOCX"
+                                                            >
+                                                                <Download className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
@@ -283,16 +299,18 @@ export function WorkOutlineManager() {
                 )}
             </div>
 
-            <WorkOutlineForm
-                open={isFormOpen}
-                onOpenChange={setIsFormOpen}
-                initialData={editingOutline}
-                onSubmit={handleSubmit}
-                schedules={schedules}
-                personnel={personnel}
-                vehicles={vehicles}
-                contracts={contracts}
-            />
+            {(canAdd || canEdit) && (
+                <WorkOutlineForm
+                    open={isFormOpen}
+                    onOpenChange={setIsFormOpen}
+                    initialData={editingOutline}
+                    onSubmit={handleSubmit}
+                    schedules={schedules}
+                    personnel={personnel}
+                    vehicles={vehicles}
+                    contracts={contracts}
+                />
+            )}
         </div>
     );
 }

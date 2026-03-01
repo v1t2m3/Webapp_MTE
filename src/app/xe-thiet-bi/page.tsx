@@ -7,12 +7,19 @@ import { useEffect, useState } from "react";
 import { Vehicle } from "@/types";
 import { VehicleForm } from "@/components/VehicleForm";
 import { GlassCard, GlassPageHeader } from "@/components/ui/GlassCard";
+import { useSession } from "next-auth/react";
+import { hasAccess } from "@/lib/rbac";
 
 export default function VehiclePage() {
+    const { data: session } = useSession();
     const [data, setData] = useState<Vehicle[]>([]);
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [currentVehicle, setCurrentVehicle] = useState<Vehicle | null>(null);
+
+    const canAdd = hasAccess(session?.user?.role, session?.user?.level, "create", "xe-thiet-bi");
+    const canEdit = hasAccess(session?.user?.role, session?.user?.level, "update", "xe-thiet-bi");
+    const canDelete = hasAccess(session?.user?.role, session?.user?.level, "delete", "xe-thiet-bi");
 
     const fetchData = async () => {
         try {
@@ -95,13 +102,15 @@ export default function VehiclePage() {
                 description="Danh sách phương tiện và thiết bị (Dữ liệu từ Google Sheets)."
             >
                 <div className="flex items-center gap-2">
-                    <Button
-                        variant="default"
-                        className="bg-[#3a0ca3] hover:bg-[#3a0ca3]/90 text-white shadow-lg shadow-blue-900/20 transition-all hover:scale-105"
-                        onClick={handleAdd}
-                    >
-                        <Plus className="mr-2 h-4 w-4" /> Thêm xe mới
-                    </Button>
+                    {canAdd && (
+                        <Button
+                            variant="default"
+                            className="bg-[#3a0ca3] hover:bg-[#3a0ca3]/90 text-white shadow-lg shadow-blue-900/20 transition-all hover:scale-105"
+                            onClick={handleAdd}
+                        >
+                            <Plus className="mr-2 h-4 w-4" /> Thêm xe mới
+                        </Button>
+                    )}
                     <Button variant="outline" className="border-indigo-100 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800">
                         Xuất Excel
                     </Button>
@@ -116,18 +125,20 @@ export default function VehiclePage() {
                 ) : (
                     <VehicleTable
                         data={data}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
+                        onEdit={canEdit ? handleEdit : undefined}
+                        onDelete={canDelete ? handleDelete : undefined}
                     />
                 )}
             </GlassCard>
 
-            <VehicleForm
-                open={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
-                initialData={currentVehicle}
-                onSubmit={handleFormSubmit}
-            />
+            {(canAdd || canEdit) && (
+                <VehicleForm
+                    open={isDialogOpen}
+                    onOpenChange={setIsDialogOpen}
+                    initialData={currentVehicle}
+                    onSubmit={handleFormSubmit}
+                />
+            )}
         </div>
     );
 }

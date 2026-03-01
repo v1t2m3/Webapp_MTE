@@ -17,11 +17,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { getISOWeek, getISOWeeksInYear } from "date-fns";
 import { formatScheduleTime } from "@/lib/utils";
 import { Plus, Save, PenSquare, Trash2, Edit2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { hasAccess } from "@/lib/rbac";
 
 const COLORS = ['#4cc9f0', '#f72585', '#3a0ca3'];
 
 export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
     const { schedules } = data;
+    const { data: session } = useSession();
+    const canEditReport = hasAccess(session?.user?.role, session?.user?.level, "update", "bao-cao-tuan-thang-hop-dong");
+
     const [reportType, setReportType] = useState<"week" | "month">("month");
     const [selectedMonth, setSelectedMonth] = useState<string>((new Date().getMonth() + 1).toString());
     const [selectedWeek, setSelectedWeek] = useState<string>(getISOWeek(new Date()).toString());
@@ -67,8 +72,8 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
 
         filtered = filtered.sort((a, b) => new Date(a.startDate || '').getTime() - new Date(b.startDate || '').getTime());
         setEditableSchedules(filtered); // mapped directly to array values
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [schedules, data.supplementalReports, selectedMonth, selectedYear, reportType]); // Ignored dynamic dep
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [schedules, data.supplementalReports, selectedMonth, selectedYear, reportType]); // Ignored dynamic dep
 
     // Handle inline input change for multiple fields
     const handleChange = (id: string, field: string, value: string) => {
@@ -175,8 +180,8 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
 
     // KPIs based on all filtered data for the period
     const total = editableSchedules.length;
-    
-    
+
+
 
     // Chart Data (Days of month/week)
     const chartData = useMemo(() => {
@@ -278,9 +283,11 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
                     <div className="px-4 py-2 bg-[#3a0ca3]/10 text-[#3a0ca3] rounded-lg border border-[#3a0ca3]/20 md:flex flex-col justify-center hidden">
                         <span className="text-sm font-bold">Tổng: {total}</span>
                     </div>
-                    <Button onClick={handleSaveReports} className="bg-green-600 hover:bg-green-700 text-white shadow-md">
-                        <Save className="w-4 h-4 mr-2" /> Lưu Báo Cáo
-                    </Button>
+                    {canEditReport && (
+                        <Button onClick={handleSaveReports} className="bg-green-600 hover:bg-green-700 text-white shadow-md">
+                            <Save className="w-4 h-4 mr-2" /> Lưu Báo Cáo
+                        </Button>
+                    )}
                 </div>
             </GlassCard>
 
@@ -361,7 +368,7 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
                                                 >
                                                     {s.isCustomReport ? 'Nhập tay' : s.type}
                                                 </Badge>
-                                                {s.isCustomReport && (
+                                                {s.isCustomReport && canEditReport && (
                                                     <div className="flex gap-1">
                                                         {!s.isNewOrEditing && (
                                                             <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-500 hover:bg-blue-50" onClick={() => handleEditCustomRow(s.id)}>
@@ -387,11 +394,13 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
                         </TableBody>
                     </Table>
                 </div>
-                <div className="p-3 bg-slate-50 border-t flex justify-end">
-                    <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(true)} className="text-[#3a0ca3] border-[#3a0ca3] hover:bg-[#3a0ca3]/10">
-                        <Plus className="w-4 h-4 mr-2" /> Bổ sung công việc
-                    </Button>
-                </div>
+                {canEditReport && (
+                    <div className="p-3 bg-slate-50 border-t flex justify-end">
+                        <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(true)} className="text-[#3a0ca3] border-[#3a0ca3] hover:bg-[#3a0ca3]/10">
+                            <Plus className="w-4 h-4 mr-2" /> Bổ sung công việc
+                        </Button>
+                    </div>
+                )}
             </GlassCard>
 
             {/* Data Table: Future Schedules */}
@@ -454,7 +463,7 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
                                                 >
                                                     {s.isCustomReport ? 'Nhập tay' : s.type}
                                                 </Badge>
-                                                {s.isCustomReport && (
+                                                {s.isCustomReport && canEditReport && (
                                                     <div className="flex gap-1">
                                                         {!s.isNewOrEditing && (
                                                             <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-500 hover:bg-blue-50" onClick={() => handleEditCustomRow(s.id)}>
@@ -480,11 +489,13 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
                         </TableBody>
                     </Table>
                 </div>
-                <div className="p-3 bg-slate-50 border-t flex justify-end">
-                    <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(false)} className="text-[#f72585] border-[#f72585] hover:bg-[#f72585]/10">
-                        <Plus className="w-4 h-4 mr-2" /> Bổ sung kế hoạch
-                    </Button>
-                </div>
+                {canEditReport && (
+                    <div className="p-3 bg-slate-50 border-t flex justify-end">
+                        <Button variant="outline" size="sm" onClick={() => handleAddCustomRow(false)} className="text-[#f72585] border-[#f72585] hover:bg-[#f72585]/10">
+                            <Plus className="w-4 h-4 mr-2" /> Bổ sung kế hoạch
+                        </Button>
+                    </div>
+                )}
             </GlassCard>
 
             {/* Custom Notes Section */}
@@ -494,6 +505,7 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
                 </div>
                 <div className="p-4 bg-white">
                     <Textarea
+                        disabled={!canEditReport}
                         placeholder="Nhập thêm ghi chú, đánh giá kết quả, hoặc đề xuất cho tuần/tháng này..."
                         className="min-h-[120px] resize-y border-gray-200 focus-visible:ring-[#3a0ca3] print:border-none print:resize-none print:p-0"
                         value={customNotes}

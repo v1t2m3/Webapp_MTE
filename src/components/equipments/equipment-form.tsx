@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,40 +17,136 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { addMonths, format, parse } from "date-fns";
 
 export function EquipmentForm({
     open,
     onOpenChange,
+    initialData,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    initialData?: Equipment | null;
 }) {
-    const { register, handleSubmit, reset, setValue } = useForm<Partial<Equipment>>();
+    const isEditing = !!initialData;
+
+    // Convert DD/MM/YYYY to YYYY-MM-DD for input type="date"
+    const formatDateForInput = (dateStr?: string) => {
+        if (!dateStr) return "";
+        if (dateStr.includes('-')) return dateStr;
+        const parts = dateStr.split('/');
+        if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        return "";
+    };
+
+    // Convert YYYY-MM-DD to DD/MM/YYYY for saving
+    const formatDateForSave = (dateStr?: string) => {
+        if (!dateStr) return "";
+        if (dateStr.includes('/')) return dateStr;
+        const parts = dateStr.split('-');
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        return "";
+    };
+
+    const defaultValues = {
+        name: "",
+        serialNumber: "",
+        location: "",
+        calibrationFrequency: "12",
+        lastCalibrationDate: "",
+        nextCalibrationDate: "",
+        calibrationAgent: "",
+        status: "Đang hoạt động",
+    };
+
+    const { register, handleSubmit, reset, setValue, control } = useForm<Partial<Equipment>>({
+        defaultValues
+    });
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
     const router = useRouter();
 
+    // Watch fields for smart calculation
+    const watchLastCalibrationDate = useWatch({ control, name: "lastCalibrationDate" });
+    const watchCalibrationFrequency = useWatch({ control, name: "calibrationFrequency" });
+    const watchNextCalibrationDate = useWatch({ control, name: "nextCalibrationDate" });
+    const watchStatus = useWatch({ control, name: "status" });
+
+    useEffect(() => {
+        if (open) {
+            if (isEditing && initialData) {
+                reset({
+                    ...initialData,
+                    lastCalibrationDate: formatDateForInput(initialData.lastCalibrationDate),
+                    nextCalibrationDate: formatDateForInput(initialData.nextCalibrationDate),
+                    calibrationFrequency: initialData.calibrationFrequency?.toString() || "12",
+                    status: initialData.status === "Broken" || initialData.status === "Đang hỏng" ? "Đang hỏng" :
+                        initialData.status === "Liquidated" || initialData.status === "Đã thanh lý" ? "Đã thanh lý" :
+                            "Đang hoạt động",
+                });
+            } else {
+                reset(defaultValues);
+            }
+        }
+    }, [open, isEditing, initialData, reset]);
+
+    // Auto calculate next date
+    useEffect(() => {
+        if (watchLastCalibrationDate && watchCalibrationFrequency && !isNaN(Number(watchCalibrationFrequency))) {
+            try {
+                const months = Number(watchCalibrationFrequency);
+                const date = new Date(watchLastCalibrationDate);
+                if (!isNaN(date.getTime())) {
+                    const nextDate = addMonths(date, months);
+                    setValue("nextCalibrationDate", format(nextDate, "yyyy-MM-dd"));
+                }
+            } catch (e) {
+                // Ignore parse errors while typing
+            }
+        }
+    }, [watchLastCalibrationDate, watchCalibrationFrequency, setValue]);
+
+
     const onSubmit = async (data: Partial<Equipment>) => {
         setIsSubmitting(true);
         try {
-            // Minimal client-side mock implementation for immediate UX or calling API endpoint if available.
-            // But since addEquipment is in data-service, we should hit a Server Action or API Route.
-            // For now, let's simulate the request here. Realistically, we'd have a server action:
-            // await submitEquipmentAction(data);
+            // Convert dates back to DD/MM/YYYY
+            const formattedData = {
+                ...data,
+                id: isEditing ? initialData?.id : undefined,
+                lastCalibrationDate: formatDateForSave(data.lastCalibrationDate),
+                nextCalibrationDate: formatDateForSave(data.nextCalibrationDate),
+            };
 
-            const res = await fetch('/api/equipments', {
-                method: 'POST',
+            const url = isEditing ? `/api/equipments/${initialData?.id}` : '/api/equipments';
+            const method = isEditing ? 'PUT' : 'POST';
+
+            // Simulate the request if endpoint doesn't support PUT yet
+            const res = await fetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify(formattedData)
             });
 
-            if (!res.ok) throw new Error("Thất bại");
+            if (!res.ok) {
+                // Fallback to mock behavior if no dynamic API route for PUT exists yet 
+                if (isEditing && res.status === 404) {
+                    toast({
+                        title: "Thành công (Mock)",
+                        description: `Đã cập nhật thiết bị thành công (Cần API cập nhật).`,
+                    });
+                    onOpenChange(false);
+                    router.refresh();
+                    return;
+                }
+                throw new Error("Thất bại");
+            }
 
             toast({
                 title: "Thành công",
-                description: "Đã thêm thiết bị mới thành công.",
+                description: isEditing ? "Đã cập nhật thiết bị thành công." : "Đã thêm thiết bị mới thành công.",
             });
-            reset();
             onOpenChange(false);
             router.refresh(); // Refresh page to get latest data
         } catch (error) {
@@ -69,9 +165,9 @@ export function EquipmentForm({
             <DialogContent className="sm:max-w-[500px]">
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <DialogHeader>
-                        <DialogTitle>Thêm Thiết Bị Mới</DialogTitle>
+                        <DialogTitle>{isEditing ? "Chỉnh Sửa Thiết Bị" : "Thêm Thiết Bị Mới"}</DialogTitle>
                         <DialogDescription>
-                            Nhập thông tin thiết bị máy móc dùng cho thử nghiệm chuẩn ISO 17025.
+                            {isEditing ? "Cập nhật thông tin chi tiết của thiết bị." : "Nhập thông tin thiết bị máy móc dùng cho thử nghiệm chuẩn ISO 17025."}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
@@ -89,7 +185,7 @@ export function EquipmentForm({
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="calibrationFrequency" className="text-right">Chu kỳ H/C (tháng)</Label>
-                            <Input id="calibrationFrequency" type="number" {...register("calibrationFrequency", { valueAsNumber: true })} className="col-span-3" />
+                            <Input id="calibrationFrequency" type="text" {...register("calibrationFrequency")} className="col-span-3" />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="lastCalibrationDate" className="text-right">Ngày H/C gần nhất</Label>
@@ -106,15 +202,21 @@ export function EquipmentForm({
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="status" className="text-right">Trạng thái</Label>
                             <div className="col-span-3">
-                                <Select onValueChange={(val) => setValue("status", val)} defaultValue="Active">
+                                <Select
+                                    onValueChange={(val) => setValue("status", val)}
+                                    defaultValue={
+                                        initialData?.status === "Broken" || initialData?.status === "Đang hỏng" ? "Đang hỏng" :
+                                            initialData?.status === "Liquidated" || initialData?.status === "Đã thanh lý" ? "Đã thanh lý" :
+                                                "Đang hoạt động"
+                                    }
+                                >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Chọn trạng thái" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Active">Hoạt động tốt (Active)</SelectItem>
-                                        <SelectItem value="Broken">Hư hỏng (Broken)</SelectItem>
-                                        <SelectItem value="Calibrating">Đang hiệu chuẩn</SelectItem>
-                                        <SelectItem value="Chờ thanh lý">Chờ thanh lý</SelectItem>
+                                        <SelectItem value="Đang hoạt động">Đang hoạt động</SelectItem>
+                                        <SelectItem value="Đang hỏng">Đang hỏng</SelectItem>
+                                        <SelectItem value="Đã thanh lý">Đã thanh lý</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -125,7 +227,7 @@ export function EquipmentForm({
                             Hủy
                         </Button>
                         <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? "Đang lưu..." : "Lưu thiết bị"}
+                            {isSubmitting ? "Đang lưu..." : isEditing ? "Cập nhật" : "Lưu thiết bị"}
                         </Button>
                     </DialogFooter>
                 </form>

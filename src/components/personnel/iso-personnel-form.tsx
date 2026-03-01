@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,11 +22,13 @@ import {
 export function IsoPersonnelForm({
     open,
     onOpenChange,
-    availableEquipments
+    availableEquipments,
+    initialData
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     availableEquipments: Equipment[];
+    initialData?: Personnel | null;
 }) {
     const { register, handleSubmit, reset, setValue, watch } = useForm<Partial<Personnel>>();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,6 +45,31 @@ export function IsoPersonnelForm({
         !eq.status.toLowerCase().includes("thanh lý") &&
         eq.status.toLowerCase() !== "disposed"
     );
+
+    useEffect(() => {
+        if (open) {
+            if (initialData) {
+                reset({
+                    ...initialData,
+                });
+                const equips = initialData.authorizedEquipments || "";
+                if (!equips || equips === "Không") {
+                    setEquipSelectionType("none");
+                    setSelectedEquipIds([]);
+                } else if (equips === "Tất cả") {
+                    setEquipSelectionType("all");
+                    setSelectedEquipIds([]);
+                } else {
+                    setEquipSelectionType("custom");
+                    setSelectedEquipIds(equips.split(",").map(e => e.trim()));
+                }
+            } else {
+                reset();
+                setEquipSelectionType("none");
+                setSelectedEquipIds([]);
+            }
+        }
+    }, [open, initialData, reset]);
 
     const toggleEquip = (name: string) => {
         if (selectedEquipIds.includes(name)) {
@@ -63,13 +90,18 @@ export function IsoPersonnelForm({
                 finalEquipmentsStr = selectedEquipIds.join(", ");
             }
 
+            const isEditing = !!initialData;
+            const url = isEditing ? `/api/iso-personnel/${initialData.id}` : '/api/iso-personnel';
+            const method = isEditing ? 'PUT' : 'POST';
+
             const payload = {
                 ...data,
+                id: isEditing ? initialData.id : undefined,
                 authorizedEquipments: finalEquipmentsStr,
             };
 
-            const res = await fetch('/api/iso-personnel', {
-                method: 'POST',
+            const res = await fetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
@@ -78,7 +110,7 @@ export function IsoPersonnelForm({
 
             toast({
                 title: "Thành công",
-                description: "Đã thêm nhân sự ISO 17025 thành công.",
+                description: !!initialData ? "Đã cập nhật nhân sự thành công." : "Đã thêm nhân sự ISO 17025 thành công.",
             });
             reset();
             setEquipSelectionType("none");
@@ -101,7 +133,7 @@ export function IsoPersonnelForm({
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <DialogHeader>
-                        <DialogTitle>Thêm Nhân sự Thử nghiệm (ISO 17025)</DialogTitle>
+                        <DialogTitle>{initialData ? "Sửa Nhân sự Thử nghiệm (ISO 17025)" : "Thêm Nhân sự Thử nghiệm (ISO 17025)"}</DialogTitle>
                         <DialogDescription>
                             Nhập thông tin nhân sự và chỉ định năng lực phương pháp, thiết bị thử nghiệm.
                         </DialogDescription>

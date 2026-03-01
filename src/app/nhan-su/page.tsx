@@ -7,12 +7,19 @@ import { useEffect, useState } from "react";
 import { Personnel } from "@/types";
 import { PersonnelForm } from "@/components/PersonnelForm";
 import { GlassCard, GlassPageHeader } from "@/components/ui/GlassCard";
+import { useSession } from "next-auth/react";
+import { hasAccess } from "@/lib/rbac";
 
 export default function PersonnelPage() {
+    const { data: session } = useSession();
     const [data, setData] = useState<Personnel[]>([]);
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [currentPersonnel, setCurrentPersonnel] = useState<Personnel | null>(null);
+
+    const canAdd = hasAccess(session?.user?.role, session?.user?.level, "create", "quan-ly-nhan-su");
+    const canEdit = hasAccess(session?.user?.role, session?.user?.level, "update", "quan-ly-nhan-su");
+    const canDelete = hasAccess(session?.user?.role, session?.user?.level, "delete", "quan-ly-nhan-su");
 
     const fetchData = async () => {
         try {
@@ -94,13 +101,15 @@ export default function PersonnelPage() {
                 description="Danh sách nhân viên (Dữ liệu từ Google Sheets)."
             >
                 <div className="flex items-center gap-2">
-                    <Button
-                        variant="default"
-                        className="bg-[#3a0ca3] hover:bg-[#3a0ca3]/90 text-white shadow-lg shadow-blue-900/20 transition-all hover:scale-105"
-                        onClick={handleAdd}
-                    >
-                        <Plus className="mr-2 h-4 w-4" /> Thêm mới
-                    </Button>
+                    {canAdd && (
+                        <Button
+                            variant="default"
+                            className="bg-[#3a0ca3] hover:bg-[#3a0ca3]/90 text-white shadow-lg shadow-blue-900/20 transition-all hover:scale-105"
+                            onClick={handleAdd}
+                        >
+                            <Plus className="mr-2 h-4 w-4" /> Thêm mới
+                        </Button>
+                    )}
                     <Button variant="outline" className="border-indigo-100 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800">
                         Xuất Excel
                     </Button>
@@ -115,18 +124,20 @@ export default function PersonnelPage() {
                 ) : (
                     <PersonnelTable
                         data={data}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
+                        onEdit={canEdit ? handleEdit : undefined}
+                        onDelete={canDelete ? handleDelete : undefined}
                     />
                 )}
             </GlassCard>
 
-            <PersonnelForm
-                open={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
-                initialData={currentPersonnel}
-                onSubmit={handleFormSubmit}
-            />
+            {(canAdd || canEdit) && (
+                <PersonnelForm
+                    open={isDialogOpen}
+                    onOpenChange={setIsDialogOpen}
+                    initialData={currentPersonnel}
+                    onSubmit={handleFormSubmit}
+                />
+            )}
         </div>
     );
 }

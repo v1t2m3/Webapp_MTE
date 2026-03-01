@@ -6,12 +6,16 @@ import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Contract } from "@/types";
 import { ContractForm } from "@/components/ContractForm";
+import { useSession } from "next-auth/react";
 
 export default function ContractPage() {
+    const { data: session } = useSession();
     const [data, setData] = useState<Contract[]>([]);
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [currentContract, setCurrentContract] = useState<Contract | null>(null);
+
+    const isViewer = session?.user?.role === "Viewer";
 
     const fetchData = async () => {
         try {
@@ -97,13 +101,15 @@ export default function ContractPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button
-                        variant="default"
-                        className="bg-secondary hover:bg-secondary/90 text-white shadow-lg shadow-secondary/20"
-                        onClick={handleAdd}
-                    >
-                        <Plus className="mr-2 h-4 w-4" /> Thêm hợp đồng
-                    </Button>
+                    {!isViewer && (
+                        <Button
+                            variant="default"
+                            className="bg-secondary hover:bg-secondary/90 text-white shadow-lg shadow-secondary/20"
+                            onClick={handleAdd}
+                        >
+                            <Plus className="mr-2 h-4 w-4" /> Thêm hợp đồng
+                        </Button>
+                    )}
                     <Button variant="outline" className="border-accent text-accent-foreground hover:bg-accent/10">
                         Xuất Excel
                     </Button>
@@ -115,17 +121,19 @@ export default function ContractPage() {
             ) : (
                 <ContractTable
                     data={data}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
+                    onEdit={!isViewer ? handleEdit : undefined}
+                    onDelete={!isViewer ? handleDelete : undefined}
                 />
             )}
 
-            <ContractForm
-                open={isDialogOpen}
-                onOpenChange={setIsDialogOpen}
-                initialData={currentContract}
-                onSubmit={handleFormSubmit}
-            />
+            {!isViewer && (
+                <ContractForm
+                    open={isDialogOpen}
+                    onOpenChange={setIsDialogOpen}
+                    initialData={currentContract}
+                    onSubmit={handleFormSubmit}
+                />
+            )}
         </div>
     );
 }

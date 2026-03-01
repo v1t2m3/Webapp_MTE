@@ -1,0 +1,170 @@
+[
+  {
+    "id": "MTELAB",
+    "username": "MTELAB",
+    "passwordHash": "$2b$10$3.pLPuBpxTbF5gjkPSrCce9j0VGxFheJLjvvCwRL.Marse1gDyTDq",
+    "role": "Admin",
+    "fullName": "Administrator MTE-LAB",
+    "isActive": true
+  },
+  {
+    "id": "tamnv",
+    "username": "tamnv",
+    "passwordHash": "$2b$10$6xcZWwq6Ma4imrcA2BqqgOReFw3mjKf51WBZNrUoV06OkmoiuJ3Uq",
+    "role": "Admin",
+    "fullName": "Nguyễn Văn Tâm",
+    "isActive": true
+  },
+  {
+    "id": "vietlv",
+    "username": "vietlv",
+    "passwordHash": "$2b$10$g1wRMN8KAv8GKaE7kba98.H2CSGNmuTlBDtSFGcr2u9wVMY9Mbt3e",
+    "role": "User",
+    "fullName": "Lê Văn Việt",
+    "isActive": true,
+    "level": 1
+  },
+  {
+    "id": "dutht",
+    "username": "dutht",
+    "passwordHash": "$2b$10$wqSGAL/uh2A4E5KllkdJ6.7fa8DhhU2cCmQboWqvh.4uKgboD07HG",
+    "role": "User",
+    "fullName": "Hồ Trọng Dứt",
+    "isActive": true,
+    "level": 1
+  },
+  {
+    "id": "hieptp",
+    "username": "hieptp",
+    "passwordHash": "$2b$10$vJFpxG9.3CD9G4vmRBfEkeE.FxEnRxNwOdDVIaUUbPpo7R1eLmgX2",
+    "role": "User",
+    "fullName": "Trần Phước Hiệp",
+    "isActive": true,
+    "level": 4
+  },
+  {
+    "id": "cuongtq",
+    "username": "cuongtq",
+    "passwordHash": "$2b$10$mPXf4ctCwAqRY9TqzN3one1i3iWXHcEVr5T1URoXiSwNMYxZI5rVu",
+    "role": "User",
+    "fullName": "Trần Quốc Cường",
+    "isActive": true,
+    "level": 4
+  },
+  {
+    "id": "namnv",
+    "username": "namnv",
+    "passwordHash": "$2b$10$eCbIBm85rBGr/q2R3iQ1..ZrFGUXoVA6E9JIQ4hAbwj5XC8NuLJhO",
+    "role": "Viewer",
+    "fullName": "Nguyễn Văn Nam",
+    "isActive": true
+  },
+  {
+    "id": "tiennd",
+    "username": "tiennd",
+    "passwordHash": "$2b$10$OFDHCtyHmlruyEKX1dy.XOvUG.i4Dmhgm74gQ7AisKc3De7U3gwDO",
+    "role": "User",
+    "fullName": "Đặng Ngọc Tiến",
+    "isActive": true,
+    "level": 4
+  },
+  {
+    "id": "thinhdv",
+    "username": "thinhdv",
+    "passwordHash": "$2b$10$IPHS0XTanm6aEusg/T5Fk.ClQqxViKMqfLFIlNfOEcH5mvxJWN/cm",
+    "role": "User",
+    "fullName": "Đặng Văn Thịnh",
+    "isActive": true,
+    "level": 3
+  },
+  {
+    "id": "vanht",
+    "username": "vanht",
+    "passwordHash": "$2b$10$0ubbCl0h3RQ/sGDKkeeHxec0Cq/2eszrCfz3lpDytPXO.drAGK59q",
+    "role": "User",
+    "fullName": "Hoàng Thị Vân",
+    "isActive": true,
+    "level": 2
+  },
+  {
+    "id": "ngannn",
+    "username": "ngannn",
+    "passwordHash": "$2b$10$oPeAd5aX4W0Ovdb4hFaA..npvx9I2jIGAXR3r5.OqEwo.FdbXou.6",
+    "role": "User",
+    "fullName": "Ngô Ngọc Ngân",
+    "isActive": true,
+    "level": 4
+  },
+  {
+    "id": "quangnt2",
+    "username": "quangnt2",
+    "passwordHash": "$2b$10$HtMJEe78XUHwuNfpHcmKCeQyW67rYgHtkSBp.engCqlQ0a74RgshC",
+    "role": "User",
+    "fullName": "Nguyễn Thanh Quang",
+    "isActive": true,
+    "level": 4
+  },
+  {
+    "id": "trungnt2",
+    "username": "trungnt2",
+    "passwordHash": "$2b$10$cjhQGBtPdUDfNqmrQGoGfu8WjTfF0gE66ppRZz1PjPfh3PWIPdWYq",
+    "role": "User",
+    "fullName": "Nguyễn Thành Trung",
+    "isActive": true,
+    "level": 2
+  },
+  {
+    "id": "thanhnd",
+    "username": "thanhnd",
+    "passwordHash": "$2b$10$jhgx7z0SrFgD7026wQ67Tud8A9gl7sKn1fcp6xdSXRu.wTB.urp16",
+    "role": "User",
+    "fullName": "Nguyễn Đạt Thành",
+    "isActive": true,
+    "level": 4
+  },
+  {
+    "id": "hoanndk",
+    "username": "hoanndk",
+    "passwordHash": "$2b$10$wJeaVJSbrVeroMGazL1m3.ZWuvW23RG6WVdazSC5FhpvPDUNyziZu",
+    "role": "User",
+    "fullName": "Nguyễn Đăng Khải Hoàn",
+    "isActive": true,
+    "level": 3
+  },
+  {
+    "id": "laihd",
+    "username": "laihd",
+    "passwordHash": "$2b$10$ZJLi2T6elYjCX9YtN2AiLu8AjDTubt5E4P.KJdd680UoLp8.Wgo6O",
+    "role": "User",
+    "fullName": "Hoàng Đình Lai",
+    "isActive": true,
+    "level": 4
+  },
+  {
+    "id": "anhpt",
+    "username": "anhpt",
+    "passwordHash": "$2b$10$aZg6Ij1pSrsDa1ucMyXwLOo/byL6PW0mOmuix7Iy/vbd3jPsp9S6m",
+    "role": "User",
+    "fullName": "Phạm Thế Anh",
+    "isActive": true,
+    "level": 4
+  },
+  {
+    "id": "truongnn",
+    "username": "truongnn",
+    "passwordHash": "$2b$10$k8C3buiuST3QpVk6SfQK9.EWwVJlXK3VP6z5h2W6CuoW3knCNu67u",
+    "role": "User",
+    "fullName": "Ngô Ngọc Trường",
+    "isActive": true,
+    "level": 4
+  },
+  {
+    "id": "sonnv",
+    "username": "sonnv",
+    "passwordHash": "$2b$10$MJpqByWocRN1yOtP3QWvX.Kuo/cGZjowkhkG7olcyZzMfK9jUCLy6",
+    "role": "User",
+    "fullName": "Nguyễn Văn Sơn",
+    "isActive": true,
+    "level": 4
+  }
+]
