@@ -183,37 +183,64 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
 
 
 
-    // Chart Data (Days of month/week)
+    // Chart Data (Days of month/week) — counts ALL days a schedule spans, not just startDate
     const chartData = useMemo(() => {
+        // Helper: generate all dates between start and end (inclusive)
+        const getAllDatesInRange = (startStr: string, endStr: string) => {
+            const dates: Date[] = [];
+            const start = new Date(startStr);
+            const end = new Date(endStr || startStr); // fallback to startDate if endDate is missing
+            start.setHours(0, 0, 0, 0);
+            end.setHours(0, 0, 0, 0);
+            const current = new Date(start);
+            while (current <= end) {
+                dates.push(new Date(current));
+                current.setDate(current.getDate() + 1);
+            }
+            return dates;
+        };
+
         if (reportType === "month") {
-            const daysInMonth = getDaysInMonth(new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1));
+            const year = parseInt(selectedYear);
+            const month = parseInt(selectedMonth) - 1;
+            const daysInMonth = getDaysInMonth(new Date(year, month));
             const days = Array.from({ length: daysInMonth }, (_, i) => ({
                 day: (i + 1).toString(),
                 'Lịch công tác': 0
             }));
 
             editableSchedules.forEach(s => {
-                const d = new Date(s.startDate);
-                const dayIndex = d.getDate() - 1;
-                if (days[dayIndex]) {
-                    days[dayIndex]['Lịch công tác'] += 1;
-                }
+                const allDates = getAllDatesInRange(s.startDate, s.endDate);
+                allDates.forEach(d => {
+                    // Only count if the date falls within the selected month/year
+                    if (d.getMonth() === month && d.getFullYear() === year) {
+                        const dayIndex = d.getDate() - 1;
+                        if (days[dayIndex]) {
+                            days[dayIndex]['Lịch công tác'] += 1;
+                        }
+                    }
+                });
             });
             return days;
         } else {
-            // For week, just show 7 days roughly or by specific dates
+            // For week, show 7 days: T2 -> T7, TCN
             const days = Array.from({ length: 7 }, (_, i) => ({
                 day: `T${i + 2 === 8 ? 'CN' : i + 2}`, // T2 -> T7, CN
                 'Lịch công tác': 0
             }));
 
             editableSchedules.forEach(s => {
-                const d = new Date(s.startDate);
-                let dayIndex = d.getDay() - 1; // 0 is Sunday in JS, we want Monday=0
-                if (dayIndex === -1) dayIndex = 6; // Sunday
-                if (days[dayIndex]) {
-                    days[dayIndex]['Lịch công tác'] += 1;
-                }
+                const allDates = getAllDatesInRange(s.startDate, s.endDate);
+                allDates.forEach(d => {
+                    // Only count if the date falls within the selected week/year
+                    if (getISOWeek(d) === parseInt(selectedWeek) && d.getFullYear() === parseInt(selectedYear)) {
+                        let dayIndex = d.getDay() - 1; // 0 is Sunday in JS, we want Monday=0
+                        if (dayIndex === -1) dayIndex = 6; // Sunday
+                        if (days[dayIndex]) {
+                            days[dayIndex]['Lịch công tác'] += 1;
+                        }
+                    }
+                });
             });
             return days;
         }

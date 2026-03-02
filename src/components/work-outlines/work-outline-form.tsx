@@ -45,7 +45,7 @@ export function WorkOutlineForm({
         endDate: "",
         endTime: "",
         personnelAssignments: [],
-        vehicleIds: [],
+        vehicleAssignments: [],
     });
 
     const generateTimeOptions = () => {
@@ -83,7 +83,7 @@ export function WorkOutlineForm({
                     endDate: "",
                     endTime: "17:00",
                     personnelAssignments: [],
-                    vehicleIds: [],
+                    vehicleAssignments: [],
                 });
             }
         }
@@ -190,13 +190,52 @@ export function WorkOutlineForm({
         return null;
     };
 
-    const handleVehicleChange = (vId: string, checked: boolean) => {
+    const addVehicle = () => {
+        setFormData(prev => ({
+            ...prev,
+            vehicleAssignments: [
+                ...(prev.vehicleAssignments || []),
+                {
+                    vehicleId: "",
+                    startDate: prev.startDate || "",
+                    startTime: prev.startTime || "08:00",
+                    endDate: prev.endDate || "",
+                    endTime: prev.endTime || "17:00"
+                }
+            ]
+        }));
+    };
+
+    const updateVehicle = (index: number, field: keyof NonNullable<WorkOutline['vehicleAssignments']>[number], value: string) => {
         setFormData(prev => {
-            const current = [...(prev.vehicleIds || [])];
-            if (checked && !current.includes(vId)) current.push(vId);
-            else if (!checked && current.includes(vId)) current.splice(current.indexOf(vId), 1);
-            return { ...prev, vehicleIds: current };
+            const arr = [...(prev.vehicleAssignments || [])];
+            arr[index] = { ...arr[index], [field]: value };
+            return { ...prev, vehicleAssignments: arr };
         });
+    };
+
+    const removeVehicle = (index: number) => {
+        setFormData(prev => {
+            const arr = [...(prev.vehicleAssignments || [])];
+            arr.splice(index, 1);
+            return { ...prev, vehicleAssignments: arr };
+        });
+    };
+
+    const getVehicleStatusWarning = (vehicleId: string, startDate?: string, endDate?: string) => {
+        if (!vehicleId || !startDate) return null;
+
+        const activeOutlines = allWorkOutlines.filter(wo => wo.id !== formData.id);
+        for (const wo of activeOutlines) {
+            if (wo.startDate === startDate) {
+                const isAssigned = wo.vehicleAssignments?.some(va => va.vehicleId === vehicleId);
+                if (isAssigned) {
+                    const title = wo.isCustom ? wo.customContent : schedules.find(s => s.id === wo.scheduleId)?.target || "Đề cương khác";
+                    return `Phương tiện đã được điều động vào thẻ: "${title}" trong cùng ngày.`;
+                }
+            }
+        }
+        return null;
     };
 
     const renderDatePicker = (value: string, onChange: (val: string) => void) => (
@@ -243,6 +282,16 @@ export function WorkOutlineForm({
             const uniqueIds = new Set(assignedIds);
             if (uniqueIds.size !== assignedIds.length) {
                 setFormError("Có nhân sự bị trùng lặp trong danh sách phân công. Vui lòng kiểm tra lại.");
+                return;
+            }
+        }
+
+        // Validation 2: Check for duplicate vehicles in the same outline
+        const assignedVehicleIds = formData.vehicleAssignments?.map(va => va.vehicleId).filter(id => id.trim() !== "");
+        if (assignedVehicleIds && assignedVehicleIds.length > 0) {
+            const uniqueVIds = new Set(assignedVehicleIds);
+            if (uniqueVIds.size !== assignedVehicleIds.length) {
+                setFormError("Có phương tiện bị trùng lặp trong danh sách điều động. Vui lòng kiểm tra lại.");
                 return;
             }
         }
@@ -498,22 +547,85 @@ export function WorkOutlineForm({
 
                     {/* Vehicles Section */}
                     <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-100 flex flex-col gap-4">
-                        <Label className="font-semibold text-orange-900">3. Điều động Phương tiện</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 bg-white p-3 rounded-lg border">
-                            {vehicles.map((v) => (
-                                <div key={v.id} className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id={`veh-${v.id}`}
-                                        checked={formData.vehicleIds?.includes(v.id)}
-                                        onCheckedChange={(checked) => handleVehicleChange(v.id, !!checked)}
-                                    />
-                                    <Label htmlFor={`veh-${v.id}`} className="cursor-pointer text-sm">
-                                        {v.licensePlate} - {v.name}
-                                    </Label>
-                                </div>
-                            ))}
-                            {vehicles.length === 0 && <span className="text-sm text-muted-foreground w-full">Không có phương tiện</span>}
+                        <div className="flex justify-between items-center">
+                            <Label className="font-semibold text-orange-900">3. Điều động Phương tiện</Label>
+                            <Button type="button" variant="outline" size="sm" onClick={addVehicle} className="text-orange-700 border-orange-200 hover:bg-orange-100">
+                                <Plus className="w-4 h-4 mr-1" /> Thêm phương tiện
+                            </Button>
                         </div>
+
+                        {(!formData.vehicleAssignments || formData.vehicleAssignments.length === 0) && (
+                            <div className="text-center p-4 text-muted-foreground text-sm border border-dashed rounded-lg bg-white/50">
+                                Chưa điều động phương tiện nào.
+                            </div>
+                        )}
+
+                        {formData.vehicleAssignments?.map((assignment, index) => {
+                            const otherAssignedIds = formData.vehicleAssignments
+                                ?.filter((_, i) => i !== index)
+                                ?.map(va => va.vehicleId) || [];
+
+                            const warning = getVehicleStatusWarning(assignment.vehicleId, assignment.startDate, assignment.endDate);
+
+                            return (
+                                <div key={index} className="flex flex-col gap-2">
+                                    <div className={cn(
+                                        "flex flex-col lg:flex-row gap-3 items-end bg-white p-3 rounded-lg border shadow-sm transition-colors",
+                                        warning ? "border-amber-300 bg-amber-50/30" : ""
+                                    )}>
+                                        <div className="flex-[3] w-full">
+                                            <Label className="text-xs mb-1 block text-gray-500">Phương tiện</Label>
+                                            <Select value={assignment.vehicleId} onValueChange={(v) => updateVehicle(index, "vehicleId", v)} required>
+                                                <SelectTrigger className={warning ? "border-amber-300" : ""}>
+                                                    <SelectValue placeholder="Chọn phương tiện" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {vehicles.map(v => (
+                                                        <SelectItem
+                                                            key={v.id}
+                                                            value={v.id}
+                                                            disabled={otherAssignedIds.includes(v.id)}
+                                                        >
+                                                            {v.licensePlate} - {v.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="flex flex-col w-full lg:w-auto">
+                                            <Label className="text-xs mb-1 block text-gray-500">Từ</Label>
+                                            <div className="flex gap-1">
+                                                <Select value={assignment.startTime} onValueChange={(v) => updateVehicle(index, "startTime", v)}>
+                                                    <SelectTrigger className="w-[80px] h-9"><SelectValue /></SelectTrigger>
+                                                    <SelectContent className="max-h-60">{timeOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                                {renderDatePicker(assignment.startDate, (val) => updateVehicle(index, "startDate", val))}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col w-full lg:w-auto">
+                                            <Label className="text-xs mb-1 block text-gray-500">Đến</Label>
+                                            <div className="flex gap-1">
+                                                <Select value={assignment.endTime} onValueChange={(v) => updateVehicle(index, "endTime", v)}>
+                                                    <SelectTrigger className="w-[80px] h-9"><SelectValue /></SelectTrigger>
+                                                    <SelectContent className="max-h-60">{timeOptions.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                                </Select>
+                                                {renderDatePicker(assignment.endDate, (val) => updateVehicle(index, "endDate", val))}
+                                            </div>
+                                        </div>
+                                        <Button type="button" variant="ghost" size="icon" className="text-red-500 hover:bg-red-50 h-9 shrink-0" onClick={() => removeVehicle(index)}>
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+
+                                    {warning && (
+                                        <div className="text-xs text-amber-600 bg-amber-50 px-3 py-1.5 rounded-md flex items-center w-full">
+                                            <AlertCircle className="w-3.5 h-3.5 mr-1.5 inline" />
+                                            Chú ý: {warning}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
 
                     <DialogFooter className="mt-4 border-t pt-4">

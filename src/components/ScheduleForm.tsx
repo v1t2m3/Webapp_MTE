@@ -143,14 +143,14 @@ export function ScheduleForm({ open, onOpenChange, initialData, onSubmit, contra
     };
 
     const handleVoltageChange = (v: string, checked: boolean) => {
-        const currentM = formData.voltage ? formData.voltage.split(",").map(s => s.trim()).filter(Boolean) : [];
+        const currentM = formData.voltage ? formData.voltage.split(" | ").map(s => s.trim()).filter(Boolean) : [];
         if (checked) {
             currentM.push(v);
         } else {
             const index = currentM.indexOf(v);
             if (index > -1) currentM.splice(index, 1);
         }
-        setFormData((prev) => ({ ...prev, voltage: currentM.join(", ") }));
+        setFormData((prev) => ({ ...prev, voltage: currentM.join(" | ") }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -167,7 +167,7 @@ export function ScheduleForm({ open, onOpenChange, initialData, onSubmit, contra
     };
 
     const isEdit = !!initialData;
-    const currentVoltages = formData.voltage ? formData.voltage.split(",").map(v => v.trim()) : [];
+    const currentVoltages = formData.voltage ? formData.voltage.split(" | ").map(v => v.trim()) : [];
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

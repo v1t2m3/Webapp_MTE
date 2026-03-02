@@ -34,12 +34,13 @@ export function ContractTable({ data, onEdit, onDelete }: ContractTableProps) {
             <Table>
                 <TableHeader>
                     <TableRow className="bg-muted/50">
-                        <TableHead className="w-[80px]">ID</TableHead>
+                        {/* <TableHead className="w-[80px]">ID</TableHead> */}
                         <TableHead>Mã HĐ</TableHead>
                         <TableHead>Tên hợp đồng</TableHead>
                         <TableHead>Giá trị</TableHead>
                         <TableHead>Thời hạn</TableHead>
                         <TableHead>Đại diện CĐT</TableHead>
+                        <TableHead>ĐV QLVH</TableHead>
                         <TableHead className="text-right">Thao tác</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -50,13 +51,13 @@ export function ContractTable({ data, onEdit, onDelete }: ContractTableProps) {
                             className="hover:bg-muted/50 transition-colors animate-slide-up"
                             style={{ animationDelay: `${index * 0.05}s` }}
                         >
-                            <TableCell className="font-medium">{item.id}</TableCell>
+                            {/* <TableCell className="font-medium">{item.id}</TableCell> */}
                             <TableCell>
                                 <Badge variant="outline" className="font-mono bg-[#4361ee]/10 text-[#4361ee] border-[#4361ee]/20 whitespace-nowrap">
                                     {item.code}
                                 </Badge>
                             </TableCell>
-                            <TableCell className="font-semibold text-primary max-w-[200px] truncate" title={item.name}>{item.name}</TableCell>
+                            <TableCell className="font-semibold text-primary" title={item.name}>{item.name}</TableCell>
                             <TableCell className="font-mono whitespace-nowrap">{item.value}</TableCell>
                             <TableCell className="whitespace-nowrap">
                                 <div className="flex flex-col text-xs text-muted-foreground">
@@ -65,6 +66,7 @@ export function ContractTable({ data, onEdit, onDelete }: ContractTableProps) {
                                 </div>
                             </TableCell>
                             <TableCell>{item.investorRep}</TableCell>
+                            <TableCell>{item.operationsManagementUnit || ''}</TableCell>
                             <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
                                     {onEdit && (

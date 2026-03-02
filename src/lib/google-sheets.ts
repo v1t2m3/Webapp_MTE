@@ -56,7 +56,7 @@ export const googleSheetsService = {
                         // Dashboard fields
                         name: row[1],
                         position: row[3],
-                        department: 'N/A',
+                        department: row[8],
                         status: isOnLeaveToday ? 'On Leave' : 'Active',
                         // Personnel Page fields
                         fullName: row[1],
@@ -354,7 +354,7 @@ export const googleSheetsService = {
 
             const response = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'HopDong!A2:G',
+                range: 'HopDong!A2:H',
             });
 
             const rows = response.data.values;
@@ -370,6 +370,7 @@ export const googleSheetsService = {
                     startDate: row[4],
                     endDate: row[5],
                     investorRep: row[6],
+                    operationsManagementUnit: row[7] || '',
                 }));
         } catch (error) {
             console.error('Error fetching contracts:', error);
@@ -414,12 +415,13 @@ export const googleSheetsService = {
                     contract.startDate,
                     contract.endDate,
                     contract.investorRep,
+                    contract.operationsManagementUnit || '',
                 ],
             ];
 
             await sheets.spreadsheets.values.append({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'HopDong!A:G',
+                range: 'HopDong!A:H',
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -449,12 +451,13 @@ export const googleSheetsService = {
                     contract.startDate,
                     contract.endDate,
                     contract.investorRep,
+                    contract.operationsManagementUnit || '',
                 ],
             ];
 
             await sheets.spreadsheets.values.update({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `HopDong!A${rowIndex}:G${rowIndex}`,
+                range: `HopDong!A${rowIndex}:H${rowIndex}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -477,7 +480,7 @@ export const googleSheetsService = {
 
             await sheets.spreadsheets.values.clear({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `HopDong!A${rowIndex}:G${rowIndex}`,
+                range: `HopDong!A${rowIndex}:H${rowIndex}`,
             });
 
             return true;
@@ -675,7 +678,15 @@ export const googleSheetsService = {
                     endDate: row[4] || '',
                     endTime: row[5] || '',
                     personnelAssignments: row[6] ? JSON.parse(row[6]) : [],
-                    vehicleIds: row[7] ? JSON.parse(row[7]) : [],
+                    vehicleAssignments: (row[7] ? JSON.parse(row[7]) : []).map((v: any) =>
+                        typeof v === 'string' ? {
+                            vehicleId: v,
+                            startDate: row[2] || '',
+                            startTime: row[3] || '',
+                            endDate: row[4] || '',
+                            endTime: row[5] || ''
+                        } : v
+                    ),
                     isCustom: row[8] === 'TRUE' || row[8] === 'true',
                     customContractId: row[9] || '',
                     customContractName: row[10] || '',
@@ -724,7 +735,7 @@ export const googleSheetsService = {
                     workOutline.endDate,
                     workOutline.endTime,
                     JSON.stringify(workOutline.personnelAssignments || []),
-                    JSON.stringify(workOutline.vehicleIds || []),
+                    JSON.stringify(workOutline.vehicleAssignments || []),
                     workOutline.isCustom ? 'TRUE' : 'FALSE',
                     workOutline.customContractId || '',
                     workOutline.customContractName || '',
@@ -764,7 +775,7 @@ export const googleSheetsService = {
                     workOutline.endDate,
                     workOutline.endTime,
                     JSON.stringify(workOutline.personnelAssignments || []),
-                    JSON.stringify(workOutline.vehicleIds || []),
+                    JSON.stringify(workOutline.vehicleAssignments || []),
                     workOutline.isCustom ? 'TRUE' : 'FALSE',
                     workOutline.customContractId || '',
                     workOutline.customContractName || '',

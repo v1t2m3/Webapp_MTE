@@ -27,6 +27,7 @@ export function ContractForm({ open, onOpenChange, initialData, onSubmit }: Cont
         startDate: "",
         endDate: "",
         investorRep: "",
+        operationsManagementUnit: "",
     });
     const [loading, setLoading] = useState(false);
 
@@ -42,6 +43,7 @@ export function ContractForm({ open, onOpenChange, initialData, onSubmit }: Cont
                     startDate: "",
                     endDate: "",
                     investorRep: "",
+                    operationsManagementUnit: "",
                 });
             }
         }
@@ -167,6 +169,10 @@ export function ContractForm({ open, onOpenChange, initialData, onSubmit }: Cont
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="investorRep" className="text-right">Đại diện CĐT</Label>
                         <Input id="investorRep" name="investorRep" value={formData.investorRep || ""} onChange={handleChange} className="col-span-3" placeholder="VD: Nguyễn Văn A" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="operationsManagementUnit" className="text-right">ĐV QLVH</Label>
+                        <Input id="operationsManagementUnit" name="operationsManagementUnit" value={formData.operationsManagementUnit || ""} onChange={handleChange} className="col-span-3" placeholder="VD: Điện lực Hải Châu" />
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading}>

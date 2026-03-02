@@ -108,6 +108,7 @@ export interface Contract {
     startDate: string; // Thời hạn bắt đầu
     endDate: string; // Thời hạn kết thúc
     investorRep: string; // Đại diện chủ đầu tư
+    operationsManagementUnit?: string; // ĐV QLVH
 }
 
 export interface Schedule {
@@ -142,6 +143,14 @@ export interface PersonnelAssignment {
     role?: string; // Chức danh (CHTT, LĐCV, NVCT, GSAT)
 }
 
+export interface VehicleAssignment {
+    vehicleId: string;
+    startDate: string;
+    startTime: string;
+    endDate: string;
+    endTime: string;
+}
+
 export interface WorkOutline {
     id: string;
     scheduleId: string; // Will empty if isCustom is true
@@ -154,7 +163,7 @@ export interface WorkOutline {
     endDate: string;
     endTime: string;
     personnelAssignments: PersonnelAssignment[]; // JSON stringified in Sheet
-    vehicleIds: string[]; // JSON stringified in Sheet
+    vehicleAssignments: VehicleAssignment[]; // JSON stringified in Sheet
 }
 
 export interface SupplementalReport {

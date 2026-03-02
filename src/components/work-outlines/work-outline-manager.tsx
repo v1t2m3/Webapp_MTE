@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Schedule, Personnel, Vehicle, Contract, WorkOutline } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2, Download, History, ListFilter } from "lucide-react";
+import { Plus, Edit, Trash2, Download, History, ListFilter, Printer } from "lucide-react";
 import { GlassCard, GlassPageHeader } from "@/components/ui/GlassCard";
 import { WorkOutlineForm } from "./work-outline-form";
-import { exportWorkOutlineDocx } from "@/lib/export-docx";
+import { WorkOutlinePdfTemplate } from "./work-outline-pdf-template";
+import { useReactToPrint } from "react-to-print";
 import {
     Table,
     TableBody,
@@ -106,13 +107,21 @@ export function WorkOutlineManager() {
         setIsFormOpen(true);
     };
 
-    const handleDownload = async (outline: WorkOutline) => {
-        try {
-            await exportWorkOutlineDocx(outline, schedules, contracts, personnel);
-        } catch (error) {
-            console.error("Lỗi khi tải xuống:", error);
-            alert("Đã xảy ra lỗi khi tạo Tệp Đề Cương Docx. Vui lòng thử lại!");
-        }
+    // Print logic
+    const printComponentRef = useRef<HTMLDivElement>(null);
+    const [printingOutline, setPrintingOutline] = useState<WorkOutline | null>(null);
+
+    const handlePrintReady = useReactToPrint({
+        contentRef: printComponentRef,
+        documentTitle: `DeCuong_${printingOutline?.id || "CongTac"}`
+    });
+
+    const handlePrint = (outline: WorkOutline) => {
+        setPrintingOutline(outline);
+        // We use setTimeout to allow state to settle and component to re-render with new data before printing
+        setTimeout(() => {
+            handlePrintReady();
+        }, 100);
     };
 
     const handleOpenNew = () => {
@@ -243,7 +252,7 @@ export function WorkOutlineManager() {
                                                 </TableCell>
                                                 <TableCell>
                                                     <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                                        {item.vehicleIds?.length || 0} xe
+                                                        {item.vehicleAssignments?.length || 0} xe
                                                     </span>
                                                 </TableCell>
                                                 <TableCell className="text-right sticky right-0 bg-white/95 shadow-[-4px_0_10px_rgba(0,0,0,0.05)]">
@@ -274,8 +283,8 @@ export function WorkOutlineManager() {
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 className="h-8 w-8 text-[#3a0ca3] hover:text-[#3a0ca3] hover:bg-[#3a0ca3]/10"
-                                                                onClick={() => handleDownload(item)}
-                                                                title="Tải mẫu DOCX"
+                                                                onClick={() => handlePrint(item)}
+                                                                title="Lưu PDF / In Đề cương"
                                                             >
                                                                 <Download className="h-4 w-4" />
                                                             </Button>
@@ -311,6 +320,16 @@ export function WorkOutlineManager() {
                     contracts={contracts}
                 />
             )}
+
+            {/* Hidden Print Template */}
+            <WorkOutlinePdfTemplate
+                ref={printComponentRef}
+                workOutline={printingOutline}
+                personnel={personnel}
+                vehicles={vehicles}
+                schedules={schedules}
+                contracts={contracts}
+            />
         </div>
     );
 }
