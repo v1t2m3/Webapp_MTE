@@ -46,16 +46,26 @@ export function OverviewReport({ data }: { data: ReportData }) {
 
     // --- CHARTS DATA ---
 
-    // 1. Pie Chart: Schedules by Unit this month
-    const unitCountMap: Record<string, number> = {};
+    // 1. Pie Chart: Work hours by Unit this month
+    const unitHoursMap: Record<string, number> = {};
     currentMonthSchedules.forEach(s => {
         const u = s.unit || 'Khác';
-        unitCountMap[u] = (unitCountMap[u] || 0) + 1;
+        let hours = 0;
+        try {
+            const start = new Date(`${s.startDate}T${s.startTime}`);
+            const end = new Date(`${s.endDate}T${s.endTime}`);
+            const diffMs = end.getTime() - start.getTime();
+            if (diffMs > 0) hours = diffMs / (1000 * 60 * 60);
+        } catch { /* ignore */ }
+        unitHoursMap[u] = (unitHoursMap[u] || 0) + hours;
     });
-    const pieData = Object.keys(unitCountMap).map(key => ({
-        name: key,
-        value: unitCountMap[key]
-    })).sort((a, b) => b.value - a.value); // sort descending
+    const pieData = Object.keys(unitHoursMap)
+        .filter(key => unitHoursMap[key] > 0)
+        .map(key => ({
+            name: key,
+            value: Math.round(unitHoursMap[key] * 10) / 10
+        }))
+        .sort((a, b) => b.value - a.value);
 
     // 2. Bar Chart: Schedules over the weeks of the current month
     // Group into 4-5 weeks based on date ranges
@@ -128,7 +138,7 @@ export function OverviewReport({ data }: { data: ReportData }) {
             {/* CHARTS ROW */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <GlassCard className="flex flex-col h-[400px]">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4">Phân bổ Lịch theo Đơn vị (Tháng {currentMonth + 1} / {currentYear})</h3>
+                    <h3 className="text-lg font-bold text-gray-800 mb-4">Tỷ lệ công tác theo đơn vị (Tháng {currentMonth + 1} / {currentYear})</h3>
                     {pieData.length > 0 ? (
                         <div className="flex-1 w-full relative">
                             <ResponsiveContainer width="100%" height="100%">
@@ -147,7 +157,7 @@ export function OverviewReport({ data }: { data: ReportData }) {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip formatter={(value) => [`${value} Lịch`, 'Khối lượng']} />
+                                    <Tooltip formatter={(value) => [`${value} giờ`, 'Thời gian']} />
                                     <Legend verticalAlign="bottom" height={36} />
                                 </PieChart>
                             </ResponsiveContainer>

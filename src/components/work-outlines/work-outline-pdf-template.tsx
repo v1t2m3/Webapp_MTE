@@ -84,7 +84,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                     </div>
                     <div style={{ margin: '0mm 0mm 0mm 5mm' }}>
                         {/* Title */}
-                        <h1 className="text-center font-bold mt-8 mb-4 uppercase" style={{ fontSize: '14pt' }}>
+                        <h1 className="text-center font-bold mt-4 mb-4 uppercase" style={{ fontSize: '14pt' }}>
                             ĐỀ CƯƠNG CÔNG TÁC
                         </h1>
 
@@ -93,7 +93,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                         </div>
 
                         <div className="mb-4 text-justify" style={{ textIndent: '12.7mm' }}>
-                            Thực hiện theo sự phân công của Lãnh đạo Xí nghiệp, Đoàn công tác đề nghị
+                            Thực hiện theo sự phân công của Lãnh đạo Xí nghiệp, Phân xưởng Thí nghiệm - Sửa chữa kính đề nghị
                             Lãnh đạo Xí nghiệp phê duyệt đề cương công tác như sau:
                         </div>
                         {/* I. Content */}
@@ -106,12 +106,12 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                             {/* Contract Reference if available */}
                             {workOutline.isCustom && workOutline.customContractId && (
                                 <div className="mt-2 text-justify italic" style={{ textIndent: '12.7mm' }}>
-                                    (Căn cứ theo hợp đồng {workOutline.customContractName})
+                                    (Căn cứ {workOutline.customContractName})
                                 </div>
                             )}
                             {!workOutline.isCustom && schedule?.contractId && (
                                 <div className="mt-2 text-justify italic" style={{ textIndent: '12.7mm' }}>
-                                    (Căn cứ theo hợp đồng {contracts.find(c => c.id === schedule.contractId)?.name || "..."})
+                                    (Căn cứ {contracts.find(c => c.id === schedule.contractId)?.name || "..."})
                                 </div>
                             )}
                         </div>
@@ -140,15 +140,38 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                                                 const hasCustomTime = pa.startDate && pa.endDate &&
                                                     (pa.startDate !== workOutline.startDate ||
                                                         pa.endDate !== workOutline.endDate);
-                                                if (hasCustomTime) {
-                                                    customTimeDisplay = `(${formatDate(pa.startDate)}-${formatDate(pa.endDate)})`;
+                                                if (hasCustomTime && pa.startDate && pa.endDate) {
+                                                    try {
+                                                        const sd = parseISO(pa.startDate);
+                                                        const ed = parseISO(pa.endDate);
+                                                        const sDay = format(sd, 'dd');
+                                                        const sMon = format(sd, 'MM');
+                                                        const eDay = format(ed, 'dd');
+                                                        const eMon = format(ed, 'MM');
+                                                        const eYear = format(ed, 'yy');
+                                                        if (sMon === eMon && sDay !== eDay) {
+                                                            // Same month: "03-06/03/26"
+                                                            customTimeDisplay = `(${sDay}-${eDay}/${eMon}/${eYear})`;
+                                                        } else {
+                                                            if (sDay === eDay && sMon === eMon) {
+                                                                // Same date: "04/03/26"
+                                                                customTimeDisplay = `(${eDay}/${eMon}/${eYear})`;
+                                                            }
+                                                            else {
+                                                                // Different month: "28/02-03/03/26"
+                                                                customTimeDisplay = `(${sDay}/${sMon}-${eDay}/${eMon}/${eYear})`;
+                                                            }
+                                                        }
+                                                    } catch {
+                                                        customTimeDisplay = `(${formatDate(pa.startDate)}-${formatDate(pa.endDate)})`;
+                                                    }
                                                 }
 
                                                 return (
                                                     <tr key={index}>
                                                         <td className="w-8 align-top pl-4">{index + 1}.</td>
-                                                        <td className="w-[30%] align-top">{person?.fullName || "..."}</td>
-                                                        <td className="w-[35%] align-top">{roleDisplay}</td>
+                                                        <td className="w-[35%] align-top">{person?.fullName || "..."}</td>
+                                                        <td className="w-[30%] align-top">{roleDisplay}</td>
                                                         <td className="w-[35%] align-top italic">{customTimeDisplay}</td>
                                                     </tr>
                                                 );
@@ -170,7 +193,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                         </div>
 
                         {/* IV. Vehicles */}
-                        <div className="mb-4">
+                        <div className="mb-2">
                             <div className="font-bold inline" style={{ textIndent: '12.7mm', display: 'inline-block' }}>IV. Phương tiện đi lại: </div>
                             <span className="inline">
                                 {(!workOutline.vehicleAssignments || workOutline.vehicleAssignments.length === 0)
@@ -182,8 +205,8 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                             </span>
                         </div>
 
-                        <div className="mb-6 text-justify" style={{ textIndent: '12.7mm' }}>
-                            Kính đề nghị Lãnh đạo Xí nghiệp phê duyệt đề cương công tác để người đi
+                        <div className="mb-4 text-justify" style={{ textIndent: '12.7mm' }}>
+                            Kính đề nghị Lãnh đạo Xí nghiệp phê duyệt đề cương công tác để Phân xưởng và các nhân sự tham gia
                             công tác triển khai các nội dung tiếp theo.
                         </div>
                         {/* Signatures */}

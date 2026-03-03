@@ -249,19 +249,39 @@ export function PersonalReport({ data }: { data: ReportData }) {
     });
     const totalHours = Math.round(totalMinutes / 60);
 
-    // Chart Data (Pie Chart: Task Types)
+    // Chart Data (Pie Chart: Work hours by type — Cắt điện vs Không cắt điện)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const pieData: { name: string; value: number }[] = useMemo(() => {
-        const typeMap: Record<string, number> = {};
+        const typeHoursMap: Record<string, number> = {};
         personWorkloads.forEach(item => {
             const t = item.type || 'Khác';
-            typeMap[t] = (typeMap[t] || 0) + 1;
+            let hours = 0;
+            if (!item.isCustomReport && item.assignment) {
+                // Use assignment's specific time for this person
+                try {
+                    const start = new Date(`${item.assignment.startDate}T${item.assignment.startTime}`);
+                    const end = new Date(`${item.assignment.endDate}T${item.assignment.endTime}`);
+                    const diffMs = end.getTime() - start.getTime();
+                    if (diffMs > 0) hours = diffMs / (1000 * 60 * 60); // Convert to hours
+                } catch { /* ignore */ }
+            } else if (item.startDate && item.endDate) {
+                // Fallback for custom reports: estimate from dates (assume 8h/day)
+                try {
+                    const start = new Date(item.startDate);
+                    const end = new Date(item.endDate);
+                    const diffDays = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+                    hours = diffDays * 8;
+                } catch { /* ignore */ }
+            }
+            typeHoursMap[t] = (typeHoursMap[t] || 0) + hours;
         });
-        return Object.keys(typeMap).map(key => ({
-            name: key,
-            value: typeMap[key]
-        }));
-    }, [personWorkloads]); // Changed dependency to personWorkloads as editableWorkloads can have custom types
+        return Object.keys(typeHoursMap)
+            .filter(key => typeHoursMap[key] > 0)
+            .map(key => ({
+                name: key,
+                value: Math.round(typeHoursMap[key] * 10) / 10 // Round to 1 decimal
+            }));
+    }, [personWorkloads]);
 
     return (
         <div className="space-y-6 animate-fade-in print:space-y-4">
@@ -379,7 +399,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip formatter={(value) => [`${value} Lịch`, 'Số lượng']} />
+                                    <Tooltip formatter={(value) => [`${value} giờ`, 'Thời gian']} />
                                     <Legend verticalAlign="bottom" height={36} />
                                 </PieChart>
                             </ResponsiveContainer>

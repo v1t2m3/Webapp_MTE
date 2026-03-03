@@ -2,6 +2,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { dataService } from "@/lib/data-service";
 import { Users, Truck, FileText, CalendarDays } from "lucide-react";
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
+import Link from "next/link";
 
 export default async function Home() {
   const personnel = await dataService.getPersonnel();
@@ -10,9 +11,15 @@ export default async function Home() {
   const schedules = await dataService.getSchedules();
 
   const activePersonnel = personnel.filter((p) => p.status === "Active").length;
-  // Vehicles status might be lowercase or uppercase in mock data, let's correspond to the type
   const availableVehicles = vehicles.filter((v) => v.status === "Available").length;
   const totalContracts = contracts.length;
+  // Sum contract values — VND format uses dots as thousand separators: "152.342.284 đ"
+  const totalContractValue = contracts.reduce((sum, c) => {
+    // Remove everything except digits (dots are thousand separators in VND, not decimals)
+    const numVal = parseFloat((c.value || "0").replace(/[^0-9]/g, ""));
+    return sum + (isNaN(numVal) ? 0 : numVal);
+  }, 0);
+  const totalContractValueBillion = (totalContractValue / 1000000000).toFixed(1);
   // Simple check for today's schedules
   const todaysSchedules = schedules.filter((s) => {
     if (!s.startDate) return false;
@@ -27,6 +34,7 @@ export default async function Home() {
       icon: Users,
       color: "text-[#7209b7]",
       bgInfo: "bg-[#7209b7]/10 text-[#7209b7]",
+      href: "/nhan-su",
     },
     {
       title: "Phương tiện",
@@ -36,13 +44,16 @@ export default async function Home() {
       icon: Truck,
       color: "text-[#f72585]",
       bgInfo: "bg-[#f72585]/10 text-[#f72585]",
+      href: "/xe-thiet-bi",
     },
     {
       title: "Hợp đồng",
       value: totalContracts,
+      desc: `Tổng giá trị: ${totalContractValueBillion} tỷ đồng`,
       icon: FileText,
       color: "text-[#4361ee]",
       bgInfo: "bg-[#4361ee]/10 text-[#4361ee]",
+      href: "/hop-dong",
     },
     {
       title: "Lịch hôm nay",
@@ -50,6 +61,7 @@ export default async function Home() {
       icon: CalendarDays,
       color: "text-[#480ca8]",
       bgInfo: "bg-[#480ca8]/10 text-[#480ca8]",
+      href: "/cong-viec",
     },
   ];
 
@@ -62,22 +74,24 @@ export default async function Home() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
-          <GlassCard key={index} className="flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200">
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </span>
-              <div className={`p-2 rounded-full ${stat.bgInfo || 'bg-gray-100'}`}>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+          <Link key={index} href={stat.href} className="block">
+            <GlassCard className="flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200 cursor-pointer hover:shadow-lg">
+              <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  {stat.title}
+                </span>
+                <div className={`p-2 rounded-full ${stat.bgInfo || 'bg-gray-100'}`}>
+                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                </div>
               </div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-gray-800">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stat.active !== undefined ? `${stat.active} ${stat.desc || 'đang hoạt động'}` : "Số liệu cập nhật"}
-              </p>
-            </div>
-          </GlassCard>
+              <div>
+                <div className="text-3xl font-bold text-gray-800">{stat.value}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {stat.active !== undefined ? `${stat.active} ${stat.desc || 'đang hoạt động'}` : (stat.desc || "Số liệu cập nhật")}
+                </p>
+              </div>
+            </GlassCard>
+          </Link>
         ))}
       </div>
 

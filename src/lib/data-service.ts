@@ -77,8 +77,13 @@ export const dataService = {
 
     getContracts: async (): Promise<Contract[]> => {
         if (USE_MOCK_DATA) return mockContracts;
-        // Implement googleSheetsService.getContracts() later
-        return mockContracts;
+        try {
+            const data = await googleSheetsService.getContracts();
+            return data.length > 0 ? data : mockContracts;
+        } catch (error) {
+            console.error('Failed to fetch contracts', error);
+            return mockContracts;
+        }
     },
 
     getSchedules: async (): Promise<Schedule[]> => {
