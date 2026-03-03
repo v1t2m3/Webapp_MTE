@@ -104,8 +104,8 @@ export function OverviewReport({ data }: { data: ReportData }) {
                     </div>
                 </GlassCard>
 
-                <GlassCard className="p-4 flex items-center space-x-4 border-l-4 border-l-[#f72585]">
-                    <div className="p-3 bg-pink-100 rounded-lg text-[#f72585]">
+                <GlassCard className="p-4 flex items-center space-x-4 border-l-4 border-l-[#4361ee]">
+                    <div className="p-3 bg-blue-100 rounded-lg text-[#4361ee]">
                         <Zap className="w-6 h-6" />
                     </div>
                     <div>
@@ -114,8 +114,8 @@ export function OverviewReport({ data }: { data: ReportData }) {
                     </div>
                 </GlassCard>
 
-                <GlassCard className="p-4 flex items-center space-x-4 border-l-4 border-l-[#4361ee]">
-                    <div className="p-3 bg-blue-100 rounded-lg text-[#4361ee]">
+                <GlassCard className="p-4 flex items-center space-x-4 border-l-4 border-l-[#7209b7]">
+                    <div className="p-3 bg-purple-100 rounded-lg text-[#7209b7]">
                         <Briefcase className="w-6 h-6" />
                     </div>
                     <div>
@@ -124,8 +124,8 @@ export function OverviewReport({ data }: { data: ReportData }) {
                     </div>
                 </GlassCard>
 
-                <GlassCard className="p-4 flex items-center space-x-4 border-l-4 border-l-[#7209b7]">
-                    <div className="p-3 bg-purple-100 rounded-lg text-[#7209b7]">
+                <GlassCard className="p-4 flex items-center space-x-4 border-l-4 border-l-[#f72585]">
+                    <div className="p-3 bg-pink-100 rounded-lg text-[#f72585]">
                         <Users className="w-6 h-6" />
                     </div>
                     <div>

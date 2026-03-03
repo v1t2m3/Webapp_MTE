@@ -13,36 +13,35 @@ import { Clock, CheckSquare, Plus, Save, PenSquare, Trash2, Edit2 } from "lucide
 import { formatScheduleTime } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { useSession } from "next-auth/react";
 import { hasAccess } from "@/lib/rbac";
 
 const COLORS = ['#f72585', '#4cc9f0', '#3a0ca3', '#f8961e'];
 
-export function PersonalReport({ data }: { data: ReportData }) {
+export function DepartmentReport({ data }: { data: ReportData }) {
     const { personnel, workOutlines, schedules } = data;
     const { data: session } = useSession();
 
-    const currentUserFullName = session?.user?.name;
     const isAdmin = session?.user?.role === "Admin";
+    const canEdit = isAdmin || hasAccess(session?.user?.role, session?.user?.level, "update", "bao-cao-ca-nhan");
 
-    const availablePersonnel = useMemo(() => {
-        const canViewOthers = hasAccess(session?.user?.role, session?.user?.level, "view", "bao-cao-nguoi-khac");
-        if (canViewOthers) return personnel;
+    const availableDepartments = useMemo(() => {
+        const deps = new Set<string>();
+        personnel.forEach(p => {
+            if (p.department) deps.add(p.department);
+            // Optionally add section if they want to filter by section too
+            // if (p.section) deps.add(p.section);
+        });
+        return Array.from(deps).filter(Boolean).sort();
+    }, [personnel]);
 
-        if (!currentUserFullName) return [];
-        return personnel.filter(p => p.name === currentUserFullName || p.fullName === currentUserFullName);
-    }, [personnel, session, currentUserFullName]);
-
-    // Default selections
-    const [selectedPersonId, setSelectedPersonId] = useState<string>("");
+    const [selectedDepartment, setSelectedDepartment] = useState<string>("");
 
     useEffect(() => {
-        if (availablePersonnel.length > 0 && !selectedPersonId) {
-            const currentUser = availablePersonnel.find(p => p.name === currentUserFullName || p.fullName === currentUserFullName);
-            setSelectedPersonId(currentUser ? currentUser.id : availablePersonnel[0].id);
+        if (availableDepartments.length > 0 && !selectedDepartment) {
+            setSelectedDepartment(availableDepartments[0]);
         }
-    }, [availablePersonnel, selectedPersonId, currentUserFullName]);
+    }, [availableDepartments, selectedDepartment]);
 
     const [selectedMonth, setSelectedMonth] = useState<string>((new Date().getMonth() + 1).toString());
     const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
@@ -50,30 +49,35 @@ export function PersonalReport({ data }: { data: ReportData }) {
     // Editable state
     const [editableWorkloads, setEditableWorkloads] = useState<Array<Omit<Workload, 'startDate' | 'endDate'> & { startDate?: string; endDate?: string }>>([]);
 
-    // 1. Find the selected person
-    const selectedPerson = useMemo(() => {
-        return availablePersonnel.find(p => p.id === selectedPersonId) || null;
-    }, [availablePersonnel, selectedPersonId]);
+    const personnelInDepartment = useMemo(() => {
+        if (!selectedDepartment) return [];
+        return personnel.filter(p => p.department === selectedDepartment);
+    }, [personnel, selectedDepartment]);
 
-    const canEdit = (isAdmin || (selectedPerson?.name === currentUserFullName) || (selectedPerson?.fullName === currentUserFullName)) && hasAccess(session?.user?.role, session?.user?.level, "update", "bao-cao-ca-nhan");
+    // 2. Find work outlines for this department in the selected month/year
+    const departmentWorkloads = useMemo(() => {
+        if (!selectedDepartment || personnelInDepartment.length === 0) return [];
 
-    // 2. Find work outlines for this person in the selected month/year
-    const personWorkloads = useMemo(() => {
-        if (!selectedPersonId) return [];
+        const personnelIds = new Set(personnelInDepartment.map(p => p.id));
+        const baseWorkloads: Workload[] = [];
 
-        // Filter workOutlines by month/year and assigned person
-        const baseWorkloads: Workload[] = workOutlines
-            .filter(wo => {
-                if (!wo.startDate) return false;
-                const d = new Date(wo.startDate);
-                return d.getMonth() + 1 === parseInt(selectedMonth) && d.getFullYear() === parseInt(selectedYear);
-            })
-            .map(wo => {
-                const assignment = wo.personnelAssignments?.find(pa => pa.personnelId === selectedPersonId);
-                if (assignment) {
-                    const sched = schedules.find(s => s.id === wo.scheduleId);
-                    if (sched) {
-                        return {
+        workOutlines.forEach(wo => {
+            if (!wo.startDate) return;
+            const d = new Date(wo.startDate);
+            if (d.getMonth() + 1 !== parseInt(selectedMonth) || d.getFullYear() !== parseInt(selectedYear)) return;
+
+            // Does this WO involve anyone from this department?
+            const involvesDepartment = wo.personnelAssignments?.some(pa => personnelIds.has(pa.personnelId));
+
+            if (involvesDepartment) {
+                const sched = schedules.find(s => s.id === wo.scheduleId);
+                if (sched) {
+                    // Collect all assignments belonging to the selected department
+                    const assignmentsForDepartment = wo.personnelAssignments?.filter(pa => personnelIds.has(pa.personnelId)) || [];
+
+                    if (assignmentsForDepartment.length > 0) {
+                        // Pass the array of assignments to the workload object so we can calculate total man-hours
+                        baseWorkloads.push({
                             id: sched.id,
                             startDate: sched.startDate,
                             endDate: sched.endDate,
@@ -81,21 +85,20 @@ export function PersonalReport({ data }: { data: ReportData }) {
                             content: sched.content,
                             type: sched.type,
                             isCustomReport: false,
-                            assignment: assignment
-                        } as Workload;
+                            assignments: assignmentsForDepartment // Use array instead of single assignment
+                        } as unknown as Workload); // Type assertion, assuming assignments gets injected
                     }
                 }
-                return null; // Return null for items that don't match criteria
-            })
-            .filter((item): item is Workload => item !== null); // Filter out nulls and assert type
+            }
+        });
 
-        // Add Supplemental Reports specifically assigned to this person
+        // Add Supplemental Reports specifically assigned to this department
         let supplementalWorkloads: Workload[] = [];
         if (data.supplementalReports) {
             supplementalWorkloads = data.supplementalReports
                 .filter(sr =>
-                    sr.reportType === 'PERSONAL' &&
-                    sr.referenceId === selectedPersonId
+                    sr.reportType === 'DEPARTMENT' &&
+                    sr.referenceId === selectedDepartment
                 )
                 .map(sr => {
                     const d = new Date(sr.startDate);
@@ -106,11 +109,12 @@ export function PersonalReport({ data }: { data: ReportData }) {
                             endDate: sr.endDate,
                             unit: sr.unit,
                             content: sr.content,
-                            type: "Khác", // Supplemental reports are typically 'Khác' or a custom type
-                            isCustomReport: true, // Mark it so UI renders the badge
-                            isNewOrEditing: false, // It's from DB, so not editing yet
-                            bucket: '' // Will be calculated natively
-                        } as Workload;
+                            type: "Khác",
+                            isCustomReport: true,
+                            isNewOrEditing: false,
+                            bucket: '',
+                            assignments: [] // Supplemental reports don't have assigned personnel arrays by default
+                        } as unknown as Workload;
                     }
                     return null;
                 })
@@ -118,15 +122,17 @@ export function PersonalReport({ data }: { data: ReportData }) {
         }
 
         const results = [...baseWorkloads, ...supplementalWorkloads];
+        const uniqueMap = new Map();
+        results.forEach(w => uniqueMap.set(w.id, w));
 
-        return results.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-    }, [workOutlines, schedules, data.supplementalReports, selectedPersonId, selectedMonth, selectedYear]);
+        return Array.from(uniqueMap.values()).sort((a: Workload, b: Workload) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    }, [workOutlines, schedules, data.supplementalReports, selectedDepartment, personnelInDepartment, selectedMonth, selectedYear]);
 
     useEffect(() => {
-        setEditableWorkloads(personWorkloads.map(pw => ({
+        setEditableWorkloads(departmentWorkloads.map(pw => ({
             ...pw
         })));
-    }, [personWorkloads]);
+    }, [departmentWorkloads]);
 
     const handleChange = (id: string, field: string, value: string) => {
         setEditableWorkloads(prev =>
@@ -152,8 +158,9 @@ export function PersonalReport({ data }: { data: ReportData }) {
                 type: "Khác",
                 isCustomReport: true,
                 isNewOrEditing: true,
-                bucket: isPast ? 'past' : 'future'
-            }
+                bucket: isPast ? 'past' : 'future',
+                assignments: []
+            } as unknown as Workload
         ]);
     };
 
@@ -179,8 +186,8 @@ export function PersonalReport({ data }: { data: ReportData }) {
             for (const row of newCustomRows) {
                 const payload = {
                     id: row.id,
-                    reportType: 'PERSONAL',
-                    referenceId: selectedPersonId,
+                    reportType: 'DEPARTMENT',
+                    referenceId: selectedDepartment,
                     startDate: row.startDate,
                     endDate: row.endDate,
                     unit: row.unit,
@@ -194,7 +201,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                 });
 
                 if (!response.ok) {
-                    console.error("Failed to save personal row:", row.id);
+                    console.error("Failed to save department row:", row.id);
                 }
             }
 
@@ -236,15 +243,18 @@ export function PersonalReport({ data }: { data: ReportData }) {
     let totalMinutes = 0;
     editableWorkloads.forEach(item => {
         // Only calculate for original reports that have assignment data
-        if (!item.isCustomReport && item.assignment) {
-            try {
-                const start = new Date(`${item.assignment.startDate}T${item.assignment.startTime}`);
-                const end = new Date(`${item.assignment.endDate}T${item.assignment.endTime}`);
-                const diff = (end.getTime() - start.getTime()) / (1000 * 60);
-                if (diff > 0) totalMinutes += diff;
-            } catch (e) {
-                // Ignore parsing errors
-            }
+        if (!item.isCustomReport) {
+            const assignments = (item as any).assignments || [];
+            assignments.forEach((assignment: any) => {
+                try {
+                    const start = new Date(`${assignment.startDate}T${assignment.startTime}`);
+                    const end = new Date(`${assignment.endDate}T${assignment.endTime}`);
+                    const diff = (end.getTime() - start.getTime()) / (1000 * 60);
+                    if (diff > 0) totalMinutes += diff;
+                } catch (e) {
+                    // Ignore parsing errors
+                }
+            });
         }
     });
     const totalHours = Math.round(totalMinutes / 60);
@@ -253,23 +263,29 @@ export function PersonalReport({ data }: { data: ReportData }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const pieData: { name: string; value: number }[] = useMemo(() => {
         const typeHoursMap: Record<string, number> = {};
-        personWorkloads.forEach(item => {
+        departmentWorkloads.forEach(item => {
             const t = item.type || 'Khác';
             let hours = 0;
-            if (!item.isCustomReport && item.assignment) {
-                // Use assignment's specific time for this person
-                try {
-                    const start = new Date(`${item.assignment.startDate}T${item.assignment.startTime}`);
-                    const end = new Date(`${item.assignment.endDate}T${item.assignment.endTime}`);
-                    const diffMs = end.getTime() - start.getTime();
-                    if (diffMs > 0) hours = diffMs / (1000 * 60 * 60); // Convert to hours
-                } catch { /* ignore */ }
+            if (!item.isCustomReport) {
+                const assignments = (item as any).assignments || [];
+                assignments.forEach((assignment: any) => {
+                    try {
+                        const start = new Date(`${assignment.startDate}T${assignment.startTime}`);
+                        const end = new Date(`${assignment.endDate}T${assignment.endTime}`);
+                        const diffMs = end.getTime() - start.getTime();
+                        if (diffMs > 0) {
+                            hours += diffMs / (1000 * 60 * 60);
+                        }
+                    } catch { /* ignore */ }
+                });
             } else if (item.startDate && item.endDate) {
                 // Fallback for custom reports: estimate from dates (assume 8h/day)
                 try {
                     const start = new Date(item.startDate);
                     const end = new Date(item.endDate);
                     const diffDays = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+                    // For custom reports, we don't know how many people were involved, so we default to 1 person's man-hours (8h/day)
+                    // You could potentially add a field to custom workloads later to define headcount.
                     hours = diffDays * 8;
                 } catch { /* ignore */ }
             }
@@ -279,9 +295,9 @@ export function PersonalReport({ data }: { data: ReportData }) {
             .filter(key => typeHoursMap[key] > 0)
             .map(key => ({
                 name: key,
-                value: Math.round(typeHoursMap[key] * 10) / 10 // Round to 1 decimal
+                value: Math.round(typeHoursMap[key] * 10) / 10
             }));
-    }, [personWorkloads]);
+    }, [departmentWorkloads]);
 
     return (
         <div className="space-y-6 animate-fade-in print:space-y-4">
@@ -293,7 +309,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                 <div className="text-right">
                     <h1 className="text-xl font-bold uppercase text-[#3a0ca3] m-0 leading-tight">Báo cáo MTE-LAB</h1>
                     <h2 className="text-lg font-semibold m-0 mt-1 leading-tight">
-                        Cá nhân: {selectedPerson?.name || selectedPerson?.fullName}
+                        Phòng/Ban: {selectedDepartment}
                     </h2>
                     <p className="text-sm italic text-gray-600 drop-shadow-sm mt-1">
                         Tháng {selectedMonth}/{selectedYear}
@@ -304,15 +320,15 @@ export function PersonalReport({ data }: { data: ReportData }) {
             {/* Filters */}
             <GlassCard className="p-4 flex flex-wrap items-center gap-4 print:hidden">
                 <div className="flex items-center space-x-2 w-full md:w-auto">
-                    <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Nhân sự:</span>
-                    <Select value={selectedPersonId} onValueChange={setSelectedPersonId}>
+                    <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Phòng/Ban:</span>
+                    <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
                         <SelectTrigger className="w-full md:w-[250px] bg-white border-blue-100">
-                            <SelectValue placeholder="Chọn nhân sự" />
+                            <SelectValue placeholder="Chọn Phòng/Ban" />
                         </SelectTrigger>
                         <SelectContent>
-                            {availablePersonnel.map(p => (
-                                <SelectItem key={p.id} value={p.id}>
-                                    {p.name} - {p.department}
+                            {availableDepartments.map(d => (
+                                <SelectItem key={d} value={d}>
+                                    {d}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -346,7 +362,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                     </Select>
                 </div>
 
-                {selectedPerson && (
+                {selectedDepartment && (
                     <div className="ml-auto flex gap-4 w-full md:w-auto mt-4 md:mt-0">
                         <div className="px-4 py-2 bg-[#f72585]/10 text-[#f72585] rounded-lg border border-[#f72585]/20 flex items-center space-x-2">
                             <CheckSquare className="w-5 h-5" />
@@ -358,7 +374,7 @@ export function PersonalReport({ data }: { data: ReportData }) {
                         <div className="px-4 py-2 bg-[#7209b7]/10 text-[#7209b7] rounded-lg border border-[#7209b7]/20 flex items-center space-x-2">
                             <Clock className="w-5 h-5" />
                             <div>
-                                <span className="text-xs block text-muted-foreground uppercase tracking-wider">Giờ công (Tạm tính)</span>
+                                <span className="text-xs block text-muted-foreground uppercase tracking-wider">Giờ công (tạm tính)</span>
                                 <span className="text-sm font-bold leading-none">{totalHours}h</span>
                             </div>
                         </div>
@@ -415,9 +431,9 @@ export function PersonalReport({ data }: { data: ReportData }) {
                 <GlassCard className="overflow-hidden lg:col-span-2 flex flex-col h-[400px]">
                     <div className="p-4 border-b bg-white/50 flex items-center justify-between">
                         <h3 className="text-lg font-bold text-gray-800">1. Công việc đã thực hiện</h3>
-                        {selectedPerson && (
+                        {selectedDepartment && (
                             <Badge variant="outline" className="border-[#f72585] text-[#f72585] bg-[#f72585]/5">
-                                {selectedPerson.name}
+                                {selectedDepartment}
                             </Badge>
                         )}
                     </div>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { WeeklyMonthlyReport } from "./weekly-monthly-report";
 import { ContractReport } from "./contract-report";
 import { PersonalReport } from "./personal-report";
+import { DepartmentReport } from "./department-report";
 import { OverviewReport } from "./overview-report";
 import { Schedule, Contract, Personnel, WorkOutline, SupplementalReport } from "@/types";
 
@@ -84,13 +85,20 @@ export function ReportsManager() {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid grid-cols-4 bg-white/50 backdrop-blur-md p-1 h-auto rounded-xl border border-white/20 shadow-sm mb-6">
+                <TabsList className="grid grid-cols-5 bg-white/50 backdrop-blur-md p-1 h-auto rounded-xl border border-white/20 shadow-sm mb-6">
                     <TabsTrigger
                         value="overview"
                         className="data-[state=active]:bg-[#3a0ca3] data-[state=active]:text-white py-3 rounded-lg transition-all"
                     >
                         <PieChart className="w-4 h-4 mr-2" />
                         Tổng quan
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="contract"
+                        className="data-[state=active]:bg-[#4361ee] data-[state=active]:text-white py-3 rounded-lg transition-all"
+                    >
+                        <Briefcase className="w-4 h-4 mr-2" />
+                        Theo Hợp đồng
                     </TabsTrigger>
                     <TabsTrigger
                         value="weekly-monthly"
@@ -100,11 +108,11 @@ export function ReportsManager() {
                         Tuần / Tháng
                     </TabsTrigger>
                     <TabsTrigger
-                        value="contract"
-                        className="data-[state=active]:bg-[#4361ee] data-[state=active]:text-white py-3 rounded-lg transition-all"
+                        value="department"
+                        className="data-[state=active]:bg-[#9d4edd] data-[state=active]:text-white py-3 rounded-lg transition-all"
                     >
-                        <Briefcase className="w-4 h-4 mr-2" />
-                        Theo Hợp đồng
+                        <PieChart className="w-4 h-4 mr-2" />
+                        Phòng/Ban
                     </TabsTrigger>
                     <TabsTrigger
                         value="personal"
@@ -129,6 +137,10 @@ export function ReportsManager() {
 
                 <TabsContent value="personal" className="mt-0 outline-none">
                     <PersonalReport data={data} />
+                </TabsContent>
+
+                <TabsContent value="department" className="mt-0 outline-none">
+                    <DepartmentReport data={data} />
                 </TabsContent>
             </Tabs>
         </div>

@@ -168,7 +168,7 @@ export interface WorkOutline {
 
 export interface SupplementalReport {
     id: string;
-    reportType: 'PERSONAL' | 'CONTRACT' | 'WEEKLY_MONTHLY'; // Type constraints
+    reportType: 'PERSONAL' | 'CONTRACT' | 'WEEKLY_MONTHLY' | 'DEPARTMENT'; // Type constraints
     referenceId: string; // Personnel ID or Contract ID, empty if Week/Month
     startDate: string;
     endDate: string;
