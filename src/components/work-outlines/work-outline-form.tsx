@@ -277,7 +277,7 @@ export function WorkOutlineForm({
         setFormError(null);
 
         // Validation 1: Check for duplicate personnel in the same outline
-        const assignedIds = formData.personnelAssignments?.map(pa => pa.personnelId).filter(id => id.trim() !== "");
+        const assignedIds = formData.personnelAssignments?.map(pa => pa.personnelId === "CUSTOM" ? pa.customName : pa.personnelId).filter(id => id && id.trim() !== "");
         if (assignedIds && assignedIds.length > 0) {
             const uniqueIds = new Set(assignedIds);
             if (uniqueIds.size !== assignedIds.length) {
@@ -287,7 +287,7 @@ export function WorkOutlineForm({
         }
 
         // Validation 2: Check for duplicate vehicles in the same outline
-        const assignedVehicleIds = formData.vehicleAssignments?.map(va => va.vehicleId).filter(id => id.trim() !== "");
+        const assignedVehicleIds = formData.vehicleAssignments?.map(va => va.vehicleId === "CUSTOM" ? va.customLicensePlate : va.vehicleId).filter(id => id && id.trim() !== "");
         if (assignedVehicleIds && assignedVehicleIds.length > 0) {
             const uniqueVIds = new Set(assignedVehicleIds);
             if (uniqueVIds.size !== assignedVehicleIds.length) {
@@ -475,9 +475,14 @@ export function WorkOutlineForm({
                                         warning ? "border-amber-300 bg-amber-50/30" : ""
                                     )}>
                                         <div className="flex gap-2 w-full">
-                                            <div className="flex-[2]">
+                                            <div className="flex-[2] flex flex-col gap-2 relative">
                                                 <Label className="text-xs mb-1 block text-gray-500">Nhân sự</Label>
-                                                <Select value={assignment.personnelId} onValueChange={(v) => updatePersonnel(index, "personnelId", v)} required>
+                                                <Select value={assignment.personnelId} onValueChange={(v) => {
+                                                    updatePersonnel(index, "personnelId", v);
+                                                    if (v !== "CUSTOM") {
+                                                        updatePersonnel(index, "customName", "");
+                                                    }
+                                                }} required>
                                                     <SelectTrigger className={warning ? "border-amber-300" : ""}>
                                                         <SelectValue placeholder="Chọn nhân sự" />
                                                     </SelectTrigger>
@@ -491,8 +496,18 @@ export function WorkOutlineForm({
                                                                 {p.fullName} - {p.job}
                                                             </SelectItem>
                                                         ))}
+                                                        <SelectItem value="CUSTOM" className="font-semibold text-purple-700">-- Nhập tay (Tuỳ chọn) --</SelectItem>
                                                     </SelectContent>
                                                 </Select>
+                                                {assignment.personnelId === "CUSTOM" && (
+                                                    <Input
+                                                        placeholder="Nhập tên nhân sự..."
+                                                        value={assignment.customName || ""}
+                                                        onChange={(e) => updatePersonnel(index, "customName", e.target.value)}
+                                                        required
+                                                        className="mt-1"
+                                                    />
+                                                )}
                                             </div>
                                             <div className="flex-1 max-w-[130px]">
                                                 <Label className="text-xs mb-1 block text-gray-500">Chức danh</Label>
@@ -573,9 +588,15 @@ export function WorkOutlineForm({
                                         "flex flex-col lg:flex-row gap-3 items-end bg-white p-3 rounded-lg border shadow-sm transition-colors",
                                         warning ? "border-amber-300 bg-amber-50/30" : ""
                                     )}>
-                                        <div className="flex-[3] w-full">
+                                        <div className="flex-[3] w-full flex flex-col gap-2 relative">
                                             <Label className="text-xs mb-1 block text-gray-500">Phương tiện</Label>
-                                            <Select value={assignment.vehicleId} onValueChange={(v) => updateVehicle(index, "vehicleId", v)} required>
+                                            <Select value={assignment.vehicleId} onValueChange={(v) => {
+                                                updateVehicle(index, "vehicleId", v);
+                                                if (v !== "CUSTOM") {
+                                                    updateVehicle(index, "customLicensePlate", "");
+                                                    updateVehicle(index, "customType", "");
+                                                }
+                                            }} required>
                                                 <SelectTrigger className={warning ? "border-amber-300" : ""}>
                                                     <SelectValue placeholder="Chọn phương tiện" />
                                                 </SelectTrigger>
@@ -589,8 +610,29 @@ export function WorkOutlineForm({
                                                             {v.licensePlate} - {v.name}
                                                         </SelectItem>
                                                     ))}
+                                                    <SelectItem value="CUSTOM" className="font-semibold text-orange-700">-- Nhập tay (Tuỳ chọn) --</SelectItem>
                                                 </SelectContent>
                                             </Select>
+                                            {assignment.vehicleId === "CUSTOM" && (
+                                                <div className="flex gap-2 mt-1">
+                                                    <Input
+                                                        placeholder="Biển số..."
+                                                        value={assignment.customLicensePlate || ""}
+                                                        onChange={(e) => updateVehicle(index, "customLicensePlate", e.target.value)}
+                                                        required
+                                                        className="flex-[2]"
+                                                    />
+                                                    <Select value={assignment.customType || ""} onValueChange={(v) => updateVehicle(index, "customType", v)} required>
+                                                        <SelectTrigger className="flex-[1]">
+                                                            <SelectValue placeholder="Loại" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="Công ty">Công ty</SelectItem>
+                                                            <SelectItem value="Thuê ngoài">Thuê ngoài</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex flex-col w-full lg:w-auto">
                                             <Label className="text-xs mb-1 block text-gray-500">Từ</Label>

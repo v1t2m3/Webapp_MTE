@@ -125,14 +125,20 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                                             {sortedPersonnelAssignments.map((pa, index) => {
                                                 const person = personnel.find(p => p.id === pa.personnelId);
                                                 // Dynamic department: prefer section, then department, fallback to PXTNSC
-                                                const department = person?.section || person?.department || "PXTNSC";
+                                                const department = person?.section || person?.department || "Công ty";
 
                                                 // Format role (e.g., "CHTT - Chỉ huy trực tiếp" -> "CHTT")
                                                 const shortRole = pa.role ? pa.role.split(" - ")[0] : "";
+                                                let personName = person?.fullName || "...";
                                                 let roleDisplay = `- ${department}${shortRole ? ` - ${shortRole}` : ''}`;
 
                                                 if (person?.job === "Lái xe") {
                                                     roleDisplay = `- ${department} - Lái xe`;
+                                                }
+
+                                                if (pa.personnelId === "CUSTOM") {
+                                                    personName = pa.customName || "...";
+                                                    roleDisplay = `- ${department}${shortRole ? ` - ${shortRole}` : ''}`;
                                                 }
 
                                                 // Determine Custom Time if it differs from the general schedule
@@ -170,7 +176,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                                                 return (
                                                     <tr key={index}>
                                                         <td className="w-8 align-top pl-4">{index + 1}.</td>
-                                                        <td className="w-[35%] align-top">{person?.fullName || "..."}</td>
+                                                        <td className="w-[35%] align-top">{personName}</td>
                                                         <td className="w-[30%] align-top">{roleDisplay}</td>
                                                         <td className="w-[35%] align-top italic">{customTimeDisplay}</td>
                                                     </tr>
@@ -195,14 +201,83 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                         {/* IV. Vehicles */}
                         <div className="mb-2">
                             <div className="font-bold inline" style={{ textIndent: '12.7mm', display: 'inline-block' }}>IV. Phương tiện đi lại: </div>
-                            <span className="inline">
-                                {(!workOutline.vehicleAssignments || workOutline.vehicleAssignments.length === 0)
-                                    ? " Tự túc."
-                                    : ` Sử dụng xe của Xí nghiệp ${workOutline.vehicleAssignments.map(va => {
-                                        const v = vehicles.find(vh => vh.id === va.vehicleId);
-                                        return v ? v.licensePlate : "";
-                                    }).filter(Boolean).join(", ")}.`}
-                            </span>
+                            <div style={{ textIndent: '12.7mm' }}>
+                                {(() => {
+                                    if (!workOutline.vehicleAssignments || workOutline.vehicleAssignments.length === 0) {
+                                        return " Tự túc.";
+                                    }
+
+                                    const xiNghiep: string[] = [];
+                                    const congTy: string[] = [];
+                                    const thueNgoai: string[] = [];
+
+                                    workOutline.vehicleAssignments.forEach(va => {
+                                        let vName = "";
+                                        let origin = "";
+                                        if (va.vehicleId === "CUSTOM") {
+                                            vName = va.customLicensePlate || "";
+                                            origin = va.customType || "";
+                                        } else {
+                                            const vInfo = vehicles.find(vh => vh.id === va.vehicleId);
+                                            if (vInfo) {
+                                                vName = vInfo.licensePlate;
+                                                origin = "Xí nghiệp";
+                                            }
+                                        }
+
+                                        if (!vName) return;
+
+                                        // Time logic
+                                        let vTimeDisplay = "";
+                                        const hasCustomTime = va.startDate && va.endDate &&
+                                            (va.startDate !== workOutline.startDate ||
+                                                va.endDate !== workOutline.endDate);
+
+                                        if (hasCustomTime && va.startDate && va.endDate) {
+                                            try {
+                                                const sd = parseISO(va.startDate);
+                                                const ed = parseISO(va.endDate);
+                                                const sDay = format(sd, 'dd');
+                                                const sMon = format(sd, 'MM');
+                                                const eDay = format(ed, 'dd');
+                                                const eMon = format(ed, 'MM');
+                                                const eYear = format(ed, 'yy');
+                                                if (sMon === eMon && sDay !== eDay) {
+                                                    vTimeDisplay = `(${sDay}-${eDay}/${eMon}/${eYear})`;
+                                                } else if (sDay === eDay && sMon === eMon) {
+                                                    vTimeDisplay = `(${eDay}/${eMon}/${eYear})`;
+                                                } else {
+                                                    vTimeDisplay = `(${sDay}/${sMon}-${eDay}/${eMon}/${eYear})`;
+                                                }
+                                            } catch {
+                                                vTimeDisplay = `(${formatDate(va.startDate)}-${formatDate(va.endDate)})`;
+                                            }
+                                        }
+
+                                        const vStr = vTimeDisplay ? `${vName} ${vTimeDisplay}` : vName;
+
+                                        if (origin === "Xí nghiệp") xiNghiep.push(vStr);
+                                        else if (origin === "Công ty") congTy.push(vStr);
+                                        else if (origin === "Thuê ngoài") thueNgoai.push(vStr);
+                                    });
+
+                                    const parts: string[] = [];
+                                    if (xiNghiep.length > 0) parts.push(`Sử dụng xe của Xí nghiệp: ${xiNghiep.join(", ")}.`);
+                                    if (congTy.length > 0) parts.push(`Sử dụng xe Công ty: ${congTy.join(", ")}.`);
+                                    if (thueNgoai.length > 0) parts.push(`Sử dụng xe thuê ngoài: ${thueNgoai.join(", ")}.`);
+
+                                    return (
+                                        <>
+                                            {parts.map((part, index) => (
+                                                <span key={index} style={{ textIndent: '12.7mm' }}>
+                                                    {part}
+                                                    {index < parts.length - 1 && <br />}
+                                                </span>
+                                            ))}
+                                        </>
+                                    );
+                                })()}
+                            </div>
                         </div>
 
                         <div className="mb-4 text-justify" style={{ textIndent: '12.7mm' }}>

@@ -135,7 +135,8 @@ export interface Report {
 }
 
 export interface PersonnelAssignment {
-    personnelId: string;
+    personnelId: string; // 'CUSTOM' for manual entry
+    customName?: string; // Tên nhân sự nhập tay
     startDate: string;
     startTime: string;
     endDate: string;
@@ -144,7 +145,9 @@ export interface PersonnelAssignment {
 }
 
 export interface VehicleAssignment {
-    vehicleId: string;
+    vehicleId: string; // 'CUSTOM' for manual entry
+    customLicensePlate?: string; // Biển số nhập tay
+    customType?: string; // Loại: 'Công ty' hoặc 'Thuê ngoài'
     startDate: string;
     startTime: string;
     endDate: string;

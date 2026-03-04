@@ -3,6 +3,21 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { getUserByUsername, verifyPassword } from "./auth-service";
 import { UserRole } from "@/types";
 
+const useSecureCookies = process.env.NODE_ENV === "production";
+const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+const sessionCookieOption = {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    path: "/",
+    secure: useSecureCookies,
+};
+// Hack to prevent NextAuth from forcefully setting maxAge on the session cookie
+Object.defineProperty(sessionCookieOption, "maxAge", {
+    get: () => undefined,
+    set: () => { },
+    enumerable: true,
+});
+
 export const authOptions: NextAuthOptions = {
     providers: [
         CredentialsProvider({
@@ -48,7 +63,14 @@ export const authOptions: NextAuthOptions = {
     },
     session: {
         strategy: "jwt",
-        maxAge: 30 * 24 * 60 * 60, // 30 Days
+        maxAge: 30 * 24 * 60 * 60, // 30 Days JWT validity
+    },
+    useSecureCookies,
+    cookies: {
+        sessionToken: {
+            name: `${cookiePrefix}next-auth.session-token`,
+            options: sessionCookieOption,
+        },
     },
     callbacks: {
         async jwt({ token, user }) {
