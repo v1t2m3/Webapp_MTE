@@ -269,10 +269,10 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                                     return (
                                         <>
                                             {parts.map((part, index) => (
-                                                <span key={index} style={{ textIndent: '12.7mm' }}>
+                                                <div key={index}>
                                                     {part}
                                                     {index < parts.length - 1 && <br />}
-                                                </span>
+                                                </div>
                                             ))}
                                         </>
                                     );

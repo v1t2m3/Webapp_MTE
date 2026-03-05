@@ -145,12 +145,12 @@ export function ScheduleManager() {
         const sDateStr = s.startDate; // YYYY-MM-DD
 
         // Past Schedules Filter
-        if (!showPastSchedules && sDateStr) {
-            const sDate = new Date(sDateStr);
-            sDate.setHours(0, 0, 0, 0);
+        if (!showPastSchedules && s.endDate) {
+            const eDate = new Date(s.endDate);
+            eDate.setHours(0, 0, 0, 0);
             const today = new Date(now);
             today.setHours(0, 0, 0, 0);
-            if (sDate < today) return false;
+            if (eDate < today) return false;
         }
 
         // Time Filter
