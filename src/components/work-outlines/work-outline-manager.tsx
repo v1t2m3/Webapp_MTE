@@ -121,12 +121,26 @@ export function WorkOutlineManager() {
 
     const handlePrintReady = useReactToPrint({
         contentRef: printComponentRef,
-        documentTitle: `DeCuong_${printingOutline?.id || "CongTac"}`
+        documentTitle: `DeCuong_${printingOutline?.id || "CongTac"}`,
+        // Force portrait layout and specific margins for the Work Outline
+        pageStyle: `
+            @page {
+                size: A4 portrait !important;
+                margin: 25mm 20mm 20mm 30mm !important;
+            }
+        `
     });
 
     const handleVehiclePrintReady = useReactToPrint({
         contentRef: vehiclePrintComponentRef,
-        documentTitle: `PhieuDieuXe_${dispatchPrintOutline?.id || "CongTac"}`
+        documentTitle: `PhieuDieuXe_${dispatchPrintOutline?.id || "CongTac"}`,
+        // Force landscape layout and zero margin for the Vehicle Dispatch Order
+        pageStyle: `
+            @page {
+                size: A4 landscape !important;
+                margin: 0 !important;
+            }
+        `
     });
 
     const handlePrint = (outline: WorkOutline) => {
@@ -313,7 +327,7 @@ export function WorkOutlineManager() {
                                                                 size="icon"
                                                                 className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-50 border-orange-200"
                                                                 onClick={() => handleOpenVehiclePrint(item)}
-                                                                title="In lệnh điều xe / phương tiện"
+                                                                title="Tải/In lệnh điều xe"
                                                             >
                                                                 <Car className="h-4 w-4" />
                                                             </Button>
@@ -324,7 +338,7 @@ export function WorkOutlineManager() {
                                                                 size="icon"
                                                                 className="h-8 w-8 text-[#3a0ca3] hover:text-[#3a0ca3] hover:bg-[#3a0ca3]/10"
                                                                 onClick={() => handlePrint(item)}
-                                                                title="Tải / In biên bản Đề cương"
+                                                                title="Tải/In Đề cương"
                                                             >
                                                                 <FileText className="h-4 w-4" />
                                                             </Button>
