@@ -62,7 +62,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
             <div className="hidden">
                 <div
                     ref={ref}
-                    className="preview-padding bg-white text-black font-['Times_New_Roman'] leading-relaxed"
+                    className="preview-padding bg-white text-black font-['Times_New_Roman'] leading-relaxed work-outline-print-container"
                     style={{
                         boxSizing: 'border-box',
                         fontSize: '13pt', // Default content size
@@ -314,6 +314,10 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                             margin: 25mm 20mm 20mm 30mm;
                         }
                         
+                        .work-outline-print-container {
+                            display: block !important;
+                        }
+                        
                         /* Unset inline/preview styles so the browser handles margins naturally without scaling */
                         .preview-padding {
                             width: auto !important;
@@ -337,7 +341,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                     @media screen {
                         .preview-padding {
                             width: 210mm;
-                            min-height: 297mm;
+                            height: 297mm;
                             padding: 25mm 20mm 20mm 30mm;
                             margin: 0 auto;
                             box-shadow: 0 0 10px rgba(0,0,0,0.1);

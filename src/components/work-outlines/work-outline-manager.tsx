@@ -3,10 +3,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Schedule, Personnel, Vehicle, Contract, WorkOutline } from "@/types";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2, Download, History, ListFilter, Printer } from "lucide-react";
+import { Plus, Edit, Trash2, Download, History, ListFilter, Printer, FileText, FileDown, Car } from "lucide-react";
 import { GlassCard, GlassPageHeader } from "@/components/ui/GlassCard";
 import { WorkOutlineForm } from "./work-outline-form";
 import { WorkOutlinePdfTemplate } from "./work-outline-pdf-template";
+import { VehicleDispatchDialog, VehicleDispatchPrintData } from "./vehicle-dispatch-dialog";
+import { VehicleDispatchPdfTemplate } from "./vehicle-dispatch-pdf-template";
 import { useReactToPrint } from "react-to-print";
 import {
     Table,
@@ -111,9 +113,20 @@ export function WorkOutlineManager() {
     const printComponentRef = useRef<HTMLDivElement>(null);
     const [printingOutline, setPrintingOutline] = useState<WorkOutline | null>(null);
 
+    // Vehicle Dispatch Print Logic
+    const vehiclePrintComponentRef = useRef<HTMLDivElement>(null);
+    const [isVehicleDispatchOpen, setIsVehicleDispatchOpen] = useState(false);
+    const [dispatchPrintData, setDispatchPrintData] = useState<VehicleDispatchPrintData | null>(null);
+    const [dispatchPrintOutline, setDispatchPrintOutline] = useState<WorkOutline | null>(null);
+
     const handlePrintReady = useReactToPrint({
         contentRef: printComponentRef,
         documentTitle: `DeCuong_${printingOutline?.id || "CongTac"}`
+    });
+
+    const handleVehiclePrintReady = useReactToPrint({
+        contentRef: vehiclePrintComponentRef,
+        documentTitle: `PhieuDieuXe_${dispatchPrintOutline?.id || "CongTac"}`
     });
 
     const handlePrint = (outline: WorkOutline) => {
@@ -121,6 +134,18 @@ export function WorkOutlineManager() {
         // We use setTimeout to allow state to settle and component to re-render with new data before printing
         setTimeout(() => {
             handlePrintReady();
+        }, 100);
+    };
+
+    const handleOpenVehiclePrint = (outline: WorkOutline) => {
+        setDispatchPrintOutline(outline);
+        setIsVehicleDispatchOpen(true);
+    };
+
+    const executeVehiclePrint = (data: VehicleDispatchPrintData) => {
+        setDispatchPrintData(data);
+        setTimeout(() => {
+            handleVehiclePrintReady();
         }, 100);
     };
 
@@ -246,14 +271,18 @@ export function WorkOutlineManager() {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                        {item.personnelAssignments?.length || 0} người
-                                                    </span>
+                                                    <div className="flex flex-col items-start gap-1">
+                                                        <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                            {item.personnelAssignments?.length || 0} người
+                                                        </span>
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                                        {item.vehicleAssignments?.length || 0} xe
-                                                    </span>
+                                                    <div className="flex flex-col items-start gap-1">
+                                                        <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                                            {item.vehicleAssignments?.length || 0} xe
+                                                        </span>
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell className="text-right sticky right-0 bg-white/95 shadow-[-4px_0_10px_rgba(0,0,0,0.05)]">
                                                     <div className="flex justify-end gap-1">
@@ -278,15 +307,26 @@ export function WorkOutlineManager() {
                                                                 <Trash2 className="h-4 w-4" />
                                                             </Button>
                                                         )}
+                                                        {canDownload && (item.vehicleAssignments?.length ?? 0) > 0 && (
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-orange-600 hover:text-orange-700 hover:bg-orange-50 border-orange-200"
+                                                                onClick={() => handleOpenVehiclePrint(item)}
+                                                                title="In lệnh điều xe / phương tiện"
+                                                            >
+                                                                <Car className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
                                                         {canDownload && (
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 className="h-8 w-8 text-[#3a0ca3] hover:text-[#3a0ca3] hover:bg-[#3a0ca3]/10"
                                                                 onClick={() => handlePrint(item)}
-                                                                title="Lưu PDF / In Đề cương"
+                                                                title="Tải / In biên bản Đề cương"
                                                             >
-                                                                <Download className="h-4 w-4" />
+                                                                <FileText className="h-4 w-4" />
                                                             </Button>
                                                         )}
                                                     </div>
@@ -329,6 +369,25 @@ export function WorkOutlineManager() {
                 vehicles={vehicles}
                 schedules={schedules}
                 contracts={contracts}
+            />
+
+            {/* Hidden Vehicle Dispatch Print Template */}
+            <VehicleDispatchPdfTemplate
+                ref={vehiclePrintComponentRef}
+                printData={dispatchPrintData}
+                workOutline={dispatchPrintOutline}
+                schedules={schedules}
+            />
+
+            {/* Vehicle Dispatch Print Modal */}
+            <VehicleDispatchDialog
+                open={isVehicleDispatchOpen}
+                onOpenChange={setIsVehicleDispatchOpen}
+                workOutline={dispatchPrintOutline}
+                personnel={personnel}
+                vehicles={vehicles}
+                schedules={schedules}
+                onPrint={executeVehiclePrint}
             />
         </div>
     );
