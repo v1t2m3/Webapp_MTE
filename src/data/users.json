@@ -166,5 +166,39 @@
     "fullName": "Nguyễn Văn Sơn",
     "isActive": true,
     "level": 4
+  },
+  {
+    "id": "hanm",
+    "username": "hanm",
+    "passwordHash": "$2b$10$fD7NA29aW586SqNLjDyd1ugC3NQUFJqTXFkTpz537WMDeuInGvw8S",
+    "role": "Viewer",
+    "fullName": "Nguyễn Minh Hà",
+    "isActive": true
+  },
+  {
+    "id": "namcd",
+    "username": "namcd",
+    "passwordHash": "$2b$10$/icqJRtyi.Lv9a6W1Fc/R./axUi2txxYVqDjOz3BOETt/YWS8Hvdm",
+    "role": "Viewer",
+    "fullName": "Chu Đức Nam",
+    "isActive": true
+  },
+  {
+    "id": "thomht",
+    "username": "thomht",
+    "passwordHash": "$2b$10$AJXDDzRhZIEJFjk8vxucpuy0WvouFnyGncCV.cT27PL.fG9qIH2rG",
+    "role": "User",
+    "level": 2,
+    "fullName": "Hoàng Thị Thơm",
+    "isActive": true
+  },
+  {
+    "id": "hoppn",
+    "username": "hoppn",
+    "passwordHash": "$2b$10$Fxs/tQ8JaK3esb7.L4fSkeM0za3VzeAREoH6wvgpUcS0tRb6rGHBO",
+    "role": "User",
+    "level": 4,
+    "fullName": "Phan Ngọc Hợp",
+    "isActive": true
   }
 ]

@@ -383,6 +383,7 @@ export function WorkOutlineManager() {
                 vehicles={vehicles}
                 schedules={schedules}
                 contracts={contracts}
+                currentUser={session?.user?.name}
             />
 
             {/* Hidden Vehicle Dispatch Print Template */}
@@ -391,6 +392,7 @@ export function WorkOutlineManager() {
                 printData={dispatchPrintData}
                 workOutline={dispatchPrintOutline}
                 schedules={schedules}
+                currentUser={session?.user?.name}
             />
 
             {/* Vehicle Dispatch Print Modal */}

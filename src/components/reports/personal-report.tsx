@@ -16,10 +16,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useSession } from "next-auth/react";
 import { hasAccess } from "@/lib/rbac";
+import { useReactToPrint } from "react-to-print";
+import { PersonalReportPdfTemplate } from "./personal-report-pdf-template";
+import React, { useRef } from "react";
 
 const COLORS = ['#f72585', '#4cc9f0', '#3a0ca3', '#f8961e'];
 
-export function PersonalReport({ data }: { data: ReportData }) {
+export function PersonalReport({ data, printRef }: { data: ReportData, printRef?: React.MutableRefObject<{ print: () => void } | null> }) {
     const { personnel, workOutlines, schedules } = data;
     const { data: session } = useSession();
 
@@ -54,6 +57,19 @@ export function PersonalReport({ data }: { data: ReportData }) {
     const selectedPerson = useMemo(() => {
         return availablePersonnel.find(p => p.id === selectedPersonId) || null;
     }, [availablePersonnel, selectedPersonId]);
+
+    // Setup Print Reference
+    const personalPrintComponentRef = useRef<HTMLDivElement>(null);
+    const handlePrintReady = useReactToPrint({
+        contentRef: personalPrintComponentRef,
+        documentTitle: `BaoCaoCaNhan_${selectedPerson?.name || "NhanVien"}_${selectedMonth}_${selectedYear}`
+    });
+
+    useEffect(() => {
+        if (printRef) {
+            printRef.current = { print: () => handlePrintReady() };
+        }
+    }, [printRef, handlePrintReady]);
 
     const canEdit = (isAdmin || (selectedPerson?.name === currentUserFullName) || (selectedPerson?.fullName === currentUserFullName)) && hasAccess(session?.user?.role, session?.user?.level, "update", "bao-cao-ca-nhan");
 
@@ -609,6 +625,16 @@ export function PersonalReport({ data }: { data: ReportData }) {
                     XN Sửa Chữa Thiết Bị Điện - MTE
                 </span>
             </div>
+
+            {/* Hidden Print Template */}
+            <PersonalReportPdfTemplate
+                ref={personalPrintComponentRef}
+                personnel={selectedPerson}
+                workloads={editableWorkloads as Workload[]}
+                month={selectedMonth}
+                year={selectedYear}
+                currentUser={session?.user?.name}
+            />
         </div>
     );
 }

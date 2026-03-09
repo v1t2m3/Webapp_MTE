@@ -9,10 +9,11 @@ interface WorkOutlinePdfTemplateProps {
     vehicles: Vehicle[];
     schedules: Schedule[];
     contracts: Contract[];
+    currentUser?: string | null;
 }
 
 export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfTemplateProps>(
-    ({ workOutline, personnel, vehicles, schedules, contracts }, ref) => {
+    ({ workOutline, personnel, vehicles, schedules, contracts, currentUser }, ref) => {
         if (!workOutline) return null;
 
         const schedule = schedules.find(s => s.id === workOutline.scheduleId);
@@ -100,7 +101,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                         <div className="mb-2">
                             <div className="font-bold mb-1" style={{ textIndent: '12.7mm' }}>I. Nội dung công việc:</div>
                             <div className="text-justify" style={{ textIndent: '12.7mm' }}>
-                                - {contentText} {deviceName}
+                                - {contentText}
                             </div>
 
                             {/* Contract Reference if available */}
@@ -289,7 +290,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                             <div style={{ width: '33%' }}>
                                 <div className="font-bold">NGƯỜI LẬP</div>
                                 {/* Placeholder for Signature */}
-                                <div className="font-bold mt-16">Hoàng Thị Vân</div>
+                                <div className="font-bold mt-16">{currentUser || "................................"}</div>
                             </div>
                             <div style={{ width: '33%' }}>
                                 <div className="font-bold">PX TNSC</div>

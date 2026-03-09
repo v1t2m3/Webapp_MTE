@@ -15,10 +15,11 @@ interface VehicleDispatchPdfTemplateProps {
     printData: VehicleDispatchPrintData | null;
     workOutline: WorkOutline | null;
     schedules: Schedule[];
+    currentUser?: string | null;
 }
 
 export const VehicleDispatchPdfTemplate = forwardRef<HTMLDivElement, VehicleDispatchPdfTemplateProps>(
-    ({ printData, workOutline, schedules }, ref) => {
+    ({ printData, workOutline, schedules, currentUser }, ref) => {
         if (!printData || !workOutline) return null;
 
         const schedule = schedules.find(s => s.id === workOutline.scheduleId);
@@ -100,7 +101,7 @@ export const VehicleDispatchPdfTemplate = forwardRef<HTMLDivElement, VehicleDisp
                     <div className="flex justify-between w-full mt-8 px-4">
                         <div className="text-center">
                             <p className="font-bold mb-20">NGƯỜI VIẾT LỆNH</p>
-                            <p>Hoàng Thị Vân</p>
+                            <p>{currentUser || "................................"}</p>
                         </div>
                         <div className="text-center me-10">
                             <p className="font-bold mb-20">GIÁM ĐỐC</p>

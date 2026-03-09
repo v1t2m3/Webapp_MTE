@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { GlassPageHeader } from "@/components/ui/GlassCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PieChart, Briefcase, User as UserIcon, CalendarDays, Loader2, Printer } from "lucide-react";
@@ -24,6 +24,7 @@ export function ReportsManager() {
     const [activeTab, setActiveTab] = useState("overview");
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<ReportData | null>(null);
+    const personalPrintRef = useRef<{ print: () => void }>(null);
 
     const fetchData = useCallback(async () => {
         try {
@@ -68,7 +69,11 @@ export function ReportsManager() {
     }
 
     const handlePrint = () => {
-        window.print();
+        if (activeTab === "personal" && personalPrintRef.current) {
+            personalPrintRef.current.print();
+        } else {
+            window.print();
+        }
     };
 
     return (
@@ -136,7 +141,7 @@ export function ReportsManager() {
                 </TabsContent>
 
                 <TabsContent value="personal" className="mt-0 outline-none">
-                    <PersonalReport data={data} />
+                    <PersonalReport data={data} printRef={personalPrintRef} />
                 </TabsContent>
 
                 <TabsContent value="department" className="mt-0 outline-none">
