@@ -168,6 +168,10 @@ export function ScheduleManager() {
         }
 
         return true;
+    }).sort((a, b) => {
+        if (!a.startDate) return 1;
+        if (!b.startDate) return -1;
+        return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
     });
 
     const uniqueUnits = Array.from(new Set(schedules.map(s => s.unit))).filter(Boolean);

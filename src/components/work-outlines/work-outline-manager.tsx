@@ -215,6 +215,10 @@ export function WorkOutlineManager() {
             return false;
         }
         return true;
+    }).sort((a, b) => {
+        if (!a.startDate) return 1;
+        if (!b.startDate) return -1;
+        return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
     });
 
     return (

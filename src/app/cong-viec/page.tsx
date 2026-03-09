@@ -11,11 +11,11 @@ export default async function CongViecPage() {
     const today = startOfDay(new Date());
     const next10Days = addDays(today, 10);
 
-    // Filter schedules for the future (>= today)
+    // Filter schedules for the future (endDate > today)
     const futureSchedules = schedules.filter(s => {
-        if (!s.startDate) return false;
-        const sDate = startOfDay(new Date(s.startDate));
-        return sDate.getTime() >= today.getTime();
+        if (!s.endDate) return false;
+        const eDate = startOfDay(new Date(s.endDate));
+        return eDate.getTime() > today.getTime();
     });
 
     // Filter schedules in the next 10 days
@@ -24,6 +24,14 @@ export default async function CongViecPage() {
         const sDate = startOfDay(new Date(s.startDate));
         return isWithinInterval(sDate, { start: today, end: next10Days });
     }).length;
+
+    // Filter work outlines for the future (startDate > today)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const futureOutlines = workOutlines.filter((w: any) => {
+        if (!w.startDate) return false;
+        const oDate = startOfDay(new Date(w.startDate));
+        return oDate.getTime() > today.getTime();
+    });
 
     // Filter work outlines for today
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,7 +54,7 @@ export default async function CongViecPage() {
         },
         {
             title: "Đề cương công tác",
-            value: workOutlines.length,
+            value: futureOutlines.length,
             desc: "Tổng đề cương",
             extraInfo: `${todaysOutlines} đề cương hôm nay`,
             icon: ClipboardList,
@@ -56,7 +64,7 @@ export default async function CongViecPage() {
         },
         {
             title: "Báo cáo",
-            value: 0,
+            value: "bc",
             active: 0,
             desc: "Tùy chỉnh",
             extraInfo: "Xem và xuất các loại báo cáo",
@@ -87,10 +95,10 @@ export default async function CongViecPage() {
                                 </div>
                             </div>
                             <div className="mt-4">
-                                {stat.value > 0 ? (
-                                    <div className="text-3xl font-bold text-gray-800">{stat.value}</div>
-                                ) : (
+                                {stat.value === "bc" ? (
                                     <div className="text-3xl font-bold text-gray-800">Báo cáo</div>
+                                ) : (
+                                    <div className="text-3xl font-bold text-gray-800">{stat.value}</div>
                                 )}
                                 <p className="text-xs text-muted-foreground mt-1">
                                     {stat.active && stat.active > 0 ? `${stat.active} ` : ""}{stat.desc}
