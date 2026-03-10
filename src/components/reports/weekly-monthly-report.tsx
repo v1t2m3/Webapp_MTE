@@ -6,7 +6,7 @@ import { ReportData, EditableSchedule } from "@/types";
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from "recharts";
-import { format, getDaysInMonth } from "date-fns";
+import { format, getDaysInMonth, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { vi } from "date-fns/locale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,10 +19,13 @@ import { formatScheduleTime } from "@/lib/utils";
 import { Plus, Save, PenSquare, Trash2, Edit2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { hasAccess } from "@/lib/rbac";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
+import React, { useImperativeHandle } from "react";
 
 const COLORS = ['#4cc9f0', '#f72585', '#3a0ca3'];
 
-export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
+export function WeeklyMonthlyReport({ data, printRef }: { data: ReportData, printRef?: React.RefObject<any> }) {
     const { schedules } = data;
     const { data: session } = useSession();
     const canEditReport = hasAccess(session?.user?.role, session?.user?.level, "update", "bao-cao-tuan-thang-hop-dong");
@@ -36,31 +39,35 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
     // Local state for inline editing
     const [editableSchedules, setEditableSchedules] = useState<EditableSchedule[]>([]);
 
+    // Helper to check if a date string is in the selected period (n) or the next period (n+1)
+    const isInSelectedPeriod = (dateStr: string, isNext: boolean = false) => {
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
+        const year = parseInt(selectedYear);
+        
+        if (reportType === "month") {
+            const month = parseInt(selectedMonth) - 1;
+            const targetDate = new Date(year, month + (isNext ? 1 : 0), 1);
+            return d.getMonth() === targetDate.getMonth() && d.getFullYear() === targetDate.getFullYear();
+        } else {
+            const week = parseInt(selectedWeek);
+            // Calculate a reference date in the target ISO week
+            const jan4 = new Date(year, 0, 4);
+            const daysToAdd = (week - 1 + (isNext ? 1 : 0)) * 7;
+            const targetDate = new Date(jan4.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+            
+            return getISOWeek(d) === getISOWeek(targetDate) && d.getFullYear() === targetDate.getFullYear();
+        }
+    };
+
     // Initialize/Update editable schedules based on filters
     useEffect(() => {
-        let filtered: EditableSchedule[] = schedules.filter(s => {
-            if (!s.startDate) return false;
-            const d = new Date(s.startDate);
-
-            if (reportType === "month") {
-                return d.getMonth() + 1 === parseInt(selectedMonth) && d.getFullYear() === parseInt(selectedYear);
-            } else {
-                return getISOWeek(d) === parseInt(selectedWeek) && d.getFullYear() === parseInt(selectedYear);
-            }
-        }).map(s => ({ ...s, isCustomReport: false }));
+        let filtered: EditableSchedule[] = schedules.filter(s => s.startDate && (isInSelectedPeriod(s.startDate, false) || isInSelectedPeriod(s.startDate, true)))
+            .map(s => ({ ...s, isCustomReport: false }));
 
         if (data.supplementalReports) {
-            const supps = data.supplementalReports.filter(sr => {
-                if (sr.reportType !== 'WEEKLY_MONTHLY') return false;
-                if (!sr.startDate) return false;
-                const d = new Date(sr.startDate);
-
-                if (reportType === "month") {
-                    return d.getMonth() + 1 === parseInt(selectedMonth) && d.getFullYear() === parseInt(selectedYear);
-                } else {
-                    return getISOWeek(d) === parseInt(selectedWeek) && d.getFullYear() === parseInt(selectedYear);
-                }
-            }).map(sr => ({
+            const supps = data.supplementalReports.filter(sr => sr.reportType === 'WEEKLY_MONTHLY' && sr.startDate && (isInSelectedPeriod(sr.startDate, false) || isInSelectedPeriod(sr.startDate, true)))
+            .map(sr => ({
                 ...sr,
                 isCustomReport: true, // Mark it so UI renders the badge
                 isNewOrEditing: false, // It's from DB, so not editing yet
@@ -73,7 +80,7 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
         filtered = filtered.sort((a, b) => new Date(a.startDate || '').getTime() - new Date(b.startDate || '').getTime());
         setEditableSchedules(filtered); // mapped directly to array values
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [schedules, data.supplementalReports, selectedMonth, selectedYear, reportType]); // Ignored dynamic dep
+    }, [schedules, data.supplementalReports, selectedMonth, selectedYear, reportType, selectedWeek]); // Ignored dynamic dep
 
     // Handle inline input change for multiple fields
     const handleChange = (id: string, field: string, value: string) => {
@@ -155,27 +162,14 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
     };
 
     // Split schedules
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     const pastSchedules = editableSchedules.filter(s => {
-        if (s.isCustomReport && s.isNewOrEditing && s.bucket) {
-            return s.bucket === 'past';
-        }
-        if (!s.startDate) return false;
-        const d = new Date(s.startDate);
-        d.setHours(0, 0, 0, 0);
-        return d <= today;
+        if (s.isCustomReport && s.isNewOrEditing && s.bucket) return s.bucket === 'past';
+        return isInSelectedPeriod(s.startDate || '', false);
     });
 
     const futureSchedules = editableSchedules.filter(s => {
-        if (s.isCustomReport && s.isNewOrEditing && s.bucket) {
-            return s.bucket === 'future';
-        }
-        if (!s.startDate) return false;
-        const d = new Date(s.startDate);
-        d.setHours(0, 0, 0, 0);
-        return d > today;
+        if (s.isCustomReport && s.isNewOrEditing && s.bucket) return s.bucket === 'future';
+        return isInSelectedPeriod(s.startDate || '', true);
     });
 
     // KPIs based on all filtered data for the period
@@ -245,6 +239,140 @@ export function WeeklyMonthlyReport({ data }: { data: ReportData }) {
             return days;
         }
     }, [editableSchedules, selectedMonth, selectedWeek, selectedYear, reportType]);
+
+    // Format week/month string for headers based on type
+    const getPeriodString = (isNext: boolean = false) => {
+        const year = parseInt(selectedYear);
+        if (reportType === "month") {
+            const m = parseInt(selectedMonth) - 1 + (isNext ? 1 : 0);
+            const targetDate = new Date(year, m, 1);
+            const monthName = format(targetDate, 'MM/yyyy');
+            const startStr = format(startOfMonth(targetDate), 'dd/MM/yyyy');
+            const endStr = format(endOfMonth(targetDate), 'dd/MM/yyyy');
+            const onlyDays = `${format(startOfMonth(targetDate), 'dd')}-${endStr}`;
+            return {
+                title: `Khối lượng thực hiện công tác tháng ${monthName} (Từ ngày ${onlyDays}):`,
+                titleFuture: `Kế hoạch dự kiến công tác tháng ${monthName} (Từ ngày ${onlyDays}):`
+            };
+        } else {
+            const weekNum = parseInt(selectedWeek) + (isNext ? 1 : 0);
+            // jan 4 is always week 1
+            const jan4 = new Date(year, 0, 4);
+            const targetDate = new Date(jan4.getTime() + (weekNum - 1) * 7 * 24 * 60 * 60 * 1000);
+            
+            // Note: startOfWeek sets Sunday as first day by default, use { weekStartsOn: 1 } for Monday
+            const sWeek = startOfWeek(targetDate, { weekStartsOn: 1 });
+            const eWeek = endOfWeek(targetDate, { weekStartsOn: 1 });
+            const sDay = format(sWeek, 'dd/MM');
+            const sDayOnly = format(sWeek, 'dd');
+            const eDayFull = format(eWeek, 'dd/MM/yyyy');
+            
+            return {
+                title: `Khối lượng thực hiện công tác tuần ${weekNum}/${year} (Từ ngày ${sDayOnly}-${sDay === format(eWeek, 'dd/MM') ? eDayFull : eDayFull}):`, // Simplify to simple dd-dd/MM/yyyy
+                titleFuture: `Kế hoạch dự kiến công tác tuần ${weekNum}/${year} (Từ ngày ${sDayOnly}-${sDay === format(eWeek, 'dd/MM') ? eDayFull : eDayFull}):`
+            };
+        }
+    };
+
+    const handleExportExcel = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Báo Cáo Tuần-Tháng');
+
+        // Define columns
+        worksheet.columns = [
+            { header: 'STT', key: 'stt', width: 8 },
+            { header: 'Tên công trình/Công tác', key: 'name', width: 45 },
+            { header: 'ĐVT', key: 'unit', width: 10 },
+            { header: 'Số lượng', key: 'qty', width: 12 },
+            { header: 'Thời gian', key: 'time', width: 25 },
+            { header: 'Tỷ lệ hoàn thành so với KH tuần', key: 'pct_week', width: 15 },
+            { header: 'Tỷ lệ hoàn thành Công trình', key: 'pct_total', width: 15 },
+        ];
+
+        // Format Header Row
+        const headerRow = worksheet.getRow(1);
+        headerRow.font = { bold: true, name: 'Times New Roman', size: 12 };
+        headerRow.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        
+        let currentRowIndex = 2; // next row
+
+        // --- SECTION I: Past Schedules (Week/Month n) ---
+        const p1Title = getPeriodString(false).title;
+        worksheet.addRow({ stt: 'I', name: p1Title });
+        const p1Row = worksheet.getRow(currentRowIndex);
+        p1Row.font = { bold: true, name: 'Times New Roman', size: 12 };
+        p1Row.getCell('name').font = { bold: true, color: { argb: 'FFFF0000' }, name: 'Times New Roman', size: 12 }; // Make it red as in requested img
+        currentRowIndex++;
+
+        pastSchedules.forEach((s, idx) => {
+            worksheet.addRow({
+                stt: idx + 1,
+                name: s.content,
+                unit: '',
+                qty: '',
+                time: formatScheduleTime(s.startDate, s.endDate),
+                pct_week: '',
+                pct_total: ''
+            });
+            const r = worksheet.getRow(currentRowIndex);
+            r.font = { name: 'Times New Roman', size: 12, color: { argb: s.isCustomReport ? 'FFD97706' : 'FF000000' } };
+            r.alignment = { vertical: 'middle', wrapText: true };
+            if (s.isCustomReport) {
+                // If typed, mark red according to photo
+                r.getCell('name').font = { name: 'Times New Roman', size: 12, color: { argb: 'FFFF0000' } };
+            }
+            currentRowIndex++;
+        });
+
+        // --- SECTION II: Future Schedules (Week/Month n+1) ---
+        const p2Title = getPeriodString(true).titleFuture;
+        worksheet.addRow({ stt: 'II', name: p2Title });
+        const p2Row = worksheet.getRow(currentRowIndex);
+        p2Row.font = { bold: true, name: 'Times New Roman', size: 12 };
+        p2Row.getCell('name').font = { bold: true, color: { argb: 'FFFF0000' }, name: 'Times New Roman', size: 12 }; // Make it red as in requested img
+        currentRowIndex++;
+
+        futureSchedules.forEach((s, idx) => {
+            worksheet.addRow({
+                stt: idx + 1,
+                name: s.content,
+                unit: '',
+                qty: '',
+                time: formatScheduleTime(s.startDate, s.endDate),
+                pct_week: '',
+                pct_total: ''
+            });
+            const r = worksheet.getRow(currentRowIndex);
+            r.font = { name: 'Times New Roman', size: 12, color: { argb: s.isCustomReport ? 'FFD97706' : 'FF000000' } };
+            r.alignment = { vertical: 'middle', wrapText: true };
+            if (s.isCustomReport) {
+                // If typed, mark red according to photo
+                r.getCell('name').font = { name: 'Times New Roman', size: 12, color: { argb: 'FFFF0000' } };
+            }
+            currentRowIndex++;
+        });
+
+        // Add borders to all cells
+        worksheet.eachRow({ includeEmpty: false }, function(row, rowNumber) {
+            row.eachCell({ includeEmpty: false }, function(cell, colNumber) {
+                cell.border = {
+                    top: {style:'thin'},
+                    left: {style:'thin'},
+                    bottom: {style:'thin'},
+                    right: {style:'thin'}
+                };
+            });
+        });
+
+        // Generate buffer and download
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, `BaoCao_${reportType === 'week' ? 'Tuan' : 'Thang'}_${reportType === 'week' ? selectedWeek : selectedMonth}_${selectedYear}.xlsx`);
+    };
+
+    useImperativeHandle(printRef, () => ({
+        exportExcel: handleExportExcel
+    }));
 
     return (
         <div className="space-y-6 animate-fade-in">

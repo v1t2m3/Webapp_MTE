@@ -25,6 +25,7 @@ export function ReportsManager() {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<ReportData | null>(null);
     const personalPrintRef = useRef<{ print: () => void }>(null);
+    const weeklyMonthlyPrintRef = useRef<{ exportExcel: () => void }>(null);
 
     const fetchData = useCallback(async () => {
         try {
@@ -71,6 +72,8 @@ export function ReportsManager() {
     const handlePrint = () => {
         if (activeTab === "personal" && personalPrintRef.current) {
             personalPrintRef.current.print();
+        } else if (activeTab === "weekly-monthly" && weeklyMonthlyPrintRef.current) {
+            weeklyMonthlyPrintRef.current.exportExcel();
         } else {
             window.print();
         }
@@ -84,8 +87,17 @@ export function ReportsManager() {
                     description="Hệ thống thống kê, theo dõi khối lượng công việc, tiến độ hợp đồng và năng suất cá nhân."
                 />
                 <Button onClick={handlePrint} className="bg-[#3a0ca3] hover:bg-[#3a0ca3]/90 text-white shadow-lg print:hidden">
-                    <Printer className="w-4 h-4 mr-2" />
-                    In Báo cáo
+                    {activeTab === "weekly-monthly" ? (
+                        <>
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            Xuất Excel
+                        </>
+                    ) : (
+                        <>
+                            <Printer className="w-4 h-4 mr-2" />
+                            In Báo cáo
+                        </>
+                    )}
                 </Button>
             </div>
 
@@ -133,7 +145,7 @@ export function ReportsManager() {
                 </TabsContent>
 
                 <TabsContent value="weekly-monthly" className="mt-0 outline-none">
-                    <WeeklyMonthlyReport data={data} />
+                    <WeeklyMonthlyReport data={data} printRef={weeklyMonthlyPrintRef} />
                 </TabsContent>
 
                 <TabsContent value="contract" className="mt-0 outline-none">

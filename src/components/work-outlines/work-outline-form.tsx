@@ -350,9 +350,15 @@ export function WorkOutlineForm({
                                         <SelectValue placeholder="-- Chọn Lịch công tác --" />
                                     </SelectTrigger>
                                     <SelectContent className="max-h-[300px]">
-                                        {schedules.map(s => (
+                                        {[...schedules]
+                                            .sort((a, b) => {
+                                                const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
+                                                const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
+                                                return dateB - dateA;
+                                            })
+                                            .map(s => (
                                             <SelectItem key={s.id} value={s.id}>
-                                                <span className="font-semibold">{s.target}</span> - {s.deviceName} ({s.startDate})
+                                                <span className="font-semibold">{s.target}</span> - {s.deviceName} ({s.startDate ? format(new Date(s.startDate), 'dd/MM/yyyy') : ''})
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
