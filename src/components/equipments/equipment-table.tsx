@@ -11,20 +11,73 @@ import {
 } from "@/components/ui/table";
 import { Equipment } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { Edit2 } from "lucide-react";
+import { Edit2, FileText, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function EquipmentTable({ data, onEdit }: { data: Equipment[], onEdit?: (item: Equipment) => void }) {
-    const sortedData = useMemo(() => {
-        return [...data].sort((a, b) => {
-            const aStatus = a.status.toLowerCase();
-            const bStatus = b.status.toLowerCase();
-            const isALiquidated = aStatus.includes("thanh lý") || aStatus === "disposed" || aStatus === "đã thanh lý";
-            const isBLiquidated = bStatus.includes("thanh lý") || bStatus === "disposed" || bStatus === "đã thanh lý";
+const parseDateStr = (dateStr: string) => {
+    if (!dateStr) return null;
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+        return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+    } else if (dateStr.includes('-')) {
+        return new Date(dateStr);
+    }
+    return null;
+};
 
-            if (isALiquidated && !isBLiquidated) return 1;
-            if (!isALiquidated && isBLiquidated) return -1;
-            return 0; // maintain relative order otherwise
+const getEquipmentDerivedStatus = (item: Equipment, today: Date) => {
+    let displayStatus = item.status || "Đang hoạt động";
+    const baseStatusLower = displayStatus.toLowerCase();
+    const isLiquidatedRow = baseStatusLower.includes("thanh lý") || baseStatusLower === "disposed" || baseStatusLower === "đã thanh lý";
+    const isBrokenRow = baseStatusLower.includes("broken") || baseStatusLower.includes("hư hỏng") || baseStatusLower.includes("đang hỏng") || baseStatusLower.includes("bị hỏng");
+
+    if (!isLiquidatedRow && !isBrokenRow) {
+        const lastDate = item.lastCalibrationDate ? parseDateStr(item.lastCalibrationDate) : null;
+        const nextDate = item.nextCalibrationDate ? parseDateStr(item.nextCalibrationDate) : null;
+
+        if (lastDate && nextDate) {
+            if (today < lastDate || today > nextDate) {
+                displayStatus = "Chờ hiệu chuẩn";
+            }
+        } else if (nextDate) {
+            if (today > nextDate) {
+                displayStatus = "Chờ hiệu chuẩn";
+            }
+        }
+    }
+    return {
+        displayStatus,
+        isLiquidated: isLiquidatedRow,
+        isBroken: isBrokenRow,
+        isPendingCalibration: displayStatus === "Chờ hiệu chuẩn" || displayStatus.toLowerCase().includes("chờ h/c")
+    };
+};
+
+export function EquipmentTable({ data, onEdit, onDelete }: { data: Equipment[], onEdit?: (item: Equipment) => void, onDelete?: (id: string) => void }) {
+    const sortedData = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return [...data].sort((a, b) => {
+            const statusA = getEquipmentDerivedStatus(a, today);
+            const statusB = getEquipmentDerivedStatus(b, today);
+            
+            const getPriority = (s: ReturnType<typeof getEquipmentDerivedStatus>) => {
+                if (s.isLiquidated) return 5;
+                if (s.isBroken) return 4;
+                if (s.isPendingCalibration) return 3;
+                return 1; // Active / normal is priority 1. Inter-active priority 2 will be handled by name.
+            };
+
+            const prioA = getPriority(statusA);
+            const prioB = getPriority(statusB);
+
+            if (prioA !== prioB) return prioA - prioB;
+            
+            // Priority 2: Sort by name if both are in same pool
+            const nameA = a.name || "";
+            const nameB = b.name || "";
+            return nameA.localeCompare(nameB);
         });
     }, [data]);
 
@@ -40,52 +93,26 @@ export function EquipmentTable({ data, onEdit }: { data: Equipment[], onEdit?: (
                         <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">Ngày H/C gần nhất</TableHead>
                         <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">Ngày H/C tiếp theo</TableHead>
                         <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">Đơn vị H/C</TableHead>
+                        <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">BBKĐ/HC</TableHead>
                         <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">Trạng thái</TableHead>
-                        <TableHead className="text-slate-700 dark:text-slate-300 w-[50px]"></TableHead>
+                        <TableHead className="text-slate-700 dark:text-slate-300 w-[120px] text-right">Thao tác</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {sortedData.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={9} className="h-32 text-center text-slate-500">
+                            <TableCell colSpan={10} className="h-32 text-center text-slate-500">
                                 Chưa có dữ liệu thiết bị. Vui lòng thêm dữ liệu vào phần Equipments.
                             </TableCell>
                         </TableRow>
                     ) : (
                         sortedData.map((item) => {
-                            let displayStatus = item.status || "Đang hoạt động";
-                            const baseStatusLower = displayStatus.toLowerCase();
-                            const isLiquidatedRow = baseStatusLower.includes("thanh lý") || baseStatusLower === "disposed";
-                            const isBrokenRow = baseStatusLower.includes("broken") || baseStatusLower.includes("hư hỏng") || baseStatusLower.includes("đang hỏng") || baseStatusLower.includes("bị hỏng");
-
-                            // Check if past calibration date only if it's not liquidated AND not broken
-                            if (!isLiquidatedRow && !isBrokenRow) {
-                                const parseDateStr = (dateStr: string) => {
-                                    if (!dateStr) return null;
-                                    const parts = dateStr.split('/');
-                                    if (parts.length === 3) {
-                                        return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-                                    } else if (dateStr.includes('-')) {
-                                        return new Date(dateStr);
-                                    }
-                                    return null;
-                                };
-
-                                const lastDate = item.lastCalibrationDate ? parseDateStr(item.lastCalibrationDate) : null;
-                                const nextDate = item.nextCalibrationDate ? parseDateStr(item.nextCalibrationDate) : null;
-                                const today = new Date();
-                                today.setHours(0, 0, 0, 0);
-
-                                if (lastDate && nextDate) {
-                                    if (today < lastDate || today > nextDate) {
-                                        displayStatus = "Chờ hiệu chuẩn";
-                                    }
-                                } else if (nextDate) {
-                                    if (today > nextDate) {
-                                        displayStatus = "Chờ hiệu chuẩn";
-                                    }
-                                }
-                            }
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const derived = getEquipmentDerivedStatus(item, today);
+                            let displayStatus = derived.displayStatus;
+                            const isLiquidatedRow = derived.isLiquidated;
+                            const isBrokenRow = derived.isBroken;
 
                             const displayStatusLower = displayStatus.toLowerCase();
 
@@ -126,21 +153,53 @@ export function EquipmentTable({ data, onEdit }: { data: Equipment[], onEdit?: (
                                     <TableCell className="text-slate-600 dark:text-slate-400">{item.nextCalibrationDate}</TableCell>
                                     <TableCell className="text-slate-600 dark:text-slate-400">{item.calibrationAgent}</TableCell>
                                     <TableCell>
+                                        {item.calibrationReportUrl ? (
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                className="h-8 shadow-sm flex items-center bg-blue-50/50 hover:bg-blue-100 text-blue-700 border-blue-200"
+                                                onClick={() => {
+                                                    const page = item.calibrationReportPage || "01";
+                                                    window.open(`${item.calibrationReportUrl}#page=${page}`, "_blank");
+                                                }}
+                                            >
+                                                <FileText className="w-3.5 h-3.5 mr-1.5" />
+                                                Xem
+                                            </Button>
+                                        ) : (
+                                            <span className="text-slate-400 italic text-sm">-</span>
+                                        )}
+                                    </TableCell>
+                                    <TableCell>
                                         <Badge variant="outline" className={`font-medium shadow-sm whitespace-nowrap ${badgeClasses}`}>
                                             {displayStatus}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>
-                                        {onEdit && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/40"
-                                                onClick={() => onEdit({ ...item, status: displayStatus })}
-                                            >
-                                                <Edit2 className="h-4 w-4" />
-                                            </Button>
-                                        )}
+                                    <TableCell className="text-right">
+                                        <div className="flex items-center justify-end gap-1">
+                                            {onEdit && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/40"
+                                                    onClick={() => onEdit({ ...item, status: displayStatus })}
+                                                    title="Chỉnh sửa"
+                                                >
+                                                    <Edit2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                            {onDelete && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40"
+                                                    onClick={() => onDelete(item.id)}
+                                                    title="Xóa thiết bị"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             );

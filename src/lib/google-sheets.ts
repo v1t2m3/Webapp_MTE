@@ -958,7 +958,7 @@ export const googleSheetsService = {
             const sheets = google.sheets({ version: 'v4', auth: client });
             const response = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'Equipments!A2:I',
+                range: 'Equipments!A2:K',
             });
             const rows = response.data.values;
             if (!rows) return [];
@@ -972,6 +972,8 @@ export const googleSheetsService = {
                 nextCalibrationDate: row[6] || '',
                 calibrationAgent: row[7] || '',
                 status: row[8] || 'Active',
+                calibrationReportUrl: row[9] || '',
+                calibrationReportPage: row[10] || '',
             }));
         } catch (error) {
             console.error('Error fetching Equipments:', error);
@@ -996,12 +998,14 @@ export const googleSheetsService = {
                     equipment.nextCalibrationDate || '',
                     equipment.calibrationAgent || '',
                     equipment.status || 'Active',
+                    equipment.calibrationReportUrl || '',
+                    equipment.calibrationReportPage || '',
                 ],
             ];
 
             await sheets.spreadsheets.values.append({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'Equipments!A:I',
+                range: 'Equipments!A:K',
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -1055,12 +1059,14 @@ export const googleSheetsService = {
                     equipment.nextCalibrationDate || '',
                     equipment.calibrationAgent || '',
                     equipment.status || 'Active',
+                    equipment.calibrationReportUrl || '',
+                    equipment.calibrationReportPage || '',
                 ],
             ];
 
             await sheets.spreadsheets.values.update({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `Equipments!A${rowIndex}:I${rowIndex}`,
+                range: `Equipments!A${rowIndex}:K${rowIndex}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -1083,7 +1089,7 @@ export const googleSheetsService = {
 
             await sheets.spreadsheets.values.clear({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `Equipments!A${rowIndex}:I${rowIndex}`,
+                range: `Equipments!A${rowIndex}:K${rowIndex}`,
             });
 
             return true;

@@ -50,6 +50,8 @@ export interface Equipment {
     nextCalibrationDate: string;
     calibrationAgent: string;
     status: EquipmentStatus | string;
+    calibrationReportUrl?: string;
+    calibrationReportPage?: string;
 }
 
 export type ConsumableCategory = 'Hóa chất' | 'Chất chuẩn' | 'Vật tư tiêu hao' | string;

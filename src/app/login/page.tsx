@@ -1,6 +1,10 @@
 import { Metadata } from "next"
 import { LoginForm } from "@/components/auth/login-form"
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+
 export const metadata: Metadata = {
     title: "Đăng nhập | MTE-LAB",
     description: "Đăng nhập vào hệ thống quản lý phòng thí nghiệm CPSC-MTE",

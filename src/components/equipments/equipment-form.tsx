@@ -57,6 +57,8 @@ export function EquipmentForm({
         nextCalibrationDate: "",
         calibrationAgent: "",
         status: "Đang hoạt động",
+        calibrationReportUrl: "",
+        calibrationReportPage: "01",
     };
 
     const { register, handleSubmit, reset, setValue, control } = useForm<Partial<Equipment>>({
@@ -198,6 +200,19 @@ export function EquipmentForm({
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="calibrationAgent" className="text-right">Đơn vị H/C</Label>
                             <Input id="calibrationAgent" {...register("calibrationAgent")} className="col-span-3" />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="calibrationReportUrl" className="text-right">Đường dẫn BBKĐ/HC</Label>
+                            <Input id="calibrationReportUrl" placeholder="Link tải file PDF (VD: Google Drive)" {...register("calibrationReportUrl")} className="col-span-3" />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="calibrationReportPage" className="text-right">Trang số</Label>
+                            <div className="col-span-3">
+                                <Input id="calibrationReportPage" placeholder="01" {...register("calibrationReportPage")} />
+                                <p className="text-xs text-slate-500 mt-1 italic">
+                                    Lưu ý: Chức năng nhảy tới đúng trang chỉ hoạt động với link PDF tĩnh (.pdf). Các link từ SharePoint/Google Drive sẽ luôn mở ở trang 1.
+                                </p>
+                            </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="status" className="text-right">Trạng thái</Label>

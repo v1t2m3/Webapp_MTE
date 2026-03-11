@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Calculator, Save, AlertTriangle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast"; // Assuming use-toast hook exists, else we can mock it
 
+
+
 export default function CalculationsPage() {
     return (
         <div className="space-y-6 animate-in fade-in duration-500">

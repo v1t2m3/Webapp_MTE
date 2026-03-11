@@ -3,6 +3,10 @@ import { dataService } from "@/lib/data-service";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+
 export default async function VehiclePage() {
     const vehicles = await dataService.getVehicles();
 

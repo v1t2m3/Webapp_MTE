@@ -4,6 +4,10 @@ import { Users, Truck, FileText, CalendarDays } from "lucide-react";
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+
 export default async function Home() {
   const personnel = await dataService.getPersonnel();
   const vehicles = await dataService.getVehicles();

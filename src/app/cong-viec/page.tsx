@@ -4,6 +4,10 @@ import { CalendarDays, ClipboardList, FileBarChart } from "lucide-react";
 import Link from "next/link";
 import { addDays, isWithinInterval, startOfDay } from "date-fns";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+
 export default async function CongViecPage() {
     const schedules = await dataService.getSchedules();
     const workOutlines = await dataService.getWorkOutlines();

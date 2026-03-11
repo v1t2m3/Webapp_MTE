@@ -49,8 +49,16 @@ export function IsoPersonnelForm({
     useEffect(() => {
         if (open) {
             if (initialData) {
+                let formattedDate = initialData.lastTrainingDate || "";
+                if (formattedDate.includes('/')) {
+                    const parts = formattedDate.split('/');
+                    if (parts.length === 3) {
+                        formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    }
+                }
                 reset({
                     ...initialData,
+                    lastTrainingDate: formattedDate
                 });
                 const equips = initialData.authorizedEquipments || "";
                 if (!equips || equips === "Không") {
@@ -98,6 +106,8 @@ export function IsoPersonnelForm({
                 ...data,
                 id: isEditing ? initialData.id : undefined,
                 authorizedEquipments: finalEquipmentsStr,
+                fullName: data.name,
+                position: data.job,
             };
 
             const res = await fetch(url, {
@@ -116,7 +126,7 @@ export function IsoPersonnelForm({
             setEquipSelectionType("none");
             setSelectedEquipIds([]);
             onOpenChange(false);
-            router.refresh();
+            window.location.reload();
         } catch (error) {
             toast({
                 title: "Lỗi",
@@ -214,7 +224,7 @@ export function IsoPersonnelForm({
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="status" className="text-right">Trạng thái</Label>
                             <div className="col-span-3">
-                                <Select onValueChange={(val) => setValue("status", val as "Active" | "Inactive" | "On Leave")} defaultValue="Active">
+                                <Select onValueChange={(val) => setValue("status", val as "Active" | "Inactive" | "On Leave")} value={watch("status") || "Active"}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Chọn trạng thái" />
                                     </SelectTrigger>

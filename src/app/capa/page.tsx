@@ -1,6 +1,10 @@
 import { CapaClient } from "./capa-client";
 import { dataService } from "@/lib/data-service";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+
 export default async function CapaPage() {
     const capa = await dataService.getCapa();
     const personnel = await dataService.getPersonnel();

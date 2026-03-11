@@ -10,6 +10,8 @@ import { GlassCard, GlassPageHeader } from "@/components/ui/GlassCard";
 import { useSession } from "next-auth/react";
 import { hasAccess } from "@/lib/rbac";
 
+
+
 export default function ContractPage() {
     const [data, setData] = useState<Contract[]>([]);
     const [loading, setLoading] = useState(true);

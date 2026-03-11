@@ -209,5 +209,13 @@
     "level": 2,
     "fullName": "Ngô Minh Thành Đạt",
     "isActive": true
+  },
+  {
+    "id": "Viewer",
+    "username": "Viewer",
+    "passwordHash": "$2b$10$FdVHNEtdzRX0yzHz8zqqj.WrDbodYCZELcwjJlQK2S39PFi5TLJeq",
+    "role": "Viewer",
+    "fullName": "Viewer",
+    "isActive": true
   }
 ]

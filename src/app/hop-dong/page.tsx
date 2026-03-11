@@ -8,6 +8,8 @@ import { Contract } from "@/types";
 import { ContractForm } from "@/components/ContractForm";
 import { useSession } from "next-auth/react";
 
+
+
 export default function ContractPage() {
     const { data: session } = useSession();
     const [data, setData] = useState<Contract[]>([]);
