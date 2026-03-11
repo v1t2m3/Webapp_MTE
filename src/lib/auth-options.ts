@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { getUserByUsername, verifyPassword } from "./auth-service";
 import { UserRole } from "@/types";
 
-const useSecureCookies = process.env.NODE_ENV === "production";
+const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith("https://") || false;
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 const sessionCookieOption = {
     httpOnly: true,

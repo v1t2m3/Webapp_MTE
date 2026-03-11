@@ -129,7 +129,7 @@
     "role": "User",
     "fullName": "Nguyễn Đăng Khải Hoàn",
     "isActive": true,
-    "level": 3
+    "level": 1
   },
   {
     "id": "laihd",
@@ -199,6 +199,15 @@
     "role": "User",
     "level": 4,
     "fullName": "Phan Ngọc Hợp",
+    "isActive": true
+  },
+  {
+    "id": "datnmt",
+    "username": "datnmt",
+    "passwordHash": "$2b$10$uDPX.ex3VnbbJFgVS1e2weXnb8mqXJqkUuLuRAXs8NBckbZvrUyp.",
+    "role": "User",
+    "level": 2,
+    "fullName": "Ngô Minh Thành Đạt",
     "isActive": true
   }
 ]

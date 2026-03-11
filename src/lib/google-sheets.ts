@@ -958,7 +958,7 @@ export const googleSheetsService = {
             const sheets = google.sheets({ version: 'v4', auth: client });
             const response = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'Equipments !A2:I', // Trailing space required
+                range: 'Equipments!A2:I',
             });
             const rows = response.data.values;
             if (!rows) return [];
@@ -1001,7 +1001,7 @@ export const googleSheetsService = {
 
             await sheets.spreadsheets.values.append({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'Equipments !A:I',
+                range: 'Equipments!A:I',
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -1021,7 +1021,7 @@ export const googleSheetsService = {
 
             const response = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'Equipments !A:A', // Important: keep the space
+                range: 'Equipments!A:A',
             });
 
             const rows = response.data.values;
@@ -1060,7 +1060,7 @@ export const googleSheetsService = {
 
             await sheets.spreadsheets.values.update({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `Equipments !A${rowIndex}:I${rowIndex}`, // Important: keep the space
+                range: `Equipments!A${rowIndex}:I${rowIndex}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -1083,7 +1083,7 @@ export const googleSheetsService = {
 
             await sheets.spreadsheets.values.clear({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `Equipments !A${rowIndex}:I${rowIndex}`, // Important: keep the space
+                range: `Equipments!A${rowIndex}:I${rowIndex}`,
             });
 
             return true;

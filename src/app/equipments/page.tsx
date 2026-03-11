@@ -2,6 +2,9 @@ import { EquipmentTable } from "@/components/equipments/equipment-table";
 import { EquipmentClient } from "./equipment-client";
 import { dataService } from "@/lib/data-service";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function EquipmentsPage() {
     const equipments = await dataService.getEquipments();
 

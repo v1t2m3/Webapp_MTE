@@ -51,8 +51,7 @@ export const VehicleDispatchPdfTemplate = forwardRef<HTMLDivElement, VehicleDisp
         const monthStr = format(dateObj, 'MM', { locale: vi });
         const yearStr = format(dateObj, 'yyyy', { locale: vi });
 
-        // Component representing exactly one half of the page
-        const HalfPageContent = () => (
+        const contentMarkup = (
             <div className="flex-1 px-4 py-20 h-full flex flex-col font-['Times_New_Roman'] relative" style={{ fontSize: '10pt' }}>
                 {/* Header Section */}
                 <div className="flex justify-between items-start mb-2 w-full">
@@ -124,12 +123,12 @@ export const VehicleDispatchPdfTemplate = forwardRef<HTMLDivElement, VehicleDisp
 
                         {/* Left Half */}
                         <div className="w-1/2 h-full border-r border-transparent">
-                            <HalfPageContent />
+                            {contentMarkup}
                         </div>
 
                         {/* Right Half */}
                         <div className="w-1/2 h-full">
-                            <HalfPageContent />
+                            {contentMarkup}
                         </div>
                     </div>
                 </div>
