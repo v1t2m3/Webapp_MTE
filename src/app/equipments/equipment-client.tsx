@@ -83,7 +83,7 @@ export function EquipmentClient({ data }: { data: Equipment[] }) {
         <>
             <div className="flex items-center justify-between">
                 <h2 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-slate-200">
-                    Máy móc, Thiết bị (Mục 6.4)
+                    Thiết bị thí nghiệm và phương tiện đo
                 </h2>
                 {canAdd && (
                     <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm" onClick={() => {

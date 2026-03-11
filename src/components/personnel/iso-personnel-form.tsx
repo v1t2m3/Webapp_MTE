@@ -23,12 +23,14 @@ export function IsoPersonnelForm({
     open,
     onOpenChange,
     availableEquipments,
-    initialData
+    initialData,
+    allPersonnel
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     availableEquipments: Equipment[];
     initialData?: Personnel | null;
+    allPersonnel?: Personnel[];
 }) {
     const { register, handleSubmit, reset, setValue, watch } = useForm<Partial<Personnel>>();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -151,7 +153,31 @@ export function IsoPersonnelForm({
                     <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="name" className="text-right">Họ và Tên</Label>
-                            <Input id="name" {...register("name", { required: true })} className="col-span-3" />
+                            <div className="col-span-3">
+                                <Select 
+                                    onValueChange={(val) => {
+                                        setValue("name", val);
+                                        // Auto-fill department and job if matched
+                                        if (allPersonnel) {
+                                            const matched = allPersonnel.find(p => (p.fullName || p.name) === val);
+                                            if (matched) {
+                                                if (matched.department) setValue("department", matched.department);
+                                                if (matched.position || matched.job) setValue("job", matched.position || matched.job);
+                                            }
+                                        }
+                                    }} 
+                                    value={watch("name") || ""}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Chọn nhân sự" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Array.from(new Set((allPersonnel || []).map(p => p.fullName || p.name).filter(Boolean))).map(name => (
+                                            <SelectItem key={name} value={name!}>{name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="department" className="text-right">Phòng ban</Label>
@@ -235,6 +261,15 @@ export function IsoPersonnelForm({
                                     </SelectContent>
                                 </Select>
                             </div>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4 border-t pt-4">
+                            <Label htmlFor="profileLink" className="text-right">Hồ sơ đính kèm (Link Drive)</Label>
+                            <Input 
+                                id="profileLink" 
+                                placeholder="Paste đường dẫn Google Drive vào đây..." 
+                                {...register("profileLink")} 
+                                className="col-span-3 font-mono text-sm text-blue-600 dark:text-blue-400" 
+                            />
                         </div>
                     </div>
                     <DialogFooter>

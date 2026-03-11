@@ -11,10 +11,12 @@ import { hasAccess } from "@/lib/rbac";
 
 export function IsoPersonnelClient({
     personnel,
-    equipments
+    equipments,
+    allPersonnel
 }: {
     personnel: Personnel[];
     equipments: Equipment[];
+    allPersonnel?: Personnel[];
 }) {
     const { data: session } = useSession();
     const [open, setOpen] = useState(false);
@@ -74,6 +76,7 @@ export function IsoPersonnelClient({
                     }}
                     availableEquipments={equipments}
                     initialData={editingItem}
+                    allPersonnel={allPersonnel || []}
                 />
             )}
         </div>

@@ -7,9 +7,14 @@ export const revalidate = 0;
 export default async function PersonnelPage() {
     const personnel = await dataService.getIsoPersonnel();
     const equipments = await dataService.getEquipments();
+    const allPersonnel = await dataService.getPersonnel();
 
     return (
-        <IsoPersonnelClient personnel={personnel} equipments={equipments} />
+        <IsoPersonnelClient 
+            personnel={personnel} 
+            equipments={equipments} 
+            allPersonnel={allPersonnel} 
+        />
     );
 }
 

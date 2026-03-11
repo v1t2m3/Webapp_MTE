@@ -101,7 +101,7 @@ export default function ContractPage() {
         <div className="space-y-6 animate-fade-in">
             <GlassPageHeader
                 title="Quản lý Hợp đồng"
-                description="Danh sách hợp đồng và tiến độ (Dữ liệu từ Google Sheets)."
+                description="Danh sách hợp đồng và tiến độ."
             >
                 <div className="flex items-center gap-2">
                     {canAdd && (

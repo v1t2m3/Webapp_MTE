@@ -34,6 +34,7 @@ export function IsoPersonnelTable({
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Các phương pháp<br />được phép</TableHead>
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Các thiết bị<br />được phép</TableHead>
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Ngày đào tạo<br />gần nhất</TableHead>
+                        <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Hồ sơ đính kèm</TableHead>
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Trạng thái</TableHead>
                         {(onEdit || onDelete) && (
                             <TableHead className="text-right text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Thao tác</TableHead>
@@ -61,14 +62,30 @@ export function IsoPersonnelTable({
                                 </TableCell>
                                 <TableCell className="text-slate-600 dark:text-slate-400">{item.lastTrainingDate}</TableCell>
                                 <TableCell>
+                                    {item.profileLink ? (
+                                        <a 
+                                            href={item.profileLink} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            className="inline-flex items-center justify-center h-8 w-8 text-[#4cc9f0] bg-[#4cc9f0]/5 hover:bg-[#4cc9f0]/20 rounded-md border border-[#4cc9f0]/30 hover:border-[#4cc9f0]/80 shadow-[0_0_8px_rgba(76,201,240,0.15)] hover:shadow-[0_0_12px_rgba(76,201,240,0.4)] transition-all" 
+                                            title="Xem hồ sơ"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                                        </a>
+                                    ) : (
+                                        <span className="text-slate-400 italic text-sm select-none">-</span>
+                                    )}
+                                </TableCell>
+                                <TableCell>
                                     <Badge
-                                        variant={
+                                        variant="outline"
+                                        className={`font-medium whitespace-nowrap ${
                                             item.status === "Active"
-                                                ? "default"
+                                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
                                                 : item.status === "On Leave"
-                                                    ? "secondary"
-                                                    : "destructive"
-                                        }
+                                                    ? "bg-orange-500/10 text-orange-500 border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.2)]"
+                                                    : "bg-red-500/10 text-red-500 border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.2)]"
+                                        }`}
                                     >
                                         {item.status}
                                     </Badge>
@@ -80,7 +97,7 @@ export function IsoPersonnelTable({
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-[#4361ee] hover:text-[#4361ee] hover:bg-[#4361ee]/10"
+                                                    className="h-8 w-8 text-[#4cc9f0] border border-transparent hover:border-[#4cc9f0]/50 hover:bg-[#4cc9f0]/10 hover:shadow-[0_0_10px_rgba(76,201,240,0.3)] transition-all"
                                                     onClick={() => onEdit(item)}
                                                 >
                                                     <Edit className="h-4 w-4" />
@@ -90,7 +107,7 @@ export function IsoPersonnelTable({
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-[#f72585] hover:text-[#f72585] hover:bg-[#f72585]/10"
+                                                    className="h-8 w-8 text-[#f72585] border border-transparent hover:border-[#f72585]/50 hover:bg-[#f72585]/10 hover:shadow-[0_0_10px_rgba(247,37,133,0.3)] transition-all"
                                                     onClick={() => onDelete(item.id)}
                                                     title="Xoá"
                                                 >

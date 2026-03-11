@@ -90,7 +90,7 @@ export function EquipmentTable({ data, onEdit, onDelete }: { data: Equipment[], 
                         <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">Số Serial</TableHead>
                         <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">Vị trí</TableHead>
                         <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">Chu kỳ H/C</TableHead>
-                        <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">Ngày H/C gần nhất</TableHead>
+                        {/* <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">Ngày H/C gần nhất</TableHead> */}
                         <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">Ngày H/C tiếp theo</TableHead>
                         <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">Đơn vị H/C</TableHead>
                         <TableHead className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">BBKĐ/HC</TableHead>
@@ -124,16 +124,16 @@ export function EquipmentTable({ data, onEdit, onDelete }: { data: Equipment[], 
                             const isActive = !isLiquidatedRow && !isBroken && !isCalibrating && !isPendingCalibration;
 
                             const badgeClasses = isLiquidatedRow
-                                ? "bg-slate-100/80 text-slate-500 border-transparent dark:bg-slate-800/50 dark:text-slate-400"
+                                ? "bg-slate-500/10 text-slate-400 border-slate-500/50 shadow-[0_0_10px_rgba(100,116,139,0.2)]"
                                 : isBroken
-                                    ? "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50"
+                                    ? "bg-red-500/10 text-red-500 border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.2)]"
                                     : isCalibrating
-                                        ? "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/50"
+                                        ? "bg-amber-500/10 text-amber-500 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.2)]"
                                         : isPendingCalibration
-                                            ? "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-900/50"
+                                            ? "bg-orange-500/10 text-orange-500 border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.2)]"
                                             : isActive
-                                                ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/50"
-                                                : "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/50";
+                                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
+                                                : "bg-blue-500/10 text-blue-500 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.2)]";
 
                             // If liquidated, make row visually muted/disabled
                             const rowClasses = `transition-all duration-200 ${isLiquidatedRow
@@ -149,29 +149,26 @@ export function EquipmentTable({ data, onEdit, onDelete }: { data: Equipment[], 
                                     <TableCell className="text-slate-600 dark:text-slate-400 whitespace-nowrap">
                                         {item.calibrationFrequency} {item.calibrationFrequency && !isNaN(Number(item.calibrationFrequency)) && "tháng"}
                                     </TableCell>
-                                    <TableCell className="text-slate-600 dark:text-slate-400">{item.lastCalibrationDate}</TableCell>
+                                    {/* <TableCell className="text-slate-600 dark:text-slate-400">{item.lastCalibrationDate}</TableCell> */}
                                     <TableCell className="text-slate-600 dark:text-slate-400">{item.nextCalibrationDate}</TableCell>
                                     <TableCell className="text-slate-600 dark:text-slate-400">{item.calibrationAgent}</TableCell>
                                     <TableCell>
                                         {item.calibrationReportUrl ? (
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm" 
-                                                className="h-8 shadow-sm flex items-center bg-blue-50/50 hover:bg-blue-100 text-blue-700 border-blue-200"
-                                                onClick={() => {
-                                                    const page = item.calibrationReportPage || "01";
-                                                    window.open(`${item.calibrationReportUrl}#page=${page}`, "_blank");
-                                                }}
+                                            <a 
+                                                href={`${item.calibrationReportUrl}#page=${item.calibrationReportPage || "01"}`}
+                                                target="_blank" 
+                                                rel="noopener noreferrer" 
+                                                className="inline-flex items-center justify-center h-8 w-8 text-[#4cc9f0] bg-[#4cc9f0]/5 hover:bg-[#4cc9f0]/20 rounded-md border border-[#4cc9f0]/30 hover:border-[#4cc9f0]/80 shadow-[0_0_8px_rgba(76,201,240,0.15)] hover:shadow-[0_0_12px_rgba(76,201,240,0.4)] transition-all" 
+                                                title="Xem BBKĐ/HC"
                                             >
-                                                <FileText className="w-3.5 h-3.5 mr-1.5" />
-                                                Xem
-                                            </Button>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                                            </a>
                                         ) : (
                                             <span className="text-slate-400 italic text-sm">-</span>
                                         )}
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" className={`font-medium shadow-sm whitespace-nowrap ${badgeClasses}`}>
+                                        <Badge variant="outline" className={`font-medium whitespace-nowrap ${badgeClasses}`}>
                                             {displayStatus}
                                         </Badge>
                                     </TableCell>
@@ -181,7 +178,7 @@ export function EquipmentTable({ data, onEdit, onDelete }: { data: Equipment[], 
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/40"
+                                                    className="h-8 w-8 text-[#4cc9f0] border border-transparent hover:border-[#4cc9f0]/50 hover:bg-[#4cc9f0]/10 hover:shadow-[0_0_10px_rgba(76,201,240,0.3)] transition-all"
                                                     onClick={() => onEdit({ ...item, status: displayStatus })}
                                                     title="Chỉnh sửa"
                                                 >
@@ -192,7 +189,7 @@ export function EquipmentTable({ data, onEdit, onDelete }: { data: Equipment[], 
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40"
+                                                    className="h-8 w-8 text-[#f72585] border border-transparent hover:border-[#f72585]/50 hover:bg-[#f72585]/10 hover:shadow-[0_0_10px_rgba(247,37,133,0.3)] transition-all"
                                                     onClick={() => onDelete(item.id)}
                                                     title="Xóa thiết bị"
                                                 >

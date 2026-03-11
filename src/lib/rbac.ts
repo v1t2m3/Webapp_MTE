@@ -68,10 +68,9 @@ export function hasAccess(role: UserRole | undefined, level: number | undefined,
             case "nhan-su-62":
             case "may-moc-64":
             case "capa-87":
-                // Lvl 1 & 3: Có quyền Thêm, Sửa cho mảng Thử nghiệm (Mục 6.2, 6.4, 8.7)
-                // Lưu ý: Đề bài yêu cầu "Chỉ sửa thiết bị/CAPA" nên Action Delete sẽ tự rớt bằng False.
+                // Lvl 1 & 3: Có quyền Thêm, Sửa, Xoá cho mảng Thử nghiệm (Mục 6.2, 6.4, 8.7)
                 if (userLvl === 1 || userLvl === 3) {
-                    if (action === "create" || action === "update") return true;
+                    if (action === "create" || action === "update" || action === "delete") return true;
                 }
 
                 // Chức năng Hoàn Thành CAPA: Bất kỳ User nào (1,2,3,4) là Người phụ trách đều đổi được

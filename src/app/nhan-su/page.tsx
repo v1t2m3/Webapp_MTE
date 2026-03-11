@@ -100,7 +100,7 @@ export default function PersonnelPage() {
         <div className="space-y-6 animate-fade-in">
             <GlassPageHeader
                 title="Quản lý Nhân sự"
-                description="Danh sách nhân viên (Dữ liệu từ Google Sheets)."
+                description="Danh sách nhân viên."
             >
                 <div className="flex items-center gap-2">
                     {canAdd && (

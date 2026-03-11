@@ -101,7 +101,7 @@ export default function VehiclePage() {
         <div className="space-y-6 animate-fade-in">
             <GlassPageHeader
                 title="Quản lý Xe & Thiết bị"
-                description="Danh sách phương tiện và thiết bị (Dữ liệu từ Google Sheets)."
+                description="Danh sách phương tiện và thiết bị."
             >
                 <div className="flex items-center gap-2">
                     {canAdd && (

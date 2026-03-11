@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { CAPA } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { Edit2, ExternalLink } from "lucide-react";
+import { Edit2, ExternalLink, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 function parseDateStr(dateStr: string | undefined): Date | null {
@@ -25,7 +25,7 @@ function parseDateStr(dateStr: string | undefined): Date | null {
     return null;
 }
 
-export function CapaTable({ data, onEdit }: { data: CAPA[], onEdit?: (item: CAPA) => void }) {
+export function CapaTable({ data, onEdit, onDelete }: { data: CAPA[], onEdit?: (item: CAPA) => void, onDelete?: (id: string) => void }) {
     const sortedData = useMemo(() => {
         return [...data].sort((a, b) => {
             const aStatus = (a.status || "").toLowerCase();
@@ -160,8 +160,14 @@ export function CapaTable({ data, onEdit }: { data: CAPA[], onEdit?: (item: CAPA
                                     </TableCell>
                                     <TableCell>
                                         {item.linkFile ? (
-                                            <a href={item.linkFile} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 rounded-md transition-colors" title="Xem hồ sơ">
-                                                <ExternalLink className="w-4 h-4" />
+                                            <a 
+                                                href={item.linkFile} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer" 
+                                                className="inline-flex items-center justify-center h-8 w-8 text-[#4cc9f0] bg-[#4cc9f0]/5 hover:bg-[#4cc9f0]/20 rounded-md border border-[#4cc9f0]/30 hover:border-[#4cc9f0]/80 shadow-[0_0_8px_rgba(76,201,240,0.15)] hover:shadow-[0_0_12px_rgba(76,201,240,0.4)] transition-all" 
+                                                title="Xem hồ sơ"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
                                             </a>
                                         ) : "-"}
                                     </TableCell>
@@ -171,16 +177,30 @@ export function CapaTable({ data, onEdit }: { data: CAPA[], onEdit?: (item: CAPA
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
-                                        {onEdit && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/40 z-10 relative"
-                                                onClick={() => onEdit({ ...item, status: displayStatus })}
-                                            >
-                                                <Edit2 className="h-4 w-4" />
-                                            </Button>
-                                        )}
+                                        <div className="flex items-center justify-end gap-1">
+                                            {onEdit && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-[#4cc9f0] border border-transparent hover:border-[#4cc9f0]/50 hover:bg-[#4cc9f0]/10 hover:shadow-[0_0_10px_rgba(76,201,240,0.3)] transition-all z-10 relative"
+                                                    onClick={() => onEdit({ ...item, status: displayStatus })}
+                                                    title="Chỉnh sửa"
+                                                >
+                                                    <Edit2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                            {onDelete && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-[#f72585] border border-transparent hover:border-[#f72585]/50 hover:bg-[#f72585]/10 hover:shadow-[0_0_10px_rgba(247,37,133,0.3)] transition-all z-10 relative"
+                                                    onClick={() => onDelete(item.id)}
+                                                    title="Xóa CAPA"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            )}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             );

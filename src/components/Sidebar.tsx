@@ -22,7 +22,17 @@ import {
     CalendarDays,
     ClipboardList,
     FileBarChart,
-    ChevronLeft
+    ChevronLeft,
+    User,
+    Badge,
+    Drill,
+    ShieldCheckIcon,
+    TestTubes,
+    Microscope,
+    Atom,
+    VectorSquare,
+    Notebook,
+    PencilRuler
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -31,34 +41,41 @@ import { useSession } from "next-auth/react";
 
 const routes = [
     {
-        label: "Tổng quan",
+        label: "TỔNG QUAN",
         icon: LayoutDashboard,
         href: "/",
-        color: "text-[#4cc9f0]",
+
     },
     {
-        label: "Nguồn lực",
-        icon: Database,
+        label: "NGUỒN LỰC",
+        icon: VectorSquare,
         href: "/nguon-luc",
-        color: "text-[#7209b7]",
+
     },
     {
-        label: "Công việc",
-        icon: Briefcase,
+        label: "CÔNG VIỆC",
+        icon: Notebook,
         href: "/cong-viec",
-        color: "text-[#f72585]",
+
     },
     {
-        label: "Quản lý Thử nghiệm",
-        icon: TestTube,
-        color: "text-green-400",
+        label: "QUẢN LÝ THỬ NGHIỆM",
+        icon: Atom,
         isGroup: true,
         subRoutes: [
             { label: "Công cụ Tính toán", href: "/cong-cu", icon: Calculator },
-            { label: "Nhân sự (Mục 6.2)", href: "/personnel", icon: Shield },
-            { label: "Máy móc (Mục 6.4)", href: "/equipments", icon: Database },
-            { label: "Hóa chất (Mục 6.6)", href: "/consumables", icon: Search },
-            { label: "CAPA (Mục 8.7)", href: "/capa", icon: AlertTriangle },
+            { label: "Nhân sự (Mục 6.2)", href: "/personnel", icon: User },
+            {
+                label: "Thiết bị (Mục 6.4)",
+                icon: PencilRuler,
+                isGroup: true,
+                subRoutes: [
+                    { label: "Thiết bị thí nghiệm", href: "/equipments", icon: Microscope },
+                    { label: "Máy thi công", href: "/construction-machines", icon: Drill }
+                ]
+            },
+            { label: "Hóa chất (Mục 6.6)", href: "/consumables", icon: TestTube },
+            { label: "CAPA (Mục 8.7)", href: "/capa", icon: ShieldCheckIcon },
             { label: "Tài liệu (Mục 8.3)", href: "/documents", icon: FileTextIcon },
         ]
     },
@@ -133,21 +150,60 @@ export function Sidebar() {
 
                                         {isOpen && route.subRoutes && (
                                             <div className="mt-1 ml-4 space-y-1 border-l border-white/20 pl-4 py-2">
-                                                {route.subRoutes.map((subRoute) => (
-                                                    <Link
-                                                        key={subRoute.href}
-                                                        href={subRoute.href}
-                                                        className={cn(
-                                                            "text-sm group flex p-2 w-full justify-start font-medium cursor-pointer hover:bg-white/10 rounded-lg transition",
-                                                            pathname === subRoute.href ? "bg-white/20 text-white shadow-sm" : "text-white/60 hover:text-white"
-                                                        )}
-                                                    >
-                                                        <div className="flex items-center flex-1">
-                                                            <subRoute.icon className={cn("h-4 w-4 mr-3 text-white/80")} />
-                                                            <span className="drop-shadow-sm">{subRoute.label}</span>
-                                                        </div>
-                                                    </Link>
-                                                ))}
+                                                {route.subRoutes.map((subRoute) => {
+                                                    if (subRoute.isGroup) {
+                                                        const isSubOpen = openGroups[subRoute.label];
+                                                        return (
+                                                            <div key={subRoute.label} className="mt-2 mb-1">
+                                                                <button
+                                                                    onClick={() => toggleGroup(subRoute.label)}
+                                                                    className="w-full flex items-center justify-between p-2 text-white/90 hover:bg-white/10 rounded-lg transition"
+                                                                >
+                                                                    <div className="flex items-center flex-1">
+                                                                        <subRoute.icon className="h-4 w-4 mr-3 text-white/80" />
+                                                                        <span className="drop-shadow-sm text-sm">{subRoute.label}</span>
+                                                                    </div>
+                                                                    {isSubOpen ? <ChevronDown className="h-3 w-3 text-white/70" /> : <ChevronRight className="h-3 w-3 text-white/70" />}
+                                                                </button>
+                                                                {isSubOpen && subRoute.subRoutes && (
+                                                                    <div className="mt-1 ml-2 space-y-1 border-l border-white/20 pl-4 py-1">
+                                                                        {subRoute.subRoutes.map((nestedRoute) => (
+                                                                            <Link
+                                                                                key={nestedRoute.href}
+                                                                                href={nestedRoute.href!}
+                                                                                className={cn(
+                                                                                    "text-sm group flex p-2 w-full justify-start font-medium cursor-pointer hover:bg-white/10 rounded-lg transition",
+                                                                                    pathname === nestedRoute.href ? "bg-white/20 text-white shadow-sm" : "text-white/60 hover:text-white"
+                                                                                )}
+                                                                            >
+                                                                                <div className="flex items-center flex-1">
+                                                                                    <nestedRoute.icon className={cn("h-4 w-4 mr-3 text-white/60")} />
+                                                                                    <span className="drop-shadow-sm">{nestedRoute.label}</span>
+                                                                                </div>
+                                                                            </Link>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    }
+
+                                                    return (
+                                                        <Link
+                                                            key={subRoute.href}
+                                                            href={subRoute.href!}
+                                                            className={cn(
+                                                                "text-sm group flex p-2 w-full justify-start font-medium cursor-pointer hover:bg-white/10 rounded-lg transition",
+                                                                pathname === subRoute.href ? "bg-white/20 text-white shadow-sm" : "text-white/60 hover:text-white"
+                                                            )}
+                                                        >
+                                                            <div className="flex items-center flex-1">
+                                                                <subRoute.icon className={cn("h-4 w-4 mr-3 text-white/80")} />
+                                                                <span className="drop-shadow-sm">{subRoute.label}</span>
+                                                            </div>
+                                                        </Link>
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>

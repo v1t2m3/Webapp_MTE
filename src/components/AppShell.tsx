@@ -10,7 +10,7 @@ import { Menu, ChevronLeft } from "lucide-react";
 export default function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const isIsoRoute = [
-        '/cong-cu', '/personnel', '/equipments', '/consumables', '/capa', '/documents'
+        '/cong-cu', '/personnel', '/equipments', '/construction-machines', '/consumables', '/capa', '/documents'
     ].some(route => pathname?.startsWith(route));
 
     const isBareRoute = pathname === '/login';

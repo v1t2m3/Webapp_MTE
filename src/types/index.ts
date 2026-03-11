@@ -23,6 +23,7 @@ export interface Personnel {
     authorizedMethods?: string;
     authorizedEquipments?: string;
     lastTrainingDate?: string;
+    profileLink?: string;
 }
 
 export type VehicleStatus = 'Available' | 'Maintenance' | 'In Use';
@@ -39,6 +40,16 @@ export interface Vehicle {
 }
 
 export type EquipmentStatus = 'Active' | 'Broken' | 'Calibrating' | 'Disposed';
+
+export type ConstructionMachineStatus = 'đang sử dụng' | 'đang hư hỏng' | 'thanh lý' | string;
+
+export interface ConstructionMachine {
+    id: string;
+    name: string;
+    serialNumber: string;
+    location: string;
+    status: ConstructionMachineStatus;
+}
 
 export interface Equipment {
     id: string;
@@ -181,12 +192,15 @@ export interface SupplementalReport {
     content: string;
 }
 
+// Types for our data
+
 export interface ReportData {
     schedules: Schedule[];
     contracts: Contract[];
     personnel: Personnel[];
     workOutlines: WorkOutline[];
     supplementalReports: SupplementalReport[]; // Add supplemental storage array
+    constructionMachines?: ConstructionMachine[];
 }
 
 export interface Workload {

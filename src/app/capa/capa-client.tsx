@@ -23,6 +23,25 @@ export function CapaClient({ data, personnel }: { data: CAPA[], personnel: Perso
         setOpen(true);
     };
 
+    const handleDelete = async (id: string) => {
+        if (!window.confirm("Bạn có chắc chắn muốn xóa CAPA này? Hành động này không thể hoàn tác.")) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/capa/${id}`, {
+                method: "DELETE",
+            });
+
+            if (!res.ok) throw new Error("Thất bại");
+
+            window.location.reload();
+        } catch (error) {
+            console.error("Xóa CAPA lỗi:", error);
+            alert("Không thể xóa CAPA.");
+        }
+    };
+
     const handleOpenChange = (isOpen: boolean) => {
         setOpen(isOpen);
         if (!isOpen) {
@@ -123,7 +142,7 @@ export function CapaClient({ data, personnel }: { data: CAPA[], personnel: Perso
                 </div>
             </div>
 
-            <CapaTable data={data} onEdit={canEdit ? handleEdit : undefined} />
+            <CapaTable data={data} onEdit={canEdit ? handleEdit : undefined} onDelete={canEdit ? handleDelete : undefined} />
             {(canAdd || canEdit) && <CapaForm open={open} onOpenChange={handleOpenChange} initialData={editingItem} personnel={personnel} />}
         </div>
     );

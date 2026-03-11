@@ -1,6 +1,6 @@
 import { googleSheetsService } from './google-sheets';
 import { mockContracts, mockPersonnel, mockSchedules, mockVehicles } from './mock-data';
-import { Contract, Personnel, Schedule, Vehicle, Equipment, Consumable, CAPA, Document } from '@/types';
+import { Contract, Personnel, Schedule, Vehicle, Equipment, Consumable, CAPA, Document, ConstructionMachine } from '@/types';
 
 const USE_MOCK_DATA = !process.env.GOOGLE_SHEET_ID;
 
@@ -164,5 +164,21 @@ export const dataService = {
     getDocuments: async (): Promise<Document[]> => {
         if (USE_MOCK_DATA) return [];
         try { return await googleSheetsService.getDocuments(); } catch { return []; }
+    },
+    getConstructionMachines: async (): Promise<ConstructionMachine[]> => {
+        if (USE_MOCK_DATA) return [];
+        try { return await googleSheetsService.getConstructionMachines(); } catch { return []; }
+    },
+    addConstructionMachine: async (data: Partial<ConstructionMachine>): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.addConstructionMachine(data); } catch { return false; }
+    },
+    updateConstructionMachine: async (id: string, data: Partial<ConstructionMachine>): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.updateConstructionMachine(id, data); } catch { return false; }
+    },
+    deleteConstructionMachine: async (id: string): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.deleteConstructionMachine(id); } catch { return false; }
     }
 };

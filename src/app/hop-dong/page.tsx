@@ -99,7 +99,7 @@ export default function ContractPage() {
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight text-primary">Quản lý Hợp đồng</h2>
                     <p className="text-muted-foreground mt-2">
-                        Danh sách hợp đồng và tiến độ (Dữ liệu từ Google Sheets).
+                        Danh sách hợp đồng và tiến độ.
                     </p>
                 </div>
                 <div className="flex items-center gap-2">

@@ -2,7 +2,7 @@ import { google } from 'googleapis';
 import { JWT } from 'google-auth-library';
 
 // Types for our data
-import { Contract, Personnel, Schedule, Vehicle, WorkOutline, SupplementalReport, Equipment, Consumable, CAPA, Document } from '@/types';
+import { Contract, Personnel, Schedule, Vehicle, WorkOutline, SupplementalReport, Equipment, Consumable, CAPA, Document, ConstructionMachine } from '@/types';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
@@ -31,7 +31,7 @@ export const googleSheetsService = {
 
             const response = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'NhanSu!A2:K', // id, fullName, birthYear, job, skillLevel, safetyLevel, education, contractType, section, leaveType, leaveDates
+                range: 'NhanSu!A2:L', // id, fullName, birthYear, job, skillLevel, safetyLevel, education, contractType, section, leaveType, leaveDates, profileLink
             });
 
             const rows = response.data.values;
@@ -68,7 +68,8 @@ export const googleSheetsService = {
                         contractType: row[7],
                         section: row[8] || '', // Bộ phận
                         leaveType: row[9] || undefined, // Column J for Leave Type
-                        leaveDates: leaveDates // Column K for JSON formatted leave dates
+                        leaveDates: leaveDates, // Column K for JSON formatted leave dates
+                        profileLink: row[11] || undefined, // Column L for Drive link
                     } as Personnel;
                 });
         } catch (error) {
@@ -120,12 +121,13 @@ export const googleSheetsService = {
                     personnel.section || '',
                     personnel.leaveType || '',
                     JSON.stringify(personnel.leaveDates || []),
+                    personnel.profileLink || '',
                 ],
             ];
 
             await sheets.spreadsheets.values.append({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'NhanSu!A:K',
+                range: 'NhanSu!A:L',
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -159,12 +161,13 @@ export const googleSheetsService = {
                     personnel.section || '',
                     personnel.leaveType || '',
                     JSON.stringify(personnel.leaveDates || []),
+                    personnel.profileLink || '',
                 ],
             ];
 
             await sheets.spreadsheets.values.update({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `NhanSu!A${rowIndex}:K${rowIndex}`,
+                range: `NhanSu!A${rowIndex}:L${rowIndex}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -188,7 +191,7 @@ export const googleSheetsService = {
             // Clearing the row content instead of deleting the dimension to avoid needing GID
             await sheets.spreadsheets.values.clear({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `NhanSu!A${rowIndex}:K${rowIndex}`,
+                range: `NhanSu!A${rowIndex}:L${rowIndex}`,
             });
 
             return true;
@@ -1448,4 +1451,141 @@ export const googleSheetsService = {
             return [];
         }
     },
+    // --- CONSTRUCTION MACHINES MANAGEMENT ---
+
+    getConstructionMachines: async (): Promise<ConstructionMachine[]> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return [];
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Cons_Machin!A2:E',
+            });
+
+            const rows = response.data.values;
+            if (!rows) return [];
+
+            return rows
+                .filter(row => row[0])
+                .map((row) => ({
+                    id: row[0],
+                    name: row[1] || '',
+                    serialNumber: row[2] || '',
+                    location: row[3] || '',
+                    status: row[4] || 'đang sử dụng',
+                }));
+        } catch (error) {
+            console.error('Error fetching construction machines:', error);
+            return [];
+        }
+    },
+
+    findConstructionMachineRowIndex: async (id: string): Promise<number | null> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return null;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Cons_Machin!A:A',
+            });
+
+            const rows = response.data.values;
+            if (!rows) return null;
+
+            const index = rows.findIndex((row) => row[0] === id);
+            return index !== -1 ? index + 1 : null;
+        } catch (error) {
+            console.error('Error finding construction machine row:', error);
+            return null;
+        }
+    },
+
+    addConstructionMachine: async (machine: Partial<ConstructionMachine>): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const values = [
+                [
+                    machine.id,
+                    machine.name,
+                    machine.serialNumber,
+                    machine.location,
+                    machine.status,
+                ],
+            ];
+
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Cons_Machin!A:E',
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values },
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error adding construction machine:', error);
+            return false;
+        }
+    },
+
+    updateConstructionMachine: async (id: string, machine: Partial<ConstructionMachine>): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findConstructionMachineRowIndex(id);
+            if (!rowIndex) return false;
+
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const values = [
+                [
+                    id,
+                    machine.name,
+                    machine.serialNumber,
+                    machine.location,
+                    machine.status,
+                ],
+            ];
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Cons_Machin!A${rowIndex}:E${rowIndex}`,
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values },
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error updating construction machine:', error);
+            return false;
+        }
+    },
+
+    deleteConstructionMachine: async (id: string): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findConstructionMachineRowIndex(id);
+            if (!rowIndex) return false;
+
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            await sheets.spreadsheets.values.clear({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Cons_Machin!A${rowIndex}:E${rowIndex}`,
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error deleting construction machine:', error);
+            return false;
+        }
+    },
+
 };
