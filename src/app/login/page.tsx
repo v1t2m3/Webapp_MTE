@@ -49,10 +49,10 @@ export default function LoginPage() {
                             <span className="text-xs uppercase tracking-widest text-blue-200">ISO</span>
                         </div>
                         <div className="w-px h-12 bg-white/20"></div>
-                        <div className="flex flex-col items-center">
+                        <a href="https://evnmt-my.sharepoint.com/:b:/g/personal/tamnv_cpc_vn/IQBKb1i9GvrKSaGP8y27gCQDAaMTXbSpcxqNM_wycFsZ8Ag?e=TRuGbW" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center hover:scale-105 transition-transform duration-200 cursor-pointer" title="Xem chứng chỉ VALAS 019">
                             <span className="text-2xl font-bold text-[#f72585] shadow-sm mb-1">VALAS 019</span>
                             <span className="text-xs uppercase tracking-widest text-blue-200">2023-2028</span>
-                        </div>
+                        </a>
                     </div>
                 </div>
             </div>

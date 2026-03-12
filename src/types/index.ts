@@ -98,19 +98,24 @@ export interface CAPA {
     linkFile?: string;
 }
 
-export type DocumentType = 'Sổ tay' | 'Quy trình' | 'Hướng dẫn công việc' | 'Biểu mẫu' | string;
-export type DocumentStatus = 'Hiệu lực' | 'Bị thay thế' | 'Hết hiệu lực' | string;
+export type DocumentCategory = 'Tài liệu hệ thống' | 'Tài liệu kỹ thuật' | 'Tài liệu bên ngoài' | 'Tài liệu nội bộ' | 'Biểu mẫu' | string;
+export type DocumentStatus = 'Đang hiệu lực' | 'Đang dự thảo' | 'Đã lỗi thời' | string;
 
 export interface Document {
     id: string;
+    docCode: string;
     docName: string;
-    type: DocumentType;
+    category: DocumentCategory;
+    subCategory: string;
     version: string;
     issueDate: string;
+    expiryDate: string;
+    status: DocumentStatus;
     author: string;
     approver: string;
+    approvalLevel: string;
     fileLink: string;
-    status: DocumentStatus;
+    changeReason: string;
 }
 
 export interface Contract {

@@ -13,7 +13,8 @@ export type Resource =
     | "de-cuong"
     | "nhan-su-62"
     | "may-moc-64"
-    | "capa-87";
+    | "capa-87"
+    | "tai-lieu-83";
 
 export function hasAccess(role: UserRole | undefined, level: number | undefined, action: Action, resource: Resource): boolean {
     if (!role) return false;
@@ -68,6 +69,7 @@ export function hasAccess(role: UserRole | undefined, level: number | undefined,
             case "nhan-su-62":
             case "may-moc-64":
             case "capa-87":
+            case "tai-lieu-83":
                 // Lvl 1 & 3: Có quyền Thêm, Sửa, Xoá cho mảng Thử nghiệm (Mục 6.2, 6.4, 8.7)
                 if (userLvl === 1 || userLvl === 3) {
                     if (action === "create" || action === "update" || action === "delete") return true;

@@ -32,7 +32,10 @@ import {
     Atom,
     VectorSquare,
     Notebook,
-    PencilRuler
+    PencilRuler,
+    Cable,
+    FileCheck,
+    FlaskConical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -63,7 +66,6 @@ const routes = [
         icon: Atom,
         isGroup: true,
         subRoutes: [
-            { label: "Công cụ Tính toán", href: "/cong-cu", icon: Calculator },
             { label: "Nhân sự (Mục 6.2)", href: "/personnel", icon: User },
             {
                 label: "Thiết bị (Mục 6.4)",
@@ -74,9 +76,18 @@ const routes = [
                     { label: "Máy thi công", href: "/construction-machines", icon: Drill }
                 ]
             },
-            { label: "Hóa chất (Mục 6.6)", href: "/consumables", icon: TestTube },
-            { label: "CAPA (Mục 8.7)", href: "/capa", icon: ShieldCheckIcon },
+            { label: "Hóa chất (Mục 6.6)", href: "/consumables", icon: FlaskConical },
             { label: "Tài liệu (Mục 8.3)", href: "/documents", icon: FileTextIcon },
+            { label: "CAPA (Mục 8.7)", href: "/capa", icon: ShieldCheckIcon },
+            {
+                label: "Tiện ích",
+                icon: Cable,
+                isGroup: true,
+                subRoutes: [
+                    { label: "Tiêu chuẩn", href: "/standards", icon: FileCheck },
+                    { label: "Công cụ Tính toán", href: "/cong-cu", icon: Calculator }
+                ]
+            }
         ]
     },
     {
@@ -252,16 +263,18 @@ export function Sidebar() {
                                 unoptimized
                             />
                         </div>
-                        <div className="relative w-[70px] h-[70px] flex items-center justify-center hover:scale-105 transition-transform duration-200">
-                            <Image
-                                src="/images/vaci_valas019.png"
-                                alt="VACI"
-                                width={70}
-                                height={70}
-                                className="object-contain"
-                                unoptimized
-                            />
-                        </div>
+                        <a href="https://evnmt-my.sharepoint.com/:b:/g/personal/tamnv_cpc_vn/IQBKb1i9GvrKSaGP8y27gCQDAaMTXbSpcxqNM_wycFsZ8Ag?e=TRuGbW" target="_blank" rel="noopener noreferrer" title="Xem chứng chỉ VALAS 019">
+                            <div className="relative w-[70px] h-[70px] flex items-center justify-center hover:scale-105 transition-transform duration-200 cursor-pointer">
+                                <Image
+                                    src="/images/vaci_valas019.png"
+                                    alt="VACI"
+                                    width={70}
+                                    height={70}
+                                    className="object-contain"
+                                    unoptimized
+                                />
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>

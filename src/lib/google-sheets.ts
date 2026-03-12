@@ -1431,24 +1431,146 @@ export const googleSheetsService = {
             const sheets = google.sheets({ version: 'v4', auth: client });
             const response = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'Documents!A2:I',
+                range: 'Documents!A2:N',
             });
             const rows = response.data.values;
             if (!rows) return [];
             return rows.filter(row => row[0]).map((row) => ({
                 id: row[0],
-                docName: row[1] || '',
-                type: row[2] || '',
-                version: row[3] || '',
-                issueDate: row[4] || '',
-                author: row[5] || '',
-                approver: row[6] || '',
-                fileLink: row[7] || '',
-                status: row[8] || 'Hiệu lực',
+                docCode: row[1] || '',
+                docName: row[2] || '',
+                category: row[3] || '',
+                subCategory: row[4] || '',
+                version: row[5] || '',
+                issueDate: row[6] || '',
+                expiryDate: row[7] || '',
+                status: row[8] || 'Đang hiệu lực',
+                author: row[9] || '',
+                approver: row[10] || '',
+                approvalLevel: row[11] || '',
+                fileLink: row[12] || '',
+                changeReason: row[13] || '',
             }));
         } catch (error) {
             console.error('Error fetching Documents:', error);
             return [];
+        }
+    },
+
+    findDocumentRowIndex: async (id: string): Promise<number | null> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return null;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Documents!A:A',
+            });
+            const rows = response.data.values;
+            if (!rows) return null;
+            const index = rows.findIndex((row) => row[0] === id);
+            return index !== -1 ? index + 1 : null;
+        } catch (error) {
+            console.error('Error finding document row:', error);
+            return null;
+        }
+    },
+
+    addDocument: async (doc: Partial<Document>): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const values = [[
+                doc.id || `DOC_${Date.now()}`,
+                doc.docCode || '',
+                doc.docName || '',
+                doc.category || '',
+                doc.subCategory || '',
+                doc.version || '',
+                doc.issueDate || '',
+                doc.expiryDate || '',
+                doc.status || 'Đang hiệu lực',
+                doc.author || '',
+                doc.approver || '',
+                doc.approvalLevel || '',
+                doc.fileLink || '',
+                doc.changeReason || '',
+            ]];
+
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Documents!A:N',
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values },
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error adding document:', error);
+            return false;
+        }
+    },
+
+    updateDocument: async (id: string, doc: Partial<Document>): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findDocumentRowIndex(id);
+            if (!rowIndex) return false;
+
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            const values = [[
+                id,
+                doc.docCode || '',
+                doc.docName || '',
+                doc.category || '',
+                doc.subCategory || '',
+                doc.version || '',
+                doc.issueDate || '',
+                doc.expiryDate || '',
+                doc.status || 'Đang hiệu lực',
+                doc.author || '',
+                doc.approver || '',
+                doc.approvalLevel || '',
+                doc.fileLink || '',
+                doc.changeReason || '',
+            ]];
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Documents!A${rowIndex}:N${rowIndex}`,
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values },
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error updating document:', error);
+            return false;
+        }
+    },
+
+    deleteDocument: async (id: string): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findDocumentRowIndex(id);
+            if (!rowIndex) return false;
+
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+
+            await sheets.spreadsheets.values.clear({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Documents!A${rowIndex}:N${rowIndex}`,
+            });
+
+            return true;
+        } catch (error) {
+            console.error('Error deleting document:', error);
+            return false;
         }
     },
     // --- CONSTRUCTION MACHINES MANAGEMENT ---

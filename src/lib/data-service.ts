@@ -165,6 +165,18 @@ export const dataService = {
         if (USE_MOCK_DATA) return [];
         try { return await googleSheetsService.getDocuments(); } catch { return []; }
     },
+    addDocument: async (data: Partial<Document>): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.addDocument(data); } catch { return false; }
+    },
+    updateDocument: async (id: string, data: Partial<Document>): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.updateDocument(id, data); } catch { return false; }
+    },
+    deleteDocument: async (id: string): Promise<boolean> => {
+        if (USE_MOCK_DATA) return true;
+        try { return await googleSheetsService.deleteDocument(id); } catch { return false; }
+    },
     getConstructionMachines: async (): Promise<ConstructionMachine[]> => {
         if (USE_MOCK_DATA) return [];
         try { return await googleSheetsService.getConstructionMachines(); } catch { return []; }
