@@ -12,7 +12,7 @@ export default async function NguonLucPage() {
     const vehicles = await dataService.getVehicles();
     const contracts = await dataService.getContracts();
 
-    const activePersonnel = personnel.filter((p) => p.status === "Active").length;
+    const activePersonnel = personnel.filter((p) => p.status === "Hoạt động").length;
 
     // Count personnel explicitly on leave exactly today
     const today = new Date();

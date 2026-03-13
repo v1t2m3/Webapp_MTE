@@ -1,4 +1,4 @@
-export type PersonnelStatus = 'Active' | 'Inactive' | 'On Leave';
+export type PersonnelStatus = 'Hoạt động' | 'Nghỉ phép';
 
 export interface Personnel {
     id: string;
@@ -116,6 +116,16 @@ export interface Document {
     approvalLevel: string;
     fileLink: string;
     changeReason: string;
+}
+
+export interface Standard {
+    id: string;
+    code: string;
+    name: string;
+    category: 'TCVN' | 'IEC' | 'IEEE' | 'ISO' | 'QCVN' | string;
+    equipment: string;
+    description?: string;
+    fileLink?: string;
 }
 
 export interface Contract {

@@ -124,7 +124,7 @@ export function PersonnelForm({ open, onOpenChange, initialData, onSubmit }: Per
                                         const newDates = [...(formData.leaveDates || [])];
                                         if (!newDates.includes(e.target.value)) {
                                             newDates.push(e.target.value);
-                                            setFormData((prev) => ({ ...prev, leaveDates: newDates, status: "On Leave" }));
+                                            setFormData((prev) => ({ ...prev, leaveDates: newDates, status: "Nghỉ phép" }));
                                         }
                                         e.target.value = ""; // Reset input after selection
                                     }

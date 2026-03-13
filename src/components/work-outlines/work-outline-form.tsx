@@ -493,7 +493,7 @@ export function WorkOutlineForm({
                                                         <SelectValue placeholder="Chọn nhân sự" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        {personnel.filter(p => p.status !== "Inactive").map(p => (
+                                                        {personnel.filter(p => p.status === "Hoạt động" || p.status === "Nghỉ phép").map(p => (
                                                             <SelectItem
                                                                 key={p.id}
                                                                 value={p.id}

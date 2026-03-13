@@ -34,11 +34,9 @@ export function PersonnelTable({ data }: { data: Personnel[] }) {
                             <TableCell>
                                 <Badge
                                     variant={
-                                        item.status === "Active"
+                                        item.status === "Hoạt động"
                                             ? "default"
-                                            : item.status === "On Leave"
-                                                ? "secondary"
-                                                : "destructive"
+                                            : "secondary"
                                     }
                                 >
                                     {item.status}

@@ -247,21 +247,7 @@ export function IsoPersonnelForm({
                             <Label htmlFor="lastTrainingDate" className="text-right">Ngày Đ.Tạo</Label>
                             <Input id="lastTrainingDate" type="date" {...register("lastTrainingDate")} className="col-span-3" />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="status" className="text-right">Trạng thái</Label>
-                            <div className="col-span-3">
-                                <Select onValueChange={(val) => setValue("status", val as "Active" | "Inactive" | "On Leave")} value={watch("status") || "Active"}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Chọn trạng thái" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Active">Đang làm việc (Active)</SelectItem>
-                                        <SelectItem value="On Leave">Nghỉ phép (On Leave)</SelectItem>
-                                        <SelectItem value="Inactive">Đã nghỉ việc / Off</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
+
                         <div className="grid grid-cols-4 items-center gap-4 border-t pt-4">
                             <Label htmlFor="profileLink" className="text-right">Hồ sơ đính kèm (Link Drive)</Label>
                             <Input 

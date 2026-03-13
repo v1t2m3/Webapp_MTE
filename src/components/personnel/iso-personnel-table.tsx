@@ -80,11 +80,9 @@ export function IsoPersonnelTable({
                                     <Badge
                                         variant="outline"
                                         className={`font-medium whitespace-nowrap ${
-                                            item.status === "Active"
+                                            item.status === "Hoạt động"
                                                 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
-                                                : item.status === "On Leave"
-                                                    ? "bg-orange-500/10 text-orange-500 border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.2)]"
-                                                    : "bg-red-500/10 text-red-500 border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.2)]"
+                                                : "bg-orange-500/10 text-orange-400 border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.2)]"
                                         }`}
                                     >
                                         {item.status}

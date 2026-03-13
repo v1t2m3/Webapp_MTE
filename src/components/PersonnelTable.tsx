@@ -70,7 +70,7 @@ export function PersonnelTable({ data, onEdit, onDelete }: PersonnelTableProps) 
                                 {(() => {
                                     const currentYear = new Date().getFullYear().toString();
                                     const leavesThisYear = item.leaveDates?.filter(d => d.startsWith(currentYear)).length || 0;
-                                    const isOnLeaveToday = item.status === "On Leave";
+                                    const isOnLeaveToday = item.status === "Nghỉ phép";
 
                                     if (isOnLeaveToday) {
                                         return (

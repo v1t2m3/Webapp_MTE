@@ -2,7 +2,7 @@ import { google } from 'googleapis';
 import { JWT } from 'google-auth-library';
 
 // Types for our data
-import { Contract, Personnel, Schedule, Vehicle, WorkOutline, SupplementalReport, Equipment, Consumable, CAPA, Document, ConstructionMachine } from '@/types';
+import { Contract, Personnel, Schedule, Vehicle, WorkOutline, SupplementalReport, Equipment, Consumable, CAPA, Document, ConstructionMachine, Standard } from '@/types';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
@@ -57,7 +57,7 @@ export const googleSheetsService = {
                         name: row[1],
                         position: row[3],
                         department: row[8],
-                        status: isOnLeaveToday ? 'On Leave' : 'Active',
+                        status: isOnLeaveToday ? 'Nghỉ phép' : 'Hoạt động',  // Derived from NhanSu column K
                         // Personnel Page fields
                         fullName: row[1],
                         birthYear: row[2],
@@ -1113,20 +1113,30 @@ export const googleSheetsService = {
             });
             const rows = response.data.values;
             if (!rows) return [];
-            return rows.filter(row => row[0]).map((row) => ({
-                id: row[0],
-                name: row[1] || '',
-                fullName: row[1] || '',
-                department: row[2] || '',
-                position: row[3] || '',
-                job: row[3] || '',
-                authorizedMethods: row[4] || '',
-                authorizedEquipments: row[5] || '',
-                lastTrainingDate: row[6] || '',
-                status: (row[7] as 'Active' | 'Inactive' | 'On Leave') || 'Active',
-                // Stub out required fields
-                birthYear: '', skillLevel: '', safetyLevel: '', education: '', contractType: ''
-            }));
+            return rows.filter(row => row[0]).map((row) => {
+                // Status derived from leaveDates in NhanSu sheet, not from Personel sheet
+                // We store leaveDates as JSON in col H for the Personel sheet (if available), otherwise default active
+                let leaveDates: string[] = [];
+                try { leaveDates = row[7] ? JSON.parse(row[7]) : []; } catch { leaveDates = []; }
+                const today = new Date();
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                const isOnLeave = leaveDates.some((d: string) => d.includes(todayStr));
+                return {
+                    id: row[0],
+                    name: row[1] || '',
+                    fullName: row[1] || '',
+                    department: row[2] || '',
+                    position: row[3] || '',
+                    job: row[3] || '',
+                    authorizedMethods: row[4] || '',
+                    authorizedEquipments: row[5] || '',
+                    lastTrainingDate: row[6] || '',
+                    status: isOnLeave ? 'Nghỉ phép' : 'Hoạt động',
+                    leaveDates,
+                    // Stub out required fields
+                    birthYear: '', skillLevel: '', safetyLevel: '', education: '', contractType: ''
+                };
+            });
         } catch (error) {
             console.error('Error fetching ISO Personnel:', error);
             return [];
@@ -1706,6 +1716,127 @@ export const googleSheetsService = {
             return true;
         } catch (error) {
             console.error('Error deleting construction machine:', error);
+            return false;
+        }
+    },
+
+    // --- STANDARDS MANAGEMENT ---
+
+    getStandards: async (): Promise<Standard[]> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return [];
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Standards!A2:G',
+            });
+            const rows = response.data.values;
+            if (!rows) return [];
+            return rows.filter(row => row[0]).map(row => ({
+                id: row[0],
+                code: row[1] || '',
+                name: row[2] || '',
+                category: row[3] || '',
+                equipment: row[4] || '',
+                description: row[5] || '',
+                fileLink: row[6] || '',
+            }));
+        } catch (error) {
+            console.error('Error fetching standards:', error);
+            return [];
+        }
+    },
+
+    findStandardRowIndex: async (id: string): Promise<number | null> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return null;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Standards!A:A',
+            });
+            const rows = response.data.values;
+            if (!rows) return null;
+            const index = rows.findIndex(row => row[0] === id);
+            return index !== -1 ? index + 1 : null;
+        } catch (error) {
+            console.error('Error finding standard row:', error);
+            return null;
+        }
+    },
+
+    addStandard: async (standard: Partial<Standard>): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const values = [[
+                standard.id || `STD-${Date.now()}`,
+                standard.code || '',
+                standard.name || '',
+                standard.category || '',
+                standard.equipment || '',
+                standard.description || '',
+                standard.fileLink || '',
+            ]];
+            await sheets.spreadsheets.values.append({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Standards!A:G',
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values },
+            });
+            return true;
+        } catch (error) {
+            console.error('Error adding standard:', error);
+            return false;
+        }
+    },
+
+    updateStandard: async (id: string, standard: Partial<Standard>): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findStandardRowIndex(id);
+            if (!rowIndex) return false;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const values = [[
+                id,
+                standard.code || '',
+                standard.name || '',
+                standard.category || '',
+                standard.equipment || '',
+                standard.description || '',
+                standard.fileLink || '',
+            ]];
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Standards!A${rowIndex}:G${rowIndex}`,
+                valueInputOption: 'USER_ENTERED',
+                requestBody: { values },
+            });
+            return true;
+        } catch (error) {
+            console.error('Error updating standard:', error);
+            return false;
+        }
+    },
+
+    deleteStandard: async (id: string): Promise<boolean> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return false;
+            const rowIndex = await googleSheetsService.findStandardRowIndex(id);
+            if (!rowIndex) return false;
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            await sheets.spreadsheets.values.clear({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Standards!A${rowIndex}:G${rowIndex}`,
+            });
+            return true;
+        } catch (error) {
+            console.error('Error deleting standard:', error);
             return false;
         }
     },

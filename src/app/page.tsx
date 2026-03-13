@@ -14,7 +14,7 @@ export default async function Home() {
   const contracts = await dataService.getContracts();
   const schedules = await dataService.getSchedules();
 
-  const activePersonnel = personnel.filter((p) => p.status === "Active").length;
+  const activePersonnel = personnel.filter((p) => p.status === "Hoạt động").length;
   const availableVehicles = vehicles.filter((v) => v.status === "Available").length;
   const totalContracts = contracts.length;
   // Sum contract values — VND format uses dots as thousand separators: "152.342.284 đ"
