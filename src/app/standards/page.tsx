@@ -249,22 +249,34 @@ function EquipmentGroup({
             {/* Rows */}
             {open && (
                 <div className="border-t border-white/10">
-                    <Table>
+                    <Table className="w-full table-fixed">
                         <TableBody>
                             {standards.map(std => (
                                 <TableRow key={std.id} className="hover:bg-white/5 border-white/5 transition-colors">
-                                    <TableCell className="py-2 w-44">
+
+                                    {/* Cột 1: w-1/12, canh trái */}
+                                    <TableCell className="py-2 w-75 text-left">
                                         <Badge variant="outline" className={`text-xs font-mono ${CATEGORY_STYLES[std.category] ?? ""}`}>
                                             {std.code}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="py-2 text-white/80 text-sm">{std.name}</TableCell>
-                                    <TableCell className="py-2">
-                                        <Badge variant="outline" className={`text-xs ${CATEGORY_STYLES[std.category] ?? ""}`}>
-                                            {std.category}
-                                        </Badge>
+
+                                    {/* Cột 2: w-3/12, canh trái, tự động xuống dòng */}
+                                    <TableCell className="py-2 text-white/80 text-sm w-200 text-left">
+                                        <div className="line-clamp-2" title={std.name}>
+                                            {std.name}
+                                        </div>
                                     </TableCell>
-                                    <TableCell className="py-2">
+
+                                    {/* Cột 3: w-5/12, canh trái, cắt chữ sau 2 dòng (...) */}
+                                    <TableCell className="py-2 text-white/80 text-sm w-400 text-left">
+                                        <div className="line-clamp-2" title={std.description}>
+                                            {std.description}
+                                        </div>
+                                    </TableCell>
+
+                                    {/* Cột 4: w-1/12, canh phải */}
+                                    <TableCell className="py-2 text-right w-40">
                                         {std.fileLink ? (
                                             <a href={std.fileLink} target="_blank" rel="noopener noreferrer"
                                                 className="text-[#4cc9f0]/70 hover:text-[#4cc9f0] text-xs underline-offset-2 hover:underline">
@@ -274,7 +286,9 @@ function EquipmentGroup({
                                             <span className="text-white/20 text-xs">—</span>
                                         )}
                                     </TableCell>
-                                    <TableCell className="py-2 text-right">
+
+                                    {/* Cột 5: w-2/12, canh phải */}
+                                    <TableCell className="py-2 text-right w-50">
                                         <div className="flex justify-end gap-1">
                                             {canEdit && (
                                                 <Button size="icon" variant="ghost"
@@ -292,6 +306,7 @@ function EquipmentGroup({
                                             )}
                                         </div>
                                     </TableCell>
+
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -425,11 +440,10 @@ export default function StandardsPage() {
                         <button
                             key={cat}
                             onClick={() => setCatFilter(prev => prev === cat ? "all" : cat)}
-                            className={`group relative p-4 rounded-xl border transition-all text-left ${
-                                catFilter === cat
-                                    ? "border-[#4cc9f0]/60 bg-[#4cc9f0]/10 shadow-[0_0_20px_rgba(76,201,240,0.2)]"
-                                    : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
-                            }`}
+                            className={`group relative p-4 rounded-xl border transition-all text-left ${catFilter === cat
+                                ? "border-[#4cc9f0]/60 bg-[#4cc9f0]/10 shadow-[0_0_20px_rgba(76,201,240,0.2)]"
+                                : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.06]"
+                                }`}
                         >
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-xs font-bold uppercase tracking-wider text-white/60">{cat}</span>

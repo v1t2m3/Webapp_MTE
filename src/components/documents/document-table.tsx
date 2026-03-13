@@ -167,7 +167,7 @@ export function DocumentTable({
 
                                 return (
                                     <TableRow key={doc.id} className={rowClasses}>
-                                        <TableCell className="text-slate-600 dark:text-slate-400 font-mono text-sm">{doc.docCode}</TableCell>
+                                        <TableCell className="text-slate-900 dark:text-slate-400 font-mono text-sm w-70">{doc.docCode}</TableCell>
                                         <TableCell>
                                             <div className="flex flex-col gap-1">
                                                 <span className="font-medium text-slate-900 dark:text-slate-100">{doc.docName}</span>
