@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTE-LAB | Hồ Sơ Năng Lực</title>
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/page-agent@1.5.8/dist/iife/page-agent.demo.js"
+        crossorigin="true"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7400b8',
+                        secondary: '#56cfe1',
+                        accent: '#80ffdb',
+                        dark: '#0b0118',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Core Layout & Variables (Standard CSS) */
+        :root {
+            --primary: #7400b8;
+            --secondary: #56cfe1;
+            --accent: #80ffdb;
+            --dark: #0b0118;
+            --page-width: 841px;
+            --page-height: 595px;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: white;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bg-image {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            max-width: calc(100vh * (21 / 9));
+            aspect-ratio: 21 / 9;
+            object-fit: cover;
+            opacity: 0.5;
+            filter: blur(2px) brightness(0.9);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .glass-panel {
+            background: rgba(18, 0, 43, 0.1);
+            backdrop-filter: blur(15px) saturate(100%);
+            border: 1px solid rgba(128, 255, 219, 0.2);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.7);
+        }
+
+        #book-container {
+            position: relative;
+            width: var(--page-width);
+            height: var(--page-height);
+            transition: transform 0.3s ease-out;
+            z-index: 10;
+        }
+
+        .page {
+            width: var(--page-width);
+            height: var(--page-height);
+            background: rgba(18, 0, 43, 0.8);
+            overflow: hidden;
+        }
+
+        /* Essential Classes for 3D Library */
+        .st-page-flip {
+            background: transparent !important;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes shine {
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 100%;
+            }
+        }
+
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 5px rgba(128, 255, 219, 0.2);
+            }
+
+            100% {
+                text-shadow: 0 0 15px rgba(128, 255, 219, 0.8);
+            }
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .blueprint-grid {
+            background-image:
+                linear-gradient(rgba(128, 255, 219, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(128, 255, 219, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .shine-effect {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shine-effect::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.5s;
+        }
+
+        .shine-effect:hover::after {
+            animation: shine 1.5s infinite;
+        }
+
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+
+            body {
+                background: white !important;
+                display: block !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            #book-wrapper,
+            #book-container {
+                display: none !important;
+            }
+
+            #print-area {
+                display: block !important;
+            }
+
+            .print-page {
+                page-break-after: always;
+                width: 297mm;
+                height: 210mm;
+                background: radial-gradient(circle at 50% 50%, #1a0236 0%, #0b0118 100%) !important;
+                color: white !important;
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .print-page>div {
+                width: 841px;
+                height: 595px;
+                position: relative;
+                flex-shrink: 0;
+            }
+
+            .glass-panel {
+                background: rgba(255, 255, 255, 0.05) !important;
+                backdrop-filter: none !important;
+                border: 1px solid rgba(128, 255, 219, 0.3) !important;
+            }
+
+            .blueprint-grid {
+                background-image:
+                    linear-gradient(rgba(128, 255, 219, 0.1) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(128, 255, 219, 0.1) 1px, transparent 1px) !important;
+            }
+        }
+
+        #print-area {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="fixed inset-0 z-[-2] bg-[radial-gradient(circle_at_50%_50%,#1a0236_0%,#0b0118_100%)]"></div>
+    <img src="image/background_MTELAB.png" alt="Background" class="bg-image">
+
+    <!-- Top UI -->
+    <div class="no-print fixed top-10 left-12 z-50">
+        <h2 class="text-accent font-black tracking-[0.4em] uppercase text-[10px] opacity-70 animate-pulse">MTE-LAB
+            Capability Profile 2026</h2>
+    </div>
+
+    <div class="no-print fixed top-10 right-12 z-50">
+        <button onclick="window.print()"
+            class="bg-primary hover:bg-primary/80 text-white px-8 py-3 rounded-full text-[11px] font-bold uppercase tracking-widest shadow-lg transition-transform hover:scale-110 active:scale-95">
+            Bản PDF
+        </button>
+    </div>
+
+    <!-- Bottom UI Arrows & Instruction -->
+    <div class="no-print fixed bottom-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-6 z-50">
+        <div class="text-[8px] uppercase tracking-[0.7em] text-accent/50 font-mono">Lật trang để khám phá</div>
+        <div class="flex items-center gap-10">
+            <button onclick="pageFlip && pageFlip.flipPrev()"
+                class="glass-panel w-14 h-14 rounded-full flex items-center justify-center text-secondary hover:text-white transition-all hover:scale-110">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6" />
+                </svg>
+            </button>
+            <button onclick="pageFlip && pageFlip.flipNext()"
+                class="glass-panel w-14 h-14 rounded-full flex items-center justify-center text-secondary hover:text-white transition-all hover:scale-110">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 3D Book Area -->
+    <div id="book-container" class="flex items-center justify-center">
+        <div id="flip-book" class="glass-panel shadow-2xl">
+            <!-- PAGE 1: COVER -->
+            <div class="page">
+                <div class="h-full flex flex-col p-16 items-center justify-center text-center blueprint-grid relative">
+                    <div class="absolute top-16 left-16 flex items-center gap-5">
+                        <div
+                            class="w-16 h-16 border-[3px] border-accent rounded-2xl flex items-center justify-center text-accent font-black text-xl shadow-[0_0_20px_#80ffdb33] animate-float">
+                            MTE</div>
+                        <div class="text-left">
+                            <span
+                                class="font-mono text-xs tracking-[0.3em] text-secondary font-bold block">CPSC-MTE</span>
+                            <span class="font-mono text-[9px] text-white/30 block mt-1 uppercase">DaNang, Vietnam</span>
+                        </div>
+                    </div>
+                    <div class="space-y-8 max-w-[85%]">
+                        <h1 class="text-7xl font-black uppercase text-white tracking-tighter leading-[0.85]">
+                            CAPABILITY<br><span
+                                class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-secondary">PROFILE</span>
+                        </h1>
+                        <div class="h-2 w-48 bg-accent mx-auto rounded-full shadow-[0_0_15px_#80ffdb]"></div>
+                        <p class="font-mono text-base tracking-[0.5em] text-secondary/80 uppercase pt-6">Hồ sơ năng lực
+                            số hóa</p>
+                    </div>
+                    <div class="absolute bottom-16 right-16 text-right">
+                        <p class="text-xs font-bold text-accent uppercase italic tracking-[0.2em] animate-glow">
+                            Xí nghiệp Sửa chữa Thí nghiệm</p>
+                        <p class="font-mono text-[9px] text-white/20 mt-3 tracking-widest uppercase">Certified ISO/IEC
+                            17025:2017 | VILAS 019 </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 2: GIỚI THIỆU & TẦM NHÌN -->
+            <div class="page">
+                <div
+                    class="h-full flex flex-col p-16 relative from-primary/10 via-transparent to-transparent blueprint-grid">
+                    <header class="flex justify-between items-end border-b border-white/10 pb-8 mb-12">
+                        <div>
+                            <span class="text-accent font-bold text-xs uppercase tracking-[0.3em] font-mono">01 // Tổng
+                                quan đơn vị</span>
+                            <h2 class="text-4xl font-extrabold uppercase mt-3 tracking-normal text-white">Tin cậy &
+                                Chuyên nghiệp</h2>
+                        </div>
+                        <div class="text-right font-mono text-[10px] text-white/10 uppercase tracking-widest">
+                            Since 2007</div>
+                    </header>
+                    <div class="space-y-8 flex-grow">
+                        <p class="text-sm leading-relaxed text-white/60 italic border-l-2 border-accent/30 pl-6">
+                            Xí nghiệp Sửa chữa Thí nghiệm (MTE) là đơn vị trực thuộc Công ty Dịch vụ Điện lực miền Trung
+                            (CPSC). Với kinh nghiệm hoạt động trong lĩnh vực hơn 25 năm, chúng tôi tự hào là đơn vị nòng
+                            cốt trong việc giúp đảm bảo vận hành an toàn và tin cậy hệ thống lưới điện tại 13 tỉnh thành
+                            miền Trung - Tây
+                            Nguyên.
+                        </p>
+                        <div class="grid grid-cols-2 gap-8">
+                            <div class="glass-panel p-8 rounded-3xl">
+                                <h3 class="text-secondary font-bold uppercase text-xs mb-4 tracking-widest">Sứ mệnh</h3>
+                                <p class="text-[13px] text-white/70">Cung cấp các giải pháp kỹ thuật tối ưu về thí
+                                    nghiệm, hiệu chuẩn, sửa chữa và bảo trì, góp phần nâng cao độ tin cậy cung cấp điện
+                                    (SAIDI,
+                                    SAIFI) và an toàn vận hành lưới điện từ cấp 22kV đến 110kV.</p>
+                            </div>
+                            <div class="glass-panel p-8 rounded-3xl">
+                                <h3 class="text-secondary font-bold uppercase text-xs mb-4 tracking-widest">Tầm nhìn
+                                    2025-2030</h3>
+                                <p class="text-[13px] text-white/70">Trở thành đơn vị thí nghiệm điện và sửa chữa bảo
+                                    dưỡng theo tình trạng thiết bị (CBM) hàngđầu thuộc khu vực miền Trung, ứng dụng công
+                                    nghệ số 4.0 vào quản lý vận hành phòng thí nghiệm.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 3: LĨNH VỰC HOẠT ĐỘNG -->
+            <div class="page">
+                <div
+                    class="h-full flex flex-col p-16 relative from-primary/10 via-transparent to-transparent blueprint-grid">
+                    <header class="flex justify-between items-end border-b border-white/10 pb-8 mb-12">
+                        <div>
+                            <span class="text-accent font-bold text-xs uppercase tracking-[0.3em] font-mono">02 // Lĩnh
+                                vực hoạt động</span>
+                            <h2 class="text-4xl font-extrabold uppercase mt-3 tracking-normal text-white">Giải pháp Kỹ
+                                thuật Toàn diện</h2>
+                        </div>
+                    </header>
+                    <div class="grid grid-cols-2 gap-4 flex-grow">
+                        <div
+                            class="glass-panel p-3 rounded-2xl flex flex-col gap-4 border-white/5 hover:border-accent/20 transition-all">
+                            <div class="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center text-accent">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-sm uppercase">Thí nghiệm & Kiểm định</h4>
+                                <ul class="text-[11px] text-white/50 mt-1 space-y-1">
+                                    <li>• Thí nghiệm định kỳ/mới các TBA từ 22kV đến 110kV</li>
+                                    <li>• Kiểm định an toàn kỹ thuật thiết bị, dụng cụ Điện </li>
+                                    <li>• Thử nghiệm các hệ thống SCADA, RTU, IED</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div
+                            class="glass-panel p-3 rounded-2xl flex flex-col gap-4 border-white/5 hover:border-accent/20 transition-all">
+                            <div
+                                class="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center text-secondary">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-sm uppercase">Sửa chữa & Đại tu</h4>
+                                <ul class="text-[11px] text-white/50 mt-1 space-y-1">
+                                    <li>• Đại tu MBA và OLTC các máy biến áp lực đến 110kV</li>
+                                    <li>• Bảo dưỡng OLTC các hãng MR, ABB</li>
+                                    <li>• Sửa chữa thiết bị đóng cắt, tủ bảng điện</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div
+                            class="glass-panel p-3 rounded-2xl flex flex-col gap-4 border-white/5 hover:border-accent/20 transition-all">
+                            <div
+                                class="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center text-primary">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-sm uppercase">Chẩn đoán nâng cao (CBM)</h4>
+                                <ul class="text-[11px] text-white/50 mt-1 space-y-1">
+                                    <li>• Phân tích hàm lượng ẩm, khí hòa tan trong dầu (DGA)</li>
+                                    <li>• Đo phóng điện cục bộ (PD), Đáp ứng tần số (SFRA)</li>
+                                    <li>• Chẩn đoán tình trạng cách điện MBA</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div
+                            class="glass-panel p-3 rounded-2xl flex flex-col gap-4 border-white/5 hover:border-accent/20 transition-all">
+                            <div class="w-10 h-10 bg-accent/20 rounded-lg flex items-center justify-center text-accent">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09a13.916 13.916 0 002.103-4.76m12.989-1.332A13.945 13.945 0 0118.055 20.41m-4.209-6.93a13.945 13.945 0 01-2.903 5.302m3.113-8.818A14.233 14.233 0 0115.933 13m-2.221-3.246a14.317 14.317 0 00-3.664-2.233m-4.03 5.601A14.403 14.403 0 0113.316 8.5" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-sm uppercase">Tự động hóa & SCADA</h4>
+                                <ul class="text-[11px] text-white/50 mt-1 space-y-1">
+                                    <li>• Cấu hình hệ thống điều khiển bảo vệ</li>
+                                    <li>• Xây dựng hệ thống SCADA cho TBA 110kV</li>
+                                    <li>• Tích hợp trung tâm điều khiển (OCC/RCC)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 4: TIÊU CHUẨN & CHỨNG CHỈ -->
+            <div class="page">
+                <div
+                    class="h-full flex flex-col p-16 relative from-primary/10 via-transparent to-transparent blueprint-grid">
+                    <header class="flex justify-between items-end border-b border-white/10 pb-8 mb-8">
+                        <div>
+                            <span class="text-accent font-bold text-xs uppercase tracking-[0.3em] font-mono">03 // Hệ
+                                thống Quản lý</span>
+                            <h2 class="text-4xl font-extrabold uppercase mt-3 tracking-normal text-white">Chất lượng
+                                Quốc tế</h2>
+                        </div>
+                    </header>
+                    <div class="space-y-4">
+                        <div
+                            class="flex items-center gap-12 glass-panel p-8 rounded-3xl transform hover:scale-[1.02] transition-transform">
+                            <div
+                                class="text-4xl font-black text-accent italic tracking-tighter opacity-90 drop-shadow-[0_0_20px_rgba(128,255,219,0.3)]">
+                                ISO 17025</div>
+                            <div class="h-20 w-[2px] bg-white/10"></div>
+                            <div class="max-w-[50%]">
+                                <h4 class="font-bold text-white uppercase text-xl leading-snug">ISO/IEC 17025:2017</h4>
+                                <p class="text-[12px] text-white/40 mt-4 uppercase tracking-[0.1em] leading-relaxed">
+                                    Phòng thí nghiệm mã số <b>VILAS 019</b> được Bộ Khoa học và Công nghệ công nhận năng
+                                    lực thử nghiệm trong lĩnh vực Điện.</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-8">
+                            <div class="glass-panel p-8 rounded-2xl space-y-4">
+                                <h5 class="text-secondary font-bold text-xs uppercase tracking-widest">Năng lực Nhân sự
+                                </h5>
+                                <p class="text-[11px] text-white/60">Đội ngũ kỹ sư giàu kinh nghiệm, đạt chứng chỉ
+                                    chuyên gia thử nghiệm/kiểm định được các tổ chức công nhận, nắm vững quy trình vận
+                                    hành thiết bị và hệ thống
+                                    điện quốc gia.</p>
+                            </div>
+                            <div class="glass-panel p-8 rounded-2xl space-y-4">
+                                <h5 class="text-secondary font-bold text-xs uppercase tracking-widest">Chính sách vận
+                                    hành</h5>
+                                <ul class="text-[11px] text-white/60 space-y-2">
+                                    <li class="flex items-center gap-2">
+                                        <div class="w-1 h-1 bg-accent rounded-full"></div> An toàn lao động là ưu tiên
+                                        hàng đầu
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <div class="w-1 h-1 bg-accent rounded-full"></div> Độc lập, khách quan, trung
+                                        thực
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <div class="w-1 h-1 bg-accent rounded-full"></div> Cải tiến và áp dụng công nghệ
+                                        liên tục
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 5.1: TRANG THIẾT BỊ -->
+            <div class="page">
+                <div
+                    class="h-full flex flex-col p-16 relative from-primary/10 via-transparent to-transparent blueprint-grid">
+                    <header class="flex justify-between items-end border-b border-white/10 pb-8 mb-8">
+                        <div>
+                            <span class="text-accent font-bold text-xs uppercase tracking-[0.3em] font-mono">04 // Công
+                                nghệ & Thiết bị</span>
+                            <h2 class="text-4xl font-extrabold uppercase mt-3 tracking-normal text-white">Thiết bị hiện
+                                đại</h2>
+                        </div>
+                    </header>
+                    <div class="grid grid-cols-2 gap-10 flex-grow">
+                        <div
+                            class="glass-panel p-8 flex flex-col gap-6 rounded-[2.5rem] group hover:bg-white/5 transition-colors">
+                            <div
+                                class="h-44 bg-white rounded-2xl flex items-center justify-center font-mono text-accent/20 text-[11px] border border-white/5 shadow-inner relative overflow-hidden">
+                                <div
+                                    class="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
+                                <img src="image/iCT1.jpg" alt="iCT1" class="h-full object-contain relative z-10">
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-accent text-sm uppercase tracking-widest">Current and Voltage
+                                    Transformer test set – iCT1</h4>
+                                <p class="text-[10px] text-white/50 mt-3 leading-relaxed italic">Thiết bị cầm tay tiên
+                                    tiến nhất dùng để thí nghiệm máy biến dòng, máy biến áp, máy biến áp kết hợp.</p>
+                            </div>
+                        </div>
+                        <div
+                            class="glass-panel p-8 flex flex-col gap-6 rounded-[2.5rem] group hover:bg-white/5 transition-colors">
+                            <div
+                                class="h-44 bg-slate-900/50 rounded-2xl flex items-center justify-center font-mono text-accent/20 text-[11px] border border-white/5 shadow-inner relative overflow-hidden">
+                                <div
+                                    class="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
+                                <img src="image/VLF-65E.jpg" alt="VLF-65E" class="w-full object-contain relative z-10">
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-accent text-sm uppercase tracking-widest">High Performance
+                                    Portable VLF Hipot
+                                </h4>
+                                <p class="text-[10px] text-white/50 mt-3 leading-relaxed italic">Thiết bị thử nghiệm cáp
+                                    lực tần số thấp</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 5.2: TRANG THIẾT BỊ -->
+            <div class="page">
+                <div
+                    class="h-full flex flex-col p-16 relative from-primary/10 via-transparent to-transparent blueprint-grid">
+                    <header class="flex justify-between items-end border-b border-white/10 pb-8 mb-8">
+                        <div>
+                            <span class="text-accent font-bold text-xs uppercase tracking-[0.3em] font-mono">05 // Công
+                                nghệ & Thiết bị</span>
+                            <h2 class="text-4xl font-extrabold uppercase mt-3 tracking-normal text-white">Thiết bị hiện
+                                đại</h2>
+                        </div>
+                    </header>
+                    <div class="grid grid-cols-2 gap-10 flex-grow">
+                        <div
+                            class="glass-panel p-8 flex flex-col gap-6 rounded-[2.5rem] group hover:bg-white/5 transition-colors">
+                            <div
+                                class="h-44 bg-white rounded-2xl flex items-center justify-center font-mono text-accent/20 text-[11px] border border-white/5 shadow-inner relative overflow-hidden">
+                                <div
+                                    class="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
+                                <img src="image/Osillo.png" alt="Osillo" class="h-full object-contain relative z-10">
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-accent text-sm uppercase tracking-widest">Scope Rider RTH
+                                    Handheld Oscillosope</h4>
+                                <p class="text-[10px] text-white/50 mt-3 leading-relaxed italic">Máy hiện sóng cầm tay
+                                    xác định lỗi của các thiết bị trong phòng thí nghiệm hoặc phân tích các vấn đề phức
+                                    tạp tại hiện trường .</p>
+                            </div>
+                        </div>
+                        <div
+                            class="glass-panel p-8 flex flex-col gap-6 rounded-[2.5rem] group hover:bg-white/5 transition-colors">
+                            <div
+                                class="h-44 bg-white rounded-2xl flex items-center justify-center font-mono text-accent/20 text-[11px] border border-white/5 shadow-inner relative overflow-hidden">
+                                <div
+                                    class="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
+                                <img src="image/CMC-356-.png" alt="CMC-356-"
+                                    class="w-full object-contain relative z-10">
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-accent text-sm uppercase tracking-widest">Omicro CMC 356
+                                </h4>
+                                <p class="text-[10px] text-white/50 mt-3 leading-relaxed italic">Hợp bộ thí nghiệm nhị
+                                    thứ 3 pha công suất lớn CMC356 Omicron</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 5.3: TRANG THIẾT BỊ -->
+            <div class="page">
+                <div
+                    class="h-full flex flex-col p-16 relative from-primary/10 via-transparent to-transparent blueprint-grid">
+                    <header class="flex justify-between items-end border-b border-white/10 pb-8 mb-8">
+                        <div>
+                            <span class="text-accent font-bold text-xs uppercase tracking-[0.3em] font-mono">06 // Công
+                                nghệ & Thiết bị</span>
+                            <h2 class="text-4xl font-extrabold uppercase mt-3 tracking-normal text-white">Thiết bị hiện
+                                đại</h2>
+                        </div>
+                    </header>
+                    <div class="grid grid-cols-2 gap-10 flex-grow">
+                        <div
+                            class="glass-panel p-8 flex flex-col gap-6 rounded-[2.5rem] group hover:bg-white/5 transition-colors">
+                            <div
+                                class="h-44 bg-white rounded-2xl flex items-center justify-center font-mono text-accent/20 text-[11px] border border-white/5 shadow-inner relative overflow-hidden">
+                                <div
+                                    class="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
+                                <img src="image/ATR-03.jpg" alt="ATR-03" class="h-full object-contain relative z-10">
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-accent text-sm uppercase tracking-widest">ATRT-03 Vanguard
+                                </h4>
+                                <p class="text-[10px] text-white/50 mt-3 leading-relaxed italic"> thiết bị có độ chính
+                                    xác cao, được thiết kế để đo tỷ số biến, độ dịch chuyển pha, dòng điện kích thích
+                                    của máy biến áp điện một pha và ba pha, máy phân phối và máy đo theo tiêu chuẩn IEEE
+                                    C57.12.90 & IEC 60076</p>
+                            </div>
+                        </div>
+                        <div
+                            class="glass-panel p-8 flex flex-col gap-6 rounded-[2.5rem] group hover:bg-white/5 transition-colors">
+                            <div
+                                class="h-44 bg-white rounded-2xl flex items-center justify-center font-mono text-accent/20 text-[11px] border border-white/5 shadow-inner relative overflow-hidden">
+                                <div
+                                    class="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
+                                <img src="image/TRM-20.png" alt="TRM-20" class="h-full object-contain relative z-10">
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-accent text-sm uppercase tracking-widest">TRM-20</h4>
+                                <p class="text-[10px] text-white/50 mt-3 leading-relaxed italic">hiết bị đo điện trở một
+                                    chiều cuộn dây máy biến áp thế hệ thứ ba của Vanguard. Dòng sản phẩm TRM được thiết
+                                    kế đặc biệt để đo điện trở một chiều cuộn dây của máy biến áp, động cơ điện,…</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 6.1: DỰ ÁN TIÊU BIỂU -->
+            <div class="page">
+                <div
+                    class="h-full flex flex-col p-16 relative from-primary/10 via-transparent to-transparent blueprint-grid">
+                    <header class="flex justify-between items-end border-b border-white/10 pb-8 mb-12">
+                        <div>
+                            <span class="text-accent font-bold text-xs uppercase tracking-[0.3em] font-mono">07 // Kinh
+                                nghiệm thực thi</span>
+                            <h2 class="text-4xl font-extrabold uppercase mt-3 tracking-normal text-white">Dự án trọng
+                                điểm</h2>
+                        </div>
+                    </header>
+                    <div class="space-y-4 flex-grow">
+                        <!-- Dự án 1 -->
+                        <div
+                            class="flex items-center gap-8 border-l-4 border-accent pl-8 py-4 bg-white/[0.03] rounded-r-2xl transition-all hover:bg-white/10">
+                            <div class="flex-grow">
+                                <h5 class="text-base font-bold text-white uppercase tracking-tight">Nâng công suất TBA
+                                    110kV Kỳ Hà</h5>
+                                <p class="text-[10px] text-secondary/60 mt-1 uppercase tracking-widest font-bold">Tổ hợp
+                                    lọc dầu MBA lực 110kV và lắp đặt vật tư thiết bị</p>
+                                <div class="text-[9px] text-white/30 mt-1">Quy mô: 63+40MVA | Hoàn thành: 2025 | Giá
+                                    trị: 500 triệu VNĐ</div>
+                            </div>
+                            <span class="font-mono text-lg text-accent font-black">2025</span>
+                        </div>
+                        <!-- Dự án 2 -->
+                        <div
+                            class="flex items-center gap-8 border-l-4 border-secondary pl-8 py-4 bg-white/[0.03] rounded-r-2xl transition-all hover:bg-white/10">
+                            <div class="flex-grow">
+                                <h5 class="text-base font-bold text-white uppercase tracking-tight">Đại tu MBA T2 TBA
+                                    110kV Đại Lộc</h5>
+                                <p class="text-[10px] text-secondary/60 mt-1 uppercase tracking-widest font-bold">Đi tu
+                                    OLTC, lọc dầu tuần hoàn chân không.</p>
+                                <div class="text-[9px] text-white/30 mt-1">Quy mô: 40MVA | Hoàn thành: 2025 | Giá trị:
+                                    120 triệu VNĐ</div>
+                            </div>
+                            <span class="font-mono text-lg text-secondary font-black">2025</span>
+                        </div>
+                        <!-- Dự án 3 -->
+                        <div
+                            class="flex items-center gap-8 border-l-4 border-accent pl-8 py-4 bg-white/[0.03] rounded-r-2xl transition-all hover:bg-white/10">
+                            <div class="flex-grow">
+                                <h5 class="text-base font-bold text-white uppercase tracking-tight">Thí nghiệm định kỳ
+                                    NM Nhiệt điện Nông
+                                    Sơn</h5>
+                                <p class="text-[10px] text-secondary/60 mt-1 uppercase tracking-widest font-bold">Thay
+                                    thế, lắp đặt thiết bị, lọc dầu và thí nghiệm MBA 110kV.</p>
+                                <div class="text-[9px] text-white/30 mt-1">Quy mô: 63 MVA | Hoàn thành: 2025 | Giá trị:
+                                    270 triệu VNĐ</div>
+                            </div>
+                            <span class="font-mono text-lg text-accent font-black">2025</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 6.2: DỰ ÁN TIÊU BIỂU -->
+            <div class="page">
+                <div
+                    class="h-full flex flex-col p-16 relative from-primary/10 via-transparent to-transparent blueprint-grid">
+                    <header class="flex justify-between items-end border-b border-white/10 pb-8 mb-12">
+                        <div>
+                            <span class="text-accent font-bold text-xs uppercase tracking-[0.3em] font-mono">08 // Kinh
+                                nghiệm thực thi</span>
+                            <h2 class="text-4xl font-extrabold uppercase mt-3 tracking-normal text-white">Dự án trọng
+                                điểm</h2>
+                        </div>
+                    </header>
+                    <div class="space-y-4 flex-grow">
+                        <!-- Dự án 1 -->
+                        <div
+                            class="flex items-center gap-8 border-l-4 border-accent pl-8 py-4 bg-white/[0.03] rounded-r-2xl transition-all hover:bg-white/10">
+                            <div class="flex-grow">
+                                <h5 class="text-base font-bold text-white uppercase tracking-tight">Nâng cao độ tin cậy
+                                    TBA 110kV Kon Tum, Đăk Hà</h5>
+                                <p class="text-[10px] text-secondary/60 mt-1 uppercase tracking-widest font-bold">Thay
+                                    thế, lắp đặt thiết bị, thí nghiệm và cấu hình hiệu chỉnh hệ thống Role bảo vệ và
+                                    SCADA</p>
+                                <div class="text-[9px] text-white/30 mt-1">Quy mô: TCC42, ngăn MBA T1-40MVA | Hoàn
+                                    thành: 2025 | Giá trị: 1.200 triệu VNĐ</div>
+                            </div>
+                            <span class="font-mono text-lg text-accent font-black">2025</span>
+                        </div>
+                        <!-- Dự án 2 -->
+                        <div
+                            class="flex items-center gap-8 border-l-4 border-secondary pl-8 py-4 bg-white/[0.03] rounded-r-2xl transition-all hover:bg-white/10">
+                            <div class="flex-grow">
+                                <h5 class="text-base font-bold text-white uppercase tracking-tight">Thay thế các thiết
+                                    bị KĐB vận hành an toàn các TBA 110kV năm 2025 - QNaPC</h5>
+                                <p class="text-[10px] text-secondary/60 mt-1 uppercase tracking-widest font-bold">Thay
+                                    thế, lắp đặt các máy cắt, biến dòng điện và dao cách ly cấp điện áp 110kV tại các
+                                    TBA 110kV</p>
+                                <div class="text-[9px] text-white/30 mt-1">Quy mô: 07 TBA 110kV | Hoàn thành: 2025 | Giá
+                                    trị: 1.150 triệu VNĐ</div>
+                            </div>
+                            <span class="font-mono text-lg text-secondary font-black">2025</span>
+                        </div>
+                        <!-- Dự án 3 -->
+                        <div
+                            class="flex items-center gap-8 border-l-4 border-accent pl-8 py-4 bg-white/[0.03] rounded-r-2xl transition-all hover:bg-white/10">
+                            <div class="flex-grow">
+                                <h5 class="text-base font-bold text-white uppercase tracking-tight">Thay thế hệ thống
+                                    role bảo vệ các TBA 110kV năm 2025 - QNPC</h5>
+                                <p class="text-[10px] text-secondary/60 mt-1 uppercase tracking-widest font-bold">Thay
+                                    thế-lắp đặt, cấu hình-thử nghiệm hệ thống role bảo vệ và SCADA.</p>
+                                <div class="text-[9px] text-white/30 mt-1">Quy mô: 02 TBA 110kV | Hoàn thành: 2025 | Giá
+                                    trị:
+                                    440 triệu VNĐ</div>
+                            </div>
+                            <span class="font-mono text-lg text-accent font-black">2025</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 7: ĐỐI TÁC & CAM KẾT -->
+            <div class="page">
+                <div
+                    class="h-full flex flex-col p-16 relative from-primary/10 via-transparent to-transparent blueprint-grid">
+                    <header class="flex justify-between items-end border-b border-white/10 pb-8 mb-12">
+                        <div>
+                            <span class="text-accent font-bold text-xs uppercase tracking-[0.3em] font-mono">09 // Đối
+                                tác & Cam kết</span>
+                            <h2 class="text-4xl font-extrabold uppercase mt-3 tracking-normal text-white">Chúng tôi đồng
+                                hành</h2>
+                        </div>
+                    </header>
+                    <div class="grid grid-cols-2 gap-10 flex-grow">
+                        <div class="space-y-6">
+                            <div class="glass-panel p-6 rounded-2xl border-white/5">
+                                <h6 class="text-white font-bold text-xs mb-4 uppercase tracking-[0.2em]">Đối tác tin cậy
+                                </h6>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div
+                                        class="h-12 bg-white rounded-lg border border-white/5 flex items-center justify-center p-2">
+                                        <img src="image/evncpc.png" alt="EVNCPC"
+                                            class="max-h-full max-w-full object-contain filter brightness-110">
+                                    </div>
+                                    <div
+                                        class="h-12 bg-white rounded-lg border border-white/5 flex items-center justify-center p-2">
+                                        <img src="image/eemc.jpg" alt="EEMC"
+                                            class="max-h-full max-w-full object-contain filter brightness-110">
+                                    </div>
+                                    <div
+                                        class="h-12 bg-white rounded-lg border border-white/5 flex items-center justify-center p-2">
+                                        <img src="image/songda5.webp" alt="SONGDA 5"
+                                            class="max-h-full max-w-full object-contain filter brightness-110">
+                                    </div>
+                                    <div
+                                        class="h-12 bg-white rounded-lg border border-white/5 flex items-center justify-center p-2">
+                                        <img src="image/deoca.jpg" alt="DEOCA"
+                                            class="max-h-full max-w-full object-contain filter brightness-110">
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-[12px] text-white/50 leading-relaxed italic">"MTE-CPSC không chỉ cung cấp
+                                dịch vụ kỹ thuật, chúng tôi mang lại sự an tâm cho khách hàng thông qua chất lượng và sự
+                                tận tâm trên từng thiết bị."</p>
+                        </div>
+                        <div
+                            class="glass-panel p-10 rounded-[3rem] bg-accent/5 border-accent/20 flex flex-col justify-center text-center">
+                            <h4 class="text-accent font-black text-3xl uppercase leading-none mb-6">Cam kết 3A</h4>
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="text-white font-black text-2xl">AN TOÀN</div>
+                                    <div class="text-[10px] text-accent/50 uppercase tracking-widest mt-1">Đặt lên hàng
+                                        đầu</div>
+                                </div>
+                                <div>
+                                    <div class="text-white font-black text-2xl">AN TÂM</div>
+                                    <div class="text-[10px] text-accent/50 uppercase tracking-widest mt-1">Với độ chính
+                                        xác cao</div>
+                                </div>
+                                <div>
+                                    <div class="text-white font-black text-2xl">AM TƯỜNG</div>
+                                    <div class="text-[10px] text-accent/50 uppercase tracking-widest mt-1">Công nghệ
+                                        tiên phong</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE 8: CLOSING -->
+            <div class="page">
+                <div class="h-full flex flex-col p-16 items-center justify-center text-center blueprint-grid relative">
+                    <div class="relative group mb-12">
+                        <div
+                            class="absolute inset-0 bg-accent/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity">
+                        </div>
+                        <div
+                            class="w-36 h-36 bg-white p-2 glass-panel border-accent/40 rounded-[2.5rem] flex items-center justify-center relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-accent/30 to-transparent skew-x-[-20deg] animate-shine"
+                                style="animation: shine 3s infinite;"></div>
+                            <img src="image/qrcode_mtelab.svg" alt="QR Code"
+                                class="w-full h-full object-contain relative z-10">
+                        </div>
+                    </div>
+                    <h2 class="text-3xl font-black uppercase mb-6 text-white leading-tight tracking-tight">KẾT NỐI VỚI
+                        CHÚNG TÔI
+                    </h2>
+                    <div class="h-2 w-32 bg-accent mx-auto mb-10 rounded-full shadow-[0_0_10px_#80ffdb] animate-glow">
+                    </div>
+                    <div class="space-y-4 font-mono text-xs text-white/50 tracking-wider">
+                        <p class="hover:text-accent transition-colors">Đường số 2, KCN Hoà Cầm, TP. Đà Nẵng, Việt Nam
+                        </p>
+                        <p class="hover:text-accent transition-colors">Hotline: (+84) 0236 3551.233 - 0236 3551.241</p>
+                        <p class="hover:text-accent transition-colors">Yêu cầu báo giá: cpsc@cpc.vn</p>
+                        <p
+                            class="text-accent text-3xl font-black mt-10 tracking-widest font-sans drop-shadow-[0_0_15px_rgba(128,255,219,0.5)]">
+                            www.cpsc.cpc.vn</p>
+                    </div>
+                    <div class="absolute bottom-12 w-full px-24 border-t border-white/5 pt-8 opacity-30 text-center">
+                        <p class="text-[9px] font-black uppercase tracking-[0.5em] text-white italic">Trao niềm tin -
+                            Nhận chất lượng</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Print Area -->
+    <div id="print-area"></div>
+
+    <script>
+        let pageFlip = null;
+
+        window.onload = () => {
+            const container = document.getElementById('flip-book');
+            const pages = document.querySelectorAll('.page');
+
+            // Prepare print area BEFORE pageFlip initialization
+            const printArea = document.getElementById('print-area');
+            pages.forEach((page) => {
+                const printPage = document.createElement('div');
+                printPage.className = 'print-page';
+                const content = page.querySelector(':scope > div').cloneNode(true);
+                printArea.appendChild(printPage);
+                printPage.appendChild(content);
+            });
+
+            pageFlip = new St.PageFlip(container, {
+                width: 841,
+                height: 595,
+                size: 'fixed',
+                minWidth: 400,
+                maxWidth: 841,
+                minHeight: 300,
+                maxHeight: 595,
+                drawShadow: true,
+                flippingTime: 1000,
+                usePortrait: false,
+                startZIndex: 10,
+                showCover: true,
+                useMouseEvents: true,
+                mobileScrollSupport: false,
+                clickEventForward: true
+            });
+
+            pageFlip.loadFromHTML(pages);
+
+            adjustScale();
+        };
+
+        function adjustScale() {
+            const container = document.getElementById('book-container');
+            if (!container) return;
+
+            const winW = window.innerWidth * 0.95;
+            const winH = window.innerHeight * 0.8;
+
+            // Multi-page layout is 2x width
+            const targetW = 841 * 2;
+            const targetH = 595;
+
+            const scaleW = winW / targetW;
+            const scaleH = winH / targetH;
+            const scale = Math.min(scaleW, scaleH, 1);
+
+            container.style.transform = `scale(${scale})`;
+        }
+
+        window.addEventListener('resize', adjustScale);
+        window.oncontextmenu = (e) => e.preventDefault();
+    </script>
+</body>
+
+</html>

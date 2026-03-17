@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import { LoginForm } from "@/components/auth/login-form"
+import Link from "next/link"
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -31,9 +32,11 @@ export default function LoginPage() {
                 <div className="absolute bottom-[10%] -left-[20%] w-[60%] h-[60%] rounded-full bg-[#f72585]/20 blur-[100px]"></div>
 
                 <div className="absolute inset-0 flex flex-col justify-center items-center text-white p-12 text-center z-10">
-                    <h2 className="text-5xl font-extrabold tracking-tight mb-6 drop-shadow-lg">
-                        MTE<span className="text-[#4cc9f0]">-LAB</span>
-                    </h2>
+                    <Link href="/profile/index.html" className="group">
+                        <h2 className="text-5xl font-extrabold tracking-tight mb-6 drop-shadow-lg group-hover:scale-105 transition-transform duration-300">
+                            MTE<span className="text-[#4cc9f0]">-LAB</span>
+                        </h2>
+                    </Link>
                     <p className="text-xl text-blue-100/90 font-medium max-w-lg leading-relaxed drop-shadow-md">
                         Trang quản lý Phòng Thử nghiệm theo tiêu chuẩn ISO
                     </p>
