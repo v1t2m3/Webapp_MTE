@@ -63,7 +63,7 @@ export function LoginForm() {
         <div className="w-full flex flex-col justify-top space-y-2 sm:w-[400px]">
             <div className="flex flex-col space-y-2 text-center items-center mb-8 w-full">
                 <div className="relative h-[200px] w-[300px] mx-auto group">
-                    <Link href="/profile" target="_blank" rel="noopener noreferrer" className="cursor-pointer block">
+                    <Link href="/profile/index.html" target="_blank" rel="noopener noreferrer" className="cursor-pointer block">
                         <motion.div
                             whileHover={{ scale: 1.02 }}
                             className="relative h-[200px] w-[300px]"
