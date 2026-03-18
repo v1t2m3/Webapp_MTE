@@ -10,6 +10,8 @@ import { Eye, EyeOff, Lock, User as UserIcon } from "lucide-react";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 type LoginFormData = {
     username: string;
@@ -60,14 +62,25 @@ export function LoginForm() {
     return (
         <div className="w-full flex flex-col justify-top space-y-2 sm:w-[400px]">
             <div className="flex flex-col space-y-2 text-center items-center mb-8 w-full">
-                <div className="relative h-[200px] w-[300px] mx-auto">
-                    <Image
-                        src="/images/LogoCPCCPSC_bg_White.png"
-                        alt="CPCCPSC"
-                        fill
-                        className="object-contain"
-                        unoptimized
-                    />
+                <div className="relative h-[200px] w-[300px] mx-auto group">
+                    <Link href="/profile" target="_blank" rel="noopener noreferrer" className="cursor-pointer block">
+                        <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            className="relative h-[200px] w-[300px]"
+                        >
+                            <Image
+                                src="/images/LogoCPCCPSC_bg_White.png"
+                                alt="CPCCPSC"
+                                fill
+                                className="object-contain"
+                                unoptimized
+                            />
+                            {/* Animated Tooltip */}
+                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#3a0ca3] text-white text-[10px] py-1 px-3 rounded-full whitespace-nowrap shadow-xl pointer-events-none">
+                                Xem Hồ sơ năng lực Digital
+                            </div>
+                        </motion.div>
+                    </Link>
                 </div>
                 <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Đăng nhập</h1>
                 <p className="text-sm text-slate-500 dark:text-slate-400">

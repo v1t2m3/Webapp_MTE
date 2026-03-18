@@ -60,15 +60,6 @@
     "isActive": true
   },
   {
-    "id": "tiennd",
-    "username": "tiennd",
-    "passwordHash": "$2b$10$OFDHCtyHmlruyEKX1dy.XOvUG.i4Dmhgm74gQ7AisKc3De7U3gwDO",
-    "role": "User",
-    "fullName": "Đặng Ngọc Tiến",
-    "isActive": true,
-    "level": 4
-  },
-  {
     "id": "thinhdv",
     "username": "thinhdv",
     "passwordHash": "$2b$10$IPHS0XTanm6aEusg/T5Fk.ClQqxViKMqfLFIlNfOEcH5mvxJWN/cm",
@@ -84,7 +75,7 @@
     "role": "User",
     "fullName": "Hoàng Thị Vân",
     "isActive": true,
-    "level": 2
+    "level": 4
   },
   {
     "id": "ngannn",
@@ -216,6 +207,15 @@
     "passwordHash": "$2b$10$FdVHNEtdzRX0yzHz8zqqj.WrDbodYCZELcwjJlQK2S39PFi5TLJeq",
     "role": "Viewer",
     "fullName": "Viewer",
+    "isActive": true
+  },
+  {
+    "id": "tiendn",
+    "username": "tiendn",
+    "passwordHash": "$2b$10$uklFUoD0Hf7ntV0.qFczreB.oY2liTW/RT3..12yFiMcRUhLxANia",
+    "role": "User",
+    "level": 4,
+    "fullName": "Đặng Ngọc Tiến",
     "isActive": true
   }
 ]

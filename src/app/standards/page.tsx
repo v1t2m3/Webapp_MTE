@@ -19,8 +19,11 @@ import {
 } from "@/components/ui/table";
 import {
     BookOpen, Plus, Edit, Trash2, Search, Copy, Check,
-    Globe, FileText, Zap, ShieldCheck, ChevronDown, ChevronRight,
+    Globe, FileText, ShieldCheck, ChevronDown, ChevronRight,
     RefreshCw,
+    Star,
+    PlugZap,
+    ZapIcon,
 } from "lucide-react";
 
 // ──────────────────────────────────────────────
@@ -39,11 +42,11 @@ const CATEGORY_STYLES: Record<string, string> = {
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
     TCVN: FileText,
-    IEC: Zap,
-    IEEE: Globe,
-    ANSI: Globe,
+    IEC: Globe,
+    IEEE: PlugZap,
+    ANSI: ZapIcon,
     ISO: ShieldCheck,
-    QCVN: BookOpen,
+    QCVN: Star,
 };
 
 // ──────────────────────────────────────────────
@@ -219,7 +222,7 @@ function EquipmentGroup({
     };
 
     return (
-        <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden">
+        <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.02]">
             {/* Group header */}
             <div
                 className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
@@ -237,7 +240,7 @@ function EquipmentGroup({
                         size="sm"
                         variant="ghost"
                         onClick={handleCopy}
-                        className="text-[#4cc9f0] border border-transparent hover:border-[#4cc9f0]/40 hover:bg-[#4cc9f0]/10 transition-all text-xs h-7 gap-1"
+                        className="text-[#4cc9f0] border border-transparent hover:border-[#4cc9f0]/40 hover:bg-[#4cc9f0]/10 hover:text-pink-500 transition-all text-xs h-7 gap-1"
                         title="Copy danh sách mã tiêu chuẩn"
                     >
                         {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
@@ -249,38 +252,38 @@ function EquipmentGroup({
             {/* Rows */}
             {open && (
                 <div className="border-t border-white/10">
-                    <Table className="w-full table-fixed">
+                    <Table className="table-fixed">
                         <TableBody>
                             {standards.map(std => (
                                 <TableRow key={std.id} className="hover:bg-white/5 border-white/5 transition-colors">
 
                                     {/* Cột 1: w-1/12, canh trái */}
-                                    <TableCell className="py-2 w-75 text-left">
+                                    <TableCell className="py-2 w-2/12 text-left" style={{ width: "195px" }}>
                                         <Badge variant="outline" className={`text-xs font-mono ${CATEGORY_STYLES[std.category] ?? ""}`}>
                                             {std.code}
                                         </Badge>
                                     </TableCell>
 
                                     {/* Cột 2: w-3/12, canh trái, tự động xuống dòng */}
-                                    <TableCell className="py-2 text-white/80 text-sm w-200 text-left">
+                                    <TableCell className="py-2 text-white/80 text-sm w-3/12 text-left" style={{ width: "280px" }}>
                                         <div className="line-clamp-2" title={std.name}>
                                             {std.name}
                                         </div>
                                     </TableCell>
 
                                     {/* Cột 3: w-5/12, canh trái, cắt chữ sau 2 dòng (...) */}
-                                    <TableCell className="py-2 text-white/80 text-sm w-400 text-left">
+                                    <TableCell className="py-2 text-white/80 text-sm w-5/12 text-left" style={{ width: "560px" }}>
                                         <div className="line-clamp-2" title={std.description}>
                                             {std.description}
                                         </div>
                                     </TableCell>
 
                                     {/* Cột 4: w-1/12, canh phải */}
-                                    <TableCell className="py-2 text-right w-40">
+                                    <TableCell className="py-2 text-center w-1/12" style={{ width: "75px" }}>
                                         {std.fileLink ? (
                                             <a href={std.fileLink} target="_blank" rel="noopener noreferrer"
                                                 className="text-[#4cc9f0]/70 hover:text-[#4cc9f0] text-xs underline-offset-2 hover:underline">
-                                                Xem file
+                                                Xem
                                             </a>
                                         ) : (
                                             <span className="text-white/20 text-xs">—</span>
@@ -288,7 +291,7 @@ function EquipmentGroup({
                                     </TableCell>
 
                                     {/* Cột 5: w-2/12, canh phải */}
-                                    <TableCell className="py-2 text-right w-50">
+                                    <TableCell className="py-2 text-right w-1/12">
                                         <div className="flex justify-end gap-1">
                                             {canEdit && (
                                                 <Button size="icon" variant="ghost"
@@ -499,7 +502,7 @@ export default function StandardsPage() {
                     <p className="text-sm mt-1">Thử điều chỉnh bộ lọc hoặc thêm tiêu chuẩn mới.</p>
                 </div>
             ) : (
-                <div>
+                <div className="w-full overflow-auto">
                     {grouped.map(([equipment, stds]) => (
                         <EquipmentGroup
                             key={equipment}

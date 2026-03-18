@@ -32,12 +32,16 @@ export default function LoginPage() {
                 <div className="absolute bottom-[10%] -left-[20%] w-[60%] h-[60%] rounded-full bg-[#f72585]/20 blur-[100px]"></div>
 
                 <div className="absolute inset-0 flex flex-col justify-center items-center text-white p-12 text-center z-10">
-                    <Link href="/profile/index.html" className="group">
-                        <h2 className="text-5xl font-extrabold tracking-tight mb-6 drop-shadow-lg group-hover:scale-105 transition-transform duration-300">
+                    <Link href="/profile" className="group relative transition-transform hover:scale-105 duration-300">
+                        <h2 className="text-5xl font-extrabold tracking-tight mb-2 drop-shadow-lg">
                             MTE<span className="text-[#4cc9f0]">-LAB</span>
                         </h2>
+                        {/* Tooltip */}
+                        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/10 backdrop-blur-md text-white text-xs py-1.5 px-4 rounded-full border border-white/20 shadow-2xl whitespace-nowrap pointer-events-none">
+                            Xem Hồ sơ năng lực Digital
+                        </div>
                     </Link>
-                    <p className="text-xl text-blue-100/90 font-medium max-w-lg leading-relaxed drop-shadow-md">
+                    <p className="text-xl text-blue-100/90 font-medium max-w-lg leading-relaxed drop-shadow-md mt-4">
                         Trang quản lý Phòng Thử nghiệm theo tiêu chuẩn ISO
                     </p>
 
