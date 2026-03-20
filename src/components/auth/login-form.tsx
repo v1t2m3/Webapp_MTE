@@ -60,21 +60,17 @@ export function LoginForm() {
     };
 
     return (
-        <div className="w-full flex flex-col justify-top space-y-2 sm:w-[400px]">
+        <div className="w-full flex flex-col justify-center items-center space-y-2 sm:w-[400px]">
             <div className="flex flex-col space-y-2 text-center items-center mb-8 w-full">
-                <div className="relative h-[200px] w-[300px] mx-auto group">
+                <div className="relative mx-auto group">
                     <Link href="/profile/index.html" target="_blank" rel="noopener noreferrer" className="cursor-pointer block">
                         <motion.div
                             whileHover={{ scale: 1.02 }}
-                            className="relative h-[200px] w-[300px]"
+                            className="relative"
                         >
-                            <Image
-                                src="/images/LogoCPCCPSC_bg_White.png"
-                                alt="CPCCPSC"
-                                fill
-                                className="object-contain"
-                                unoptimized
-                            />
+                            <h2 className="text-5xl font-extrabold tracking-tight mb-2 drop-shadow-lg">
+                                MTE<span className="text-[#4cc9f0]">-LAB</span>
+                            </h2>
                             {/* Animated Tooltip */}
                             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-[#3a0ca3] text-white text-[10px] py-1 px-3 rounded-full whitespace-nowrap shadow-xl pointer-events-none">
                                 Xem Hồ sơ năng lực Digital
@@ -82,8 +78,8 @@ export function LoginForm() {
                         </motion.div>
                     </Link>
                 </div>
-                <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Đăng nhập</h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <h1 className="text-3xl font-bold tracking-tight text-[#3a0ca3] dark:text-white">LOGIN</h1>
+                <p className="text-sm text-[#3a0ca3]/70 dark:text-slate-400">
                     Nhập thông tin xác thực để truy cập MTE-LAB
                 </p>
             </div>
@@ -105,7 +101,7 @@ export function LoginForm() {
                                     className="pl-10"
                                     {...register("username", { required: "Vui lòng nhập tên đăng nhập" })}
                                 />
-                                <UserIcon className="absolute left-3 top-2.5 h-5 w-5 text-slate-400" />
+                                <UserIcon className="absolute left-3 top-2.5 h-5 w-5 text-[#3a0ca3]" />
                             </div>
                             {errors.username && <p className="text-sm text-red-500">{errors.username.message}</p>}
                         </div>
@@ -113,9 +109,6 @@ export function LoginForm() {
                         <div className="grid gap-2 relative">
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="passwordHash">Mật khẩu</Label>
-                                <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                                    Quên mật khẩu?
-                                </a>
                             </div>
                             <div className="relative">
                                 <Input
@@ -127,7 +120,7 @@ export function LoginForm() {
                                     placeholder="••••••••"
                                     {...register("passwordHash", { required: "Vui lòng nhập mật khẩu" })}
                                 />
-                                <Lock className="absolute left-3 top-2.5 h-5 w-5 text-slate-400" />
+                                <Lock className="absolute left-3 top-2.5 h-5 w-5 text-[#3a0ca3]" />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
@@ -147,28 +140,13 @@ export function LoginForm() {
                         </Button>
                     </div>
                 </form>
-
-                <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-slate-200 dark:border-slate-800" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white dark:bg-slate-950 px-2 text-slate-500">
-                            Hoặc tiếp tục với
-                        </span>
-                    </div>
-                </div>
-
-                <Button variant="outline" type="button" disabled={isLoading} className="w-full">
-                    EVNCPC Portal SSO
-                </Button>
             </div>
 
-            <p className="px-8 text-center text-sm text-slate-500 dark:text-slate-400 mt-4">
-                Chỉ dành cho cán bộ công nhân viên nội bộ MTE.
+            <p className="px-8 text-center text-sm text-[#3a0ca3]/70 dark:text-slate-400 mt-4">
+                Chỉ dành cho cán bộ, nhân viên nội bộ MTE.
                 <br />
                 Hệ thống được xây dựng và phát triển theo tiêu chuẩn ISO.
             </p>
         </div>
-    );
+    )
 }

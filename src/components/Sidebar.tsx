@@ -116,18 +116,6 @@ export function Sidebar() {
             {/* Header Section */}
             <div className="bg-gradient-to-b from-white via-white/40 to-transparent px-3 pt-4 pb-8 flex items-center justify-center">
                 <Link href="/" className="block w-full">
-                    <div className="flex items-center justify-center transition-all duration-300 mb-4">
-                        {/* EVNCPC Logo */}
-                        <div className="relative transition-all duration-300 h-12 w-32">
-                            <Image
-                                src="/images/LogoEVN_v2.png"
-                                alt="EVNCPC"
-                                fill
-                                className="object-contain transition-all duration-300 object-left"
-                                unoptimized
-                            />
-                        </div>
-                    </div>
                     <div className="text-center overflow-hidden transition-all duration-300">
                         <h2 className="text-[39px] font-bold text-white uppercase leading-tight tracking-wide whitespace-nowrap">
                             MTE-LAB
