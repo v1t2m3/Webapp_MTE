@@ -16,14 +16,14 @@ export const PersonalReportPdfTemplate = forwardRef<HTMLDivElement, PersonalRepo
         const monthNum = parseInt(month) || (new Date().getMonth() + 1);
         const daysInMonth = getDaysInMonth(new Date(yearNum, monthNum - 1));
 
-        let headerDepartment = "PHÂN XƯỞNG THÍ NGHIỆM-SỬA CHỮA";
+        let headerDepartment = "TỔ THÍ NGHIỆM-SỬA CHỮA";
         const personDept = personnel?.section || personnel?.department || "";
-        if (personDept.toUpperCase() === "PX.TNSC") {
-            headerDepartment = "PHÂN XƯỞNG THÍ NGHIỆM-SỬA CHỮA";
-        } else if (personDept.toUpperCase() === "PX.XL") {
-            headerDepartment = "PHÂN XƯỞNG XÂY LẮP";
-        } else if (personDept.toUpperCase() === "P.TH" || personDept.toUpperCase() === "PTH") {
-            headerDepartment = "PHÒNG TỔNG HỢP";
+        if (personDept.toUpperCase() === "Tổ TNSC") {
+            headerDepartment = "TỔ THÍ NGHIỆM-SỬA CHỮA";
+        } else if (personDept.toUpperCase() === "Tổ XL") {
+            headerDepartment = "TỔ XÂY LẮP";
+        } else if (personDept.toUpperCase() === "Tổ TH" || personDept.toUpperCase() === "Tổ TH") {
+            headerDepartment = "TỔ TỔNG HỢP";
         } else if (personDept) {
             headerDepartment = personDept.toUpperCase();
         }
@@ -177,7 +177,7 @@ export const PersonalReportPdfTemplate = forwardRef<HTMLDivElement, PersonalRepo
                     </div>
 
                     <div className="flex justify-between text-center mt-6">
-                        <div style={{ width: '33%' }} className="font-bold">BAN GIÁM ĐỐC</div>
+                        <div style={{ width: '33%' }} className="font-bold">BAN LÃNH ĐẠO</div>
                         <div style={{ width: '33%' }} className="font-bold">TRƯỞNG ĐƠN VỊ</div>
                         <div style={{ width: '33%' }}>
                             <div className="font-bold">NGƯỜI BÁO CÁO</div>
@@ -196,9 +196,10 @@ export const PersonalReportPdfTemplate = forwardRef<HTMLDivElement, PersonalRepo
                                 <div>Mức 5: khá</div>
                                 <div>Mức 6: tốt</div>
                                 <div>Mức 7: xuất sắc</div>
-                                <div>Mục Ban Giám đốc :</div>
-                                <div>Giám đốc theo dõi trực tiếp phòng tổng hợp</div>
-                                <div>Hai phó Giám đốc theo dõi trực tiếp 2 phân xưởng</div>
+                                <div>Mục Ban Lãnh đạo :</div>
+                                <div>Trưởng Xí nghiệp theo dõi trực tiếp Tổ Tổng hợp</div>
+                                <div>Phó Trưởng Xí nghiệp theo dõi trực tiếp Tổ TNSC</div>
+                                <div>Phó Trưởng Xí nghiệp theo dõi trực tiếp Tổ XL</div>
                             </div>
                         </div>
                     </div>

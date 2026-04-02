@@ -217,5 +217,14 @@
     "level": 4,
     "fullName": "Đặng Ngọc Tiến",
     "isActive": true
+  },
+  {
+    "id": "viewer_1",
+    "username": "viewer_1",
+    "passwordHash": "$2b$10$Th4U8TyA/YBbYHojftS.wOdGqMmlUEKSL8wnu0ZqT07aRBGW..A.K",
+    "role": "User",
+    "level": 1,
+    "fullName": "viewer_1",
+    "isActive": true
   }
 ]

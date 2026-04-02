@@ -309,7 +309,7 @@ export function DepartmentReport({ data }: { data: ReportData }) {
                 <div className="text-right">
                     <h1 className="text-xl font-bold uppercase text-[#3a0ca3] m-0 leading-tight">Báo cáo MTE-LAB</h1>
                     <h2 className="text-lg font-semibold m-0 mt-1 leading-tight">
-                        Phòng/Ban: {selectedDepartment}
+                        Tổ: {selectedDepartment}
                     </h2>
                     <p className="text-sm italic text-gray-600 drop-shadow-sm mt-1">
                         Tháng {selectedMonth}/{selectedYear}
@@ -320,10 +320,10 @@ export function DepartmentReport({ data }: { data: ReportData }) {
             {/* Filters */}
             <GlassCard className="p-4 flex flex-wrap items-center gap-4 print:hidden">
                 <div className="flex items-center space-x-2 w-full md:w-auto">
-                    <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Phòng/Ban:</span>
+                    <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Tổ:</span>
                     <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
                         <SelectTrigger className="w-full md:w-[250px] bg-white border-blue-100">
-                            <SelectValue placeholder="Chọn Phòng/Ban" />
+                            <SelectValue placeholder="Chọn Tổ" />
                         </SelectTrigger>
                         <SelectContent>
                             {availableDepartments.map(d => (

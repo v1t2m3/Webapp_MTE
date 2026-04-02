@@ -29,7 +29,7 @@ export function IsoPersonnelTable({
                     <TableRow className="bg-muted/30 dark:bg-slate-800/60 hover:bg-muted/30">
                         {/* ID Column is intentionally hidden based on user request */}
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap min-w-[150px]">Họ và Tên</TableHead>
-                        <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Phòng ban</TableHead>
+                        <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Tổ</TableHead>
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Chức vụ</TableHead>
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Các phương pháp<br />được phép</TableHead>
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold whitespace-nowrap">Các thiết bị<br />được phép</TableHead>
@@ -63,14 +63,14 @@ export function IsoPersonnelTable({
                                 <TableCell className="text-slate-600 dark:text-slate-400">{item.lastTrainingDate}</TableCell>
                                 <TableCell>
                                     {item.profileLink ? (
-                                        <a 
-                                            href={item.profileLink} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer" 
-                                            className="inline-flex items-center justify-center h-8 w-8 text-[#4cc9f0] bg-[#4cc9f0]/5 hover:bg-[#4cc9f0]/20 rounded-md border border-[#4cc9f0]/30 hover:border-[#4cc9f0]/80 shadow-[0_0_8px_rgba(76,201,240,0.15)] hover:shadow-[0_0_12px_rgba(76,201,240,0.4)] transition-all" 
+                                        <a
+                                            href={item.profileLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center justify-center h-8 w-8 text-[#4cc9f0] bg-[#4cc9f0]/5 hover:bg-[#4cc9f0]/20 rounded-md border border-[#4cc9f0]/30 hover:border-[#4cc9f0]/80 shadow-[0_0_8px_rgba(76,201,240,0.15)] hover:shadow-[0_0_12px_rgba(76,201,240,0.4)] transition-all"
                                             title="Xem hồ sơ"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" /></svg>
                                         </a>
                                     ) : (
                                         <span className="text-slate-400 italic text-sm select-none">-</span>
@@ -79,11 +79,10 @@ export function IsoPersonnelTable({
                                 <TableCell>
                                     <Badge
                                         variant="outline"
-                                        className={`font-medium whitespace-nowrap ${
-                                            item.status === "Hoạt động"
+                                        className={`font-medium whitespace-nowrap ${item.status === "Hoạt động"
                                                 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
                                                 : "bg-orange-500/10 text-orange-400 border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.2)]"
-                                        }`}
+                                            }`}
                                     >
                                         {item.status}
                                     </Badge>

@@ -129,7 +129,7 @@ export function ReportsManager() {
                         className="data-[state=active]:bg-[#9d4edd] data-[state=active]:text-white py-3 rounded-lg transition-all"
                     >
                         <PieChart className="w-4 h-4 mr-2" />
-                        Phòng/Ban
+                        Tổ
                     </TabsTrigger>
                     <TabsTrigger
                         value="personal"

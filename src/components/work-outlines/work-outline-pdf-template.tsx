@@ -73,7 +73,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                     <div className="flex justify-between items-start mb-6">
                         <div className="text-center">
                             <p className="m-0 uppercase" style={{ fontSize: '12pt' }}>XÍ NGHIỆP SỬA CHỮA-THÍ NGHIỆM</p>
-                            <p className="m-0 border-b border-black inline-block pb-0.5 uppercase font-bold" style={{ fontSize: '13pt' }}>PX THÍ NGHIỆM-SỬA CHỮA</p>
+                            <p className="m-0 border-b border-black inline-block pb-0.5 uppercase font-bold" style={{ fontSize: '13pt' }}>TỔ THÍ NGHIỆM-SỬA CHỮA</p>
                         </div>
                         <div className="text-center font-bold">
                             <p className="m-0 uppercase" style={{ fontSize: '12pt' }}>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
@@ -94,7 +94,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                         </div>
 
                         <div className="mb-4 text-justify" style={{ textIndent: '12.7mm' }}>
-                            Thực hiện theo sự phân công của Lãnh đạo Xí nghiệp, Phân xưởng Thí nghiệm - Sửa chữa kính đề nghị
+                            Thực hiện theo sự phân công của Lãnh đạo Xí nghiệp, Tổ Thí nghiệm - Sửa chữa kính đề nghị
                             Lãnh đạo Xí nghiệp phê duyệt đề cương công tác như sau:
                         </div>
                         {/* I. Content */}
@@ -282,7 +282,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                         </div>
 
                         <div className="mb-4 text-justify" style={{ textIndent: '12.7mm' }}>
-                            Kính đề nghị Lãnh đạo Xí nghiệp phê duyệt đề cương công tác để Phân xưởng và các nhân sự tham gia
+                            Kính đề nghị Lãnh đạo Xí nghiệp phê duyệt đề cương công tác để Tổ và các nhân sự tham gia
                             công tác triển khai các nội dung tiếp theo.
                         </div>
                         {/* Signatures */}
@@ -293,14 +293,14 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                                 <div className="font-bold mt-16">{currentUser || "................................"}</div>
                             </div>
                             <div style={{ width: '33%' }}>
-                                <div className="font-bold">PX TNSC</div>
+                                <div className="font-bold">TỔ TNSC</div>
                                 {/* Placeholder for Signature */}
                                 <div className="font-bold mt-16">Lê Văn Việt</div>
                             </div>
                             <div style={{ width: '33%' }}>
-                                <div className="font-bold">KT. GIÁM ĐỐC</div>
+                                <div className="font-bold">TRƯỞNG XÍ NGHIỆP</div>
                                 {/* Placeholder for Signature */}
-                                <div className="font-bold mt-16">Nguyễn Văn Tâm</div>
+                                <div className="font-bold mt-16">................................</div>
                             </div>
                         </div>
                     </div>

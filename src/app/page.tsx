@@ -24,11 +24,29 @@ export default async function Home() {
     return sum + (isNaN(numVal) ? 0 : numVal);
   }, 0);
   const totalContractValueBillion = (totalContractValue / 1000000000).toFixed(1);
-  // Simple check for today's schedules
+  // Set today up for comparison and accurate schedule counts
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const todaysSchedules = schedules.filter((s) => {
     if (!s.startDate) return false;
-    return s.startDate.split("T")[0] === new Date().toISOString().split("T")[0];
+    const sDate = new Date(s.startDate);
+    sDate.setHours(0, 0, 0, 0);
+    return sDate.getTime() === today.getTime();
   }).length;
+
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 7);
+
+  const recentActivities = schedules
+    .filter((s) => {
+      if (!s.startDate) return false;
+      const sDate = new Date(s.startDate);
+      sDate.setHours(0, 0, 0, 0);
+      return sDate < today && sDate >= sevenDaysAgo;
+    })
+    .sort((a, b) => new Date(b.startDate!).getTime() - new Date(a.startDate!).getTime())
+    .slice(0, 10);
+
 
   const stats = [
     {
@@ -115,7 +133,7 @@ export default async function Home() {
           <div className="flex flex-col space-y-4">
             <h3 className="text-lg font-semibold text-gray-800">Hoạt động gần đây</h3>
             <div className="space-y-4">
-              {schedules.slice(0, 5).map((s, i) => (
+              {recentActivities.map((s, i) => (
                 <div key={i} className="flex items-center p-3 rounded-lg bg-gray-50/50 hover:bg-white transition-colors border border-transparent hover:border-gray-100">
                   <div className="ml-2 space-y-1">
                     <p className="text-sm font-medium leading-none text-gray-800">{s.content || "Chưa có nội dung"}</p>
@@ -126,6 +144,9 @@ export default async function Home() {
                   </div>
                 </div>
               ))}
+              {recentActivities.length === 0 && (
+                <div className="p-4 text-center text-sm text-gray-500">Không có hoạt động nào trong 7 ngày qua</div>
+              )}
             </div>
           </div>
         </GlassCard>

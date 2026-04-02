@@ -26,6 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
+      <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "f3a1635e3be8443ab885b343c7f31171"}'></script>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning

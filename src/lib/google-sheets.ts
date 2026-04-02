@@ -6,6 +6,42 @@ import { Contract, Personnel, Schedule, Vehicle, WorkOutline, SupplementalReport
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
+// Helper to safely parse JSON
+function safeJSONParse(jsonStr: string, fallback: any = []) {
+    if (!jsonStr || typeof jsonStr !== 'string') return fallback;
+    try {
+        return JSON.parse(jsonStr);
+    } catch (error) {
+        console.error('JSON parse error for string:', jsonStr, error);
+        return fallback;
+    }
+}
+
+// Helper to convert sheet format (dd/MM/yyyy) to internal format (yyyy-MM-dd)
+function sheetDateToInternal(dateStr: string): string {
+    if (!dateStr || typeof dateStr !== 'string') return '';
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return dateStr;
+    const parts = dateStr.includes('/') ? dateStr.split('/') : dateStr.split('-');
+    if (parts.length === 3) {
+        if (parts[0].length === 4) {
+            return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+        } else {
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+    }
+    return dateStr;
+}
+
+// Helper to convert internal format (yyyy-MM-dd) to sheet format (dd/MM/yyyy)
+function internalDateToSheet(dateStr: string): string {
+    if (!dateStr || typeof dateStr !== 'string') return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3 && parts[0].length === 4) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    return dateStr;
+}
+
 // Function to get authenticated client
 async function getAuthClient() {
     if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
@@ -40,12 +76,9 @@ export const googleSheetsService = {
             return rows
                 .filter(row => row[0]) // Filter out empty rows (cleared rows)
                 .map((row) => {
-                    let leaveDates: string[] = [];
-                    try {
-                        leaveDates = row[10] ? JSON.parse(row[10]) : [];
-                    } catch {
-                        leaveDates = [];
-                    }
+                    let leaveDates: string[] = safeJSONParse(row[10], []);
+                    // Convert any sheet dates in leaveDates to internal if needed
+                    leaveDates = leaveDates.map((d: string) => sheetDateToInternal(d));
 
                     const today = new Date();
                     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -120,7 +153,7 @@ export const googleSheetsService = {
                     personnel.contractType,
                     personnel.section || '',
                     personnel.leaveType || '',
-                    JSON.stringify(personnel.leaveDates || []),
+                    JSON.stringify((personnel.leaveDates || []).map((d: string) => internalDateToSheet(d))),
                     personnel.profileLink || '',
                 ],
             ];
@@ -160,7 +193,7 @@ export const googleSheetsService = {
                     personnel.contractType,
                     personnel.section || '',
                     personnel.leaveType || '',
-                    JSON.stringify(personnel.leaveDates || []),
+                    JSON.stringify((personnel.leaveDates || []).map((d: string) => internalDateToSheet(d))),
                     personnel.profileLink || '',
                 ],
             ];
@@ -224,8 +257,8 @@ export const googleSheetsService = {
                     name: row[1],
                     type: row[2],
                     licensePlate: row[3],
-                    inspectionExpiry: row[4],
-                    insuranceExpiry: row[5],
+                    inspectionExpiry: sheetDateToInternal(row[4]),
+                    insuranceExpiry: sheetDateToInternal(row[5]),
                     status: row[6] || 'Available',
                     driverId: row[7],
                 }));
@@ -269,8 +302,8 @@ export const googleSheetsService = {
                     vehicle.name,
                     vehicle.type,
                     vehicle.licensePlate,
-                    vehicle.inspectionExpiry,
-                    vehicle.insuranceExpiry,
+                    internalDateToSheet(vehicle.inspectionExpiry || ''),
+                    internalDateToSheet(vehicle.insuranceExpiry || ''),
                     vehicle.status,
                     vehicle.driverId,
                 ],
@@ -305,8 +338,8 @@ export const googleSheetsService = {
                     vehicle.name,
                     vehicle.type,
                     vehicle.licensePlate,
-                    vehicle.inspectionExpiry,
-                    vehicle.insuranceExpiry,
+                    internalDateToSheet(vehicle.inspectionExpiry || ''),
+                    internalDateToSheet(vehicle.insuranceExpiry || ''),
                     vehicle.status,
                     vehicle.driverId,
                 ],
@@ -370,8 +403,8 @@ export const googleSheetsService = {
                     code: row[1],
                     name: row[2],
                     value: row[3],
-                    startDate: row[4],
-                    endDate: row[5],
+                    startDate: sheetDateToInternal(row[4]),
+                    endDate: sheetDateToInternal(row[5]),
                     investorRep: row[6],
                     operationsManagementUnit: row[7] || '',
                 }));
@@ -415,8 +448,8 @@ export const googleSheetsService = {
                     contract.code,
                     contract.name,
                     contract.value,
-                    contract.startDate,
-                    contract.endDate,
+                    internalDateToSheet(contract.startDate || ''),
+                    internalDateToSheet(contract.endDate || ''),
                     contract.investorRep,
                     contract.operationsManagementUnit || '',
                 ],
@@ -451,8 +484,8 @@ export const googleSheetsService = {
                     contract.code,
                     contract.name,
                     contract.value,
-                    contract.startDate,
-                    contract.endDate,
+                    internalDateToSheet(contract.startDate || ''),
+                    internalDateToSheet(contract.endDate || ''),
                     contract.investorRep,
                     contract.operationsManagementUnit || '',
                 ],
@@ -516,9 +549,9 @@ export const googleSheetsService = {
                     unit: row[1] || '',
                     deviceName: row[2] || '',
                     startTime: row[3] || '',
-                    startDate: row[4] || '',
+                    startDate: sheetDateToInternal(row[4]),
                     endTime: row[5] || '',
-                    endDate: row[6] || '',
+                    endDate: sheetDateToInternal(row[6]),
                     target: row[7] || '',
                     content: row[8] || '',
                     type: row[9] || '',
@@ -567,9 +600,9 @@ export const googleSheetsService = {
                     schedule.unit,
                     schedule.deviceName,
                     schedule.startTime,
-                    schedule.startDate,
+                    internalDateToSheet(schedule.startDate || ''),
                     schedule.endTime,
-                    schedule.endDate,
+                    internalDateToSheet(schedule.endDate || ''),
                     schedule.target,
                     schedule.content,
                     schedule.type,
@@ -608,9 +641,9 @@ export const googleSheetsService = {
                     schedule.unit,
                     schedule.deviceName,
                     schedule.startTime,
-                    schedule.startDate,
+                    internalDateToSheet(schedule.startDate || ''),
                     schedule.endTime,
-                    schedule.endDate,
+                    internalDateToSheet(schedule.endDate || ''),
                     schedule.target,
                     schedule.content,
                     schedule.type,
@@ -676,19 +709,23 @@ export const googleSheetsService = {
                 .map((row) => ({
                     id: row[0] || '',
                     scheduleId: row[1] || '',
-                    startDate: row[2] || '',
+                    startDate: sheetDateToInternal(row[2]),
                     startTime: row[3] || '',
-                    endDate: row[4] || '',
+                    endDate: sheetDateToInternal(row[4]),
                     endTime: row[5] || '',
-                    personnelAssignments: row[6] ? JSON.parse(row[6]) : [],
-                    vehicleAssignments: (row[7] ? JSON.parse(row[7]) : []).map((v: any) =>
+                    personnelAssignments: safeJSONParse(row[6], []),
+                    vehicleAssignments: safeJSONParse(row[7], []).map((v: any) =>
                         typeof v === 'string' ? {
                             vehicleId: v,
-                            startDate: row[2] || '',
+                            startDate: sheetDateToInternal(row[2]),
                             startTime: row[3] || '',
-                            endDate: row[4] || '',
+                            endDate: sheetDateToInternal(row[4]),
                             endTime: row[5] || ''
-                        } : v
+                        } : {
+                            ...v,
+                            startDate: sheetDateToInternal(v.startDate || row[2]),
+                            endDate: sheetDateToInternal(v.endDate || row[4])
+                        }
                     ),
                     isCustom: row[8] === 'TRUE' || row[8] === 'true',
                     customContractId: row[9] || '',
@@ -733,12 +770,16 @@ export const googleSheetsService = {
                 [
                     workOutline.id,
                     workOutline.scheduleId,
-                    workOutline.startDate,
+                    internalDateToSheet(workOutline.startDate || ''),
                     workOutline.startTime,
-                    workOutline.endDate,
+                    internalDateToSheet(workOutline.endDate || ''),
                     workOutline.endTime,
                     JSON.stringify(workOutline.personnelAssignments || []),
-                    JSON.stringify(workOutline.vehicleAssignments || []),
+                    JSON.stringify((workOutline.vehicleAssignments || []).map((v: any) => typeof v === 'string' ? v : {
+                        ...v,
+                        startDate: internalDateToSheet(v.startDate || ''),
+                        endDate: internalDateToSheet(v.endDate || '')
+                    })),
                     workOutline.isCustom ? 'TRUE' : 'FALSE',
                     workOutline.customContractId || '',
                     workOutline.customContractName || '',
@@ -773,12 +814,16 @@ export const googleSheetsService = {
                 [
                     id,
                     workOutline.scheduleId,
-                    workOutline.startDate,
+                    internalDateToSheet(workOutline.startDate || ''),
                     workOutline.startTime,
-                    workOutline.endDate,
+                    internalDateToSheet(workOutline.endDate || ''),
                     workOutline.endTime,
                     JSON.stringify(workOutline.personnelAssignments || []),
-                    JSON.stringify(workOutline.vehicleAssignments || []),
+                    JSON.stringify((workOutline.vehicleAssignments || []).map((v: any) => typeof v === 'string' ? v : {
+                        ...v,
+                        startDate: internalDateToSheet(v.startDate || ''),
+                        endDate: internalDateToSheet(v.endDate || '')
+                    })),
                     workOutline.isCustom ? 'TRUE' : 'FALSE',
                     workOutline.customContractId || '',
                     workOutline.customContractName || '',

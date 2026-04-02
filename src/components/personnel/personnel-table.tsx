@@ -20,7 +20,7 @@ export function PersonnelTable({ data }: { data: Personnel[] }) {
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold">Mã NV</TableHead>
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold">Họ và Tên</TableHead>
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold">Chức vụ</TableHead>
-                        <TableHead className="text-slate-800 dark:text-slate-200 font-bold">Phòng ban</TableHead>
+                        <TableHead className="text-slate-800 dark:text-slate-200 font-bold">Tổ</TableHead>
                         <TableHead className="text-slate-800 dark:text-slate-200 font-bold">Trạng thái</TableHead>
                     </TableRow>
                 </TableHeader>

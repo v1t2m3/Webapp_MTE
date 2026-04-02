@@ -73,11 +73,11 @@ export const VehicleDispatchPdfTemplate = forwardRef<HTMLDivElement, VehicleDisp
 
                 {/* Request Reason */}
                 <div className="text-justify mb-2 leading-relaxed">
-                    Căn cứ yêu cầu: Phục vụ <span className="font-bold">Phân xưởng Thí nghiệm</span>: <span>{fullContent}</span>.
+                    Căn cứ yêu cầu: Phục vụ <span className="font-bold">TỔ Thí nghiệm</span>: <span>{fullContent}</span>.
                 </div>
 
                 <h2 className="text-center font-bold mb-4 mt-4 uppercase" style={{ fontSize: '12pt' }}>
-                    GIÁM ĐỐC XÍ NGHIỆP SC-TN ĐIỀU ĐỘNG
+                    TRƯỞNG XÍ NGHIỆP SC-TN ĐIỀU ĐỘNG
                 </h2>
 
                 {/* Details List */}
@@ -103,7 +103,7 @@ export const VehicleDispatchPdfTemplate = forwardRef<HTMLDivElement, VehicleDisp
                             <p>{currentUser || "................................"}</p>
                         </div>
                         <div className="text-center me-10">
-                            <p className="font-bold mb-20">GIÁM ĐỐC</p>
+                            <p className="font-bold mb-20">TRƯỞNG XÍ NGHIỆP</p>
                         </div>
                     </div>
                 </div>
