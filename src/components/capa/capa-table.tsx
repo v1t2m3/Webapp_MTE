@@ -37,11 +37,10 @@ export function CapaTable({ data, onEdit, onDelete }: { data: CAPA[], onEdit?: (
             if (aIsFinished && !bIsFinished) return 1;
             if (!aIsFinished && bIsFinished) return -1;
 
-            // Prioritize by Level if neither or both are finished
             const getRank = (level: string) => {
                 const l = (level || "").toLowerCase();
-                if (l === "lỗi nặng") return 3;
-                if (l === "lỗi nhẹ") return 2;
+                if (l === "kph nặng") return 3;
+                if (l === "kph nhẹ") return 2;
                 if (l === "khuyến nghị") return 1;
                 return 0;
             };
@@ -123,14 +122,14 @@ export function CapaTable({ data, onEdit, onDelete }: { data: CAPA[], onEdit?: (
                             let levelBadgeClasses = "whitespace-nowrap px-3 py-1 font-medium";
                             if (isFinished) {
                                 rowClasses = "bg-slate-50/30 opacity-60 hover:bg-slate-50/50 dark:bg-slate-900/30 dark:hover:bg-slate-800/30 transition-all filter grayscale-[0.3]";
-                                if (levelLower === "lỗi nặng") levelBadgeClasses += " bg-slate-100 text-slate-600 border-transparent dark:bg-slate-800 dark:text-slate-400";
-                                else if (levelLower === "lỗi nhẹ") levelBadgeClasses += " bg-slate-100 text-slate-500 border-transparent dark:bg-slate-800 dark:text-slate-500";
+                                if (levelLower === "kph nặng") levelBadgeClasses += " bg-slate-100 text-slate-600 border-transparent dark:bg-slate-800 dark:text-slate-400";
+                                else if (levelLower === "kph nhẹ") levelBadgeClasses += " bg-slate-100 text-slate-500 border-transparent dark:bg-slate-800 dark:text-slate-500";
                                 else if (levelLower === "khuyến nghị") levelBadgeClasses += " bg-slate-100 text-slate-400 border-transparent dark:bg-slate-800 dark:text-slate-500";
                             } else {
-                                if (levelLower === "lỗi nặng") {
+                                if (levelLower === "kph nặng") {
                                     rowClasses = "bg-red-50/40 hover:bg-red-100/60 dark:bg-red-900/10 dark:hover:bg-red-900/20";
                                     levelBadgeClasses += " bg-red-200 text-red-900 border-red-300 dark:bg-red-900/50 dark:text-red-300 dark:border-red-800/50 font-bold";
-                                } else if (levelLower === "lỗi nhẹ") {
+                                } else if (levelLower === "kph nhẹ") {
                                     rowClasses = "bg-orange-50/40 hover:bg-orange-100/60 dark:bg-orange-900/10 dark:hover:bg-orange-900/20";
                                     levelBadgeClasses += " bg-orange-200 text-orange-900 border-orange-300 dark:bg-orange-900/50 dark:text-orange-300 dark:border-orange-800/50 font-semibold";
                                 } else if (levelLower === "khuyến nghị") {
@@ -160,14 +159,14 @@ export function CapaTable({ data, onEdit, onDelete }: { data: CAPA[], onEdit?: (
                                     </TableCell>
                                     <TableCell>
                                         {item.linkFile ? (
-                                            <a 
-                                                href={item.linkFile} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer" 
-                                                className="inline-flex items-center justify-center h-8 w-8 text-[#4cc9f0] bg-[#4cc9f0]/5 hover:bg-[#4cc9f0]/20 rounded-md border border-[#4cc9f0]/30 hover:border-[#4cc9f0]/80 shadow-[0_0_8px_rgba(76,201,240,0.15)] hover:shadow-[0_0_12px_rgba(76,201,240,0.4)] transition-all" 
+                                            <a
+                                                href={item.linkFile}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center justify-center h-8 w-8 text-[#4cc9f0] bg-[#4cc9f0]/5 hover:bg-[#4cc9f0]/20 rounded-md border border-[#4cc9f0]/30 hover:border-[#4cc9f0]/80 shadow-[0_0_8px_rgba(76,201,240,0.15)] hover:shadow-[0_0_12px_rgba(76,201,240,0.4)] transition-all"
                                                 title="Xem hồ sơ"
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" /></svg>
                                             </a>
                                         ) : "-"}
                                     </TableCell>

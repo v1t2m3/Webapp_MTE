@@ -73,7 +73,7 @@ export const VehicleDispatchPdfTemplate = forwardRef<HTMLDivElement, VehicleDisp
 
                 {/* Request Reason */}
                 <div className="text-justify mb-2 leading-relaxed">
-                    Căn cứ yêu cầu: Phục vụ <span className="font-bold">TỔ Thí nghiệm</span>: <span>{fullContent}</span>.
+                    Căn cứ yêu cầu: Phục vụ <span className="font-bold">Tổ Thí nghiệm Sửa chữa</span>: <span>{fullContent}</span>.
                 </div>
 
                 <h2 className="text-center font-bold mb-4 mt-4 uppercase" style={{ fontSize: '12pt' }}>

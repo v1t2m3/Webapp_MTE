@@ -209,8 +209,8 @@ export function CapaForm({ open, onOpenChange, initialData, personnel }: CapaFor
                                         <SelectValue placeholder="Chọn mức độ ưu tiên" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="Lỗi nặng">Lỗi nặng</SelectItem>
-                                        <SelectItem value="Lỗi nhẹ">Lỗi nhẹ</SelectItem>
+                                        <SelectItem value="KPH nặng">KPH nặng</SelectItem>
+                                        <SelectItem value="KPH nhẹ">KPH nhẹ</SelectItem>
                                         <SelectItem value="Khuyến nghị">Khuyến nghị</SelectItem>
                                     </SelectContent>
                                 </Select>

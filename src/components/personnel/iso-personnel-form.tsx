@@ -154,7 +154,7 @@ export function IsoPersonnelForm({
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="name" className="text-right">Họ và Tên</Label>
                             <div className="col-span-3">
-                                <Select 
+                                <Select
                                     onValueChange={(val) => {
                                         setValue("name", val);
                                         // Auto-fill department and job if matched
@@ -165,7 +165,7 @@ export function IsoPersonnelForm({
                                                 if (matched.position || matched.job) setValue("job", matched.position || matched.job);
                                             }
                                         }
-                                    }} 
+                                    }}
                                     value={watch("name") || ""}
                                 >
                                     <SelectTrigger>
@@ -180,7 +180,7 @@ export function IsoPersonnelForm({
                             </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="department" className="text-right">Phòng ban</Label>
+                            <Label htmlFor="department" className="text-right">Tổ</Label>
                             <Input id="department" {...register("department")} className="col-span-3" />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
@@ -250,11 +250,11 @@ export function IsoPersonnelForm({
 
                         <div className="grid grid-cols-4 items-center gap-4 border-t pt-4">
                             <Label htmlFor="profileLink" className="text-right">Hồ sơ đính kèm (Link Drive)</Label>
-                            <Input 
-                                id="profileLink" 
-                                placeholder="Paste đường dẫn Google Drive vào đây..." 
-                                {...register("profileLink")} 
-                                className="col-span-3 font-mono text-sm text-blue-600 dark:text-blue-400" 
+                            <Input
+                                id="profileLink"
+                                placeholder="Paste đường dẫn Google Drive vào đây..."
+                                {...register("profileLink")}
+                                className="col-span-3 font-mono text-sm text-blue-600 dark:text-blue-400"
                             />
                         </div>
                     </div>
