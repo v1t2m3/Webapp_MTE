@@ -44,7 +44,7 @@ export function WeeklyMonthlyReport({ data, printRef }: { data: ReportData, prin
         if (!dateStr) return false;
         const d = new Date(dateStr);
         const year = parseInt(selectedYear);
-        
+
         if (reportType === "month") {
             const month = parseInt(selectedMonth) - 1;
             const targetDate = new Date(year, month + (isNext ? 1 : 0), 1);
@@ -55,7 +55,7 @@ export function WeeklyMonthlyReport({ data, printRef }: { data: ReportData, prin
             const jan4 = new Date(year, 0, 4);
             const daysToAdd = (week - 1 + (isNext ? 1 : 0)) * 7;
             const targetDate = new Date(jan4.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
-            
+
             return getISOWeek(d) === getISOWeek(targetDate) && d.getFullYear() === targetDate.getFullYear();
         }
     };
@@ -67,12 +67,12 @@ export function WeeklyMonthlyReport({ data, printRef }: { data: ReportData, prin
 
         if (data.supplementalReports) {
             const supps = data.supplementalReports.filter(sr => sr.reportType === 'WEEKLY_MONTHLY' && sr.startDate && (isInSelectedPeriod(sr.startDate, false) || isInSelectedPeriod(sr.startDate, true)))
-            .map(sr => ({
-                ...sr,
-                isCustomReport: true, // Mark it so UI renders the badge
-                isNewOrEditing: false, // It's from DB, so not editing yet
-                bucket: ''
-            } as unknown as EditableSchedule));
+                .map(sr => ({
+                    ...sr,
+                    isCustomReport: true, // Mark it so UI renders the badge
+                    isNewOrEditing: false, // It's from DB, so not editing yet
+                    bucket: ''
+                } as unknown as EditableSchedule));
 
             filtered = [...filtered, ...supps];
         }
@@ -259,14 +259,14 @@ export function WeeklyMonthlyReport({ data, printRef }: { data: ReportData, prin
             // jan 4 is always week 1
             const jan4 = new Date(year, 0, 4);
             const targetDate = new Date(jan4.getTime() + (weekNum - 1) * 7 * 24 * 60 * 60 * 1000);
-            
+
             // Note: startOfWeek sets Sunday as first day by default, use { weekStartsOn: 1 } for Monday
             const sWeek = startOfWeek(targetDate, { weekStartsOn: 1 });
             const eWeek = endOfWeek(targetDate, { weekStartsOn: 1 });
             const sDay = format(sWeek, 'dd/MM');
             const sDayOnly = format(sWeek, 'dd');
             const eDayFull = format(eWeek, 'dd/MM/yyyy');
-            
+
             return {
                 title: `Khối lượng thực hiện công tác tuần ${weekNum}/${year} (Từ ngày ${sDayOnly}-${sDay === format(eWeek, 'dd/MM') ? eDayFull : eDayFull}):`, // Simplify to simple dd-dd/MM/yyyy
                 titleFuture: `Kế hoạch dự kiến công tác tuần ${weekNum}/${year} (Từ ngày ${sDayOnly}-${sDay === format(eWeek, 'dd/MM') ? eDayFull : eDayFull}):`
@@ -293,7 +293,7 @@ export function WeeklyMonthlyReport({ data, printRef }: { data: ReportData, prin
         const headerRow = worksheet.getRow(1);
         headerRow.font = { bold: true, name: 'Times New Roman', size: 12 };
         headerRow.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-        
+
         let currentRowIndex = 2; // next row
 
         // --- SECTION I: Past Schedules (Week/Month n) ---
@@ -353,13 +353,13 @@ export function WeeklyMonthlyReport({ data, printRef }: { data: ReportData, prin
         });
 
         // Add borders to all cells
-        worksheet.eachRow({ includeEmpty: false }, function(row, rowNumber) {
-            row.eachCell({ includeEmpty: false }, function(cell, colNumber) {
+        worksheet.eachRow({ includeEmpty: false }, function (row, rowNumber) {
+            row.eachCell({ includeEmpty: false }, function (cell, colNumber) {
                 cell.border = {
-                    top: {style:'thin'},
-                    left: {style:'thin'},
-                    bottom: {style:'thin'},
-                    right: {style:'thin'}
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
                 };
             });
         });
@@ -519,7 +519,7 @@ export function WeeklyMonthlyReport({ data, printRef }: { data: ReportData, prin
                                         <TableCell>
                                             <div className="flex items-center justify-between gap-2">
                                                 <Badge variant={s.type === 'Cắt điện' ? 'destructive' : 'default'}
-                                                    className={`whitespace-nowrap ${s.isCustomReport ? 'bg-orange-500' : (s.type === 'Cắt điện' ? 'bg-[#f72585]' : 'bg-[#4cc9f0]')}`}
+                                                    className={`whitespace-nowrap ${s.isCustomReport ? 'bg-orange-500' : (s.type === 'Cắt điện' ? 'bg-[#f5d151]' : 'bg-[#4cc9f0]')}`}
                                                 >
                                                     {s.isCustomReport ? 'Nhập tay' : s.type}
                                                 </Badge>
@@ -614,7 +614,7 @@ export function WeeklyMonthlyReport({ data, printRef }: { data: ReportData, prin
                                         <TableCell>
                                             <div className="flex items-center justify-between gap-2">
                                                 <Badge variant={s.type === 'Cắt điện' ? 'destructive' : 'default'}
-                                                    className={`whitespace-nowrap ${s.isCustomReport ? 'bg-orange-500' : (s.type === 'Cắt điện' ? 'bg-[#f72585]' : 'bg-[#4cc9f0]')}`}
+                                                    className={`whitespace-nowrap ${s.isCustomReport ? 'bg-orange-500' : (s.type === 'Cắt điện' ? 'bg-[#f5d151]' : 'bg-[#4cc9f0]')}`}
                                                 >
                                                     {s.isCustomReport ? 'Nhập tay' : s.type}
                                                 </Badge>

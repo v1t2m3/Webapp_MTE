@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Standard } from "@/types";
+import { Standard, Method } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -198,6 +198,7 @@ function StandardForm({
 function EquipmentGroup({
     equipment,
     standards,
+    methodText,
     onEdit,
     onDelete,
     canEdit,
@@ -205,6 +206,7 @@ function EquipmentGroup({
 }: {
     equipment: string;
     standards: Standard[];
+    methodText?: string;
     onEdit: (s: Standard) => void;
     onDelete: (id: string) => void;
     canEdit: boolean;
@@ -212,6 +214,7 @@ function EquipmentGroup({
 }) {
     const [open, setOpen] = useState(true);
     const [copied, setCopied] = useState(false);
+    const [copiedMethod, setCopiedMethod] = useState(false);
 
     const copyText = standards.map(s => s.code).join("; ");
 
@@ -219,6 +222,13 @@ function EquipmentGroup({
         navigator.clipboard.writeText(copyText);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleCopyMethod = () => {
+        if (!methodText) return;
+        navigator.clipboard.writeText(methodText);
+        setCopiedMethod(true);
+        setTimeout(() => setCopiedMethod(false), 2000);
     };
 
     return (
@@ -235,16 +245,28 @@ function EquipmentGroup({
                         {standards.length} tiêu chuẩn
                     </Badge>
                 </div>
-                <div onClick={e => e.stopPropagation()}>
+                <div onClick={e => e.stopPropagation()} className="flex items-center gap-2">
+                    {methodText && (
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={handleCopyMethod}
+                            className="text-[#f72585] border border-transparent hover:border-[#f72585]/40 hover:bg-[#f72585]/10 hover:text-[#f72585] transition-all text-xs h-7 gap-1"
+                            title="Copy phương pháp thử"
+                        >
+                            {copiedMethod ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                            {copiedMethod ? "Đã copy PP!" : "Copy phương pháp"}
+                        </Button>
+                    )}
                     <Button
                         size="sm"
                         variant="ghost"
                         onClick={handleCopy}
-                        className="text-[#4cc9f0] border border-transparent hover:border-[#4cc9f0]/40 hover:bg-[#4cc9f0]/10 hover:text-pink-500 transition-all text-xs h-7 gap-1"
+                        className="text-[#4cc9f0] border border-transparent hover:border-[#4cc9f0]/40 hover:bg-[#4cc9f0]/10 hover:text-[#4cc9f0] transition-all text-xs h-7 gap-1"
                         title="Copy danh sách mã tiêu chuẩn"
                     >
                         {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                        {copied ? "Đã copy!" : "Copy"}
+                        {copied ? "Đã copy!" : "Copy tiêu chuẩn"}
                     </Button>
                 </div>
             </div>
@@ -328,6 +350,7 @@ export default function StandardsPage() {
     const { toast } = useToast();
 
     const [standards, setStandards] = useState<Standard[]>([]);
+    const [methods, setMethods] = useState<Method[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [catFilter, setCatFilter] = useState("all");
@@ -343,8 +366,12 @@ export default function StandardsPage() {
     const fetchStandards = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch("/api/standards");
-            if (res.ok) setStandards(await res.json());
+            const [resStandards, resMethods] = await Promise.all([
+                fetch("/api/standards"),
+                fetch("/api/methods")
+            ]);
+            if (resStandards.ok) setStandards(await resStandards.json());
+            if (resMethods.ok) setMethods(await resMethods.json());
         } catch {
             toast({ title: "Lỗi tải dữ liệu", variant: "destructive" });
         } finally { setLoading(false); }
@@ -508,6 +535,7 @@ export default function StandardsPage() {
                             key={equipment}
                             equipment={equipment}
                             standards={stds}
+                            methodText={methods.find(m => m.equipment === equipment)?.method}
                             onEdit={handleEdit}
                             onDelete={handleDelete}
                             canEdit={canEdit}

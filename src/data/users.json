@@ -36,7 +36,7 @@
   {
     "id": "hieptp",
     "username": "hieptp",
-    "passwordHash": "$2b$10$vJFpxG9.3CD9G4vmRBfEkeE.FxEnRxNwOdDVIaUUbPpo7R1eLmgX2",
+    "passwordHash": "$2b$10$LZpGUWszkCemSERte09n8ev2B.CP5pVvLnF9aWwWhTNDk56xND4wm",
     "role": "User",
     "fullName": "Trần Phước Hiệp",
     "isActive": true,
@@ -75,7 +75,7 @@
     "role": "User",
     "fullName": "Hoàng Thị Vân",
     "isActive": true,
-    "level": 4
+    "level": 2
   },
   {
     "id": "ngannn",
@@ -225,6 +225,22 @@
     "role": "User",
     "level": 1,
     "fullName": "viewer_1",
+    "isActive": true
+  },
+  {
+    "id": "cuongvv",
+    "username": "cuongvv",
+    "passwordHash": "$2b$10$Mk8TkYWXhj1tWrTComf85uElG.lT3w3c27rH/f39GrUUaAWourWsm",
+    "role": "Viewer",
+    "fullName": "Võ Văn Cường",
+    "isActive": true
+  },
+  {
+    "id": "DVDL_DN",
+    "username": "DVDL_DN",
+    "passwordHash": "$2b$10$FRt7YsU6KLFCJlHevj32HOkWJSnwtjAcxg5BzZLC8zgH09mykC1pe",
+    "role": "Viewer",
+    "fullName": "Dịch vụ Điện lực Đà Nẵng",
     "isActive": true
   }
 ]

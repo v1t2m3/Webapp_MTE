@@ -128,6 +128,12 @@ export interface Standard {
     fileLink?: string;
 }
 
+export interface Method {
+    id: string;
+    equipment: string;
+    method: string;
+}
+
 export interface Contract {
     id: string;
     code: string; // Mã số hợp đồng
