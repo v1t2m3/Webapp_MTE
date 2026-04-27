@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Contract } from "@/types";
 import { Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toDisplayDate } from "@/lib/date-utils";
 
 interface ContractTableProps {
     data: Contract[];
@@ -20,14 +21,6 @@ interface ContractTableProps {
 }
 
 export function ContractTable({ data, onEdit, onDelete }: ContractTableProps) {
-    const formatDate = (dateString?: string) => {
-        if (!dateString) return "";
-        const parts = dateString.split("-");
-        if (parts.length === 3) {
-            return `${parts[2]}/${parts[1]}/${parts[0]}`;
-        }
-        return dateString;
-    };
 
     return (
         <div className="rounded-md border bg-card text-card-foreground shadow-sm animate-fade-in">
@@ -61,8 +54,8 @@ export function ContractTable({ data, onEdit, onDelete }: ContractTableProps) {
                             <TableCell className="font-mono whitespace-nowrap">{item.value}</TableCell>
                             <TableCell className="whitespace-nowrap">
                                 <div className="flex flex-col text-xs text-muted-foreground">
-                                    <span>BĐ: {formatDate(item.startDate)}</span>
-                                    <span>KT: {formatDate(item.endDate)}</span>
+                                    <span>BĐ: {toDisplayDate(item.startDate)}</span>
+                                    <span>KT: {toDisplayDate(item.endDate)}</span>
                                 </div>
                             </TableCell>
                             <TableCell>{item.investorRep}</TableCell>

@@ -12,8 +12,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useSession } from "next-auth/react";
 import { hasAccess } from "@/lib/rbac";
+import { toDisplayDate, toInputDate, parseSafeDate, toSheetDate } from "@/lib/date-utils";
 
 function getWeekNumber(d: Date) {
+    if (!d || isNaN(d.getTime())) return 0;
     const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
     const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
@@ -146,7 +148,8 @@ export function ScheduleManager() {
 
         // Past Schedules Filter
         if (!showPastSchedules && s.endDate) {
-            const eDate = new Date(s.endDate);
+            const eDate = parseSafeDate(s.endDate);
+            if (!eDate) return true; // If can't parse, don't filter out
             eDate.setHours(0, 0, 0, 0);
             const today = new Date(now);
             today.setHours(0, 0, 0, 0);
@@ -158,11 +161,13 @@ export function ScheduleManager() {
             const currentWeekFilter = getWeekNumber(now);
             const currentYearFilter = now.getFullYear();
             if (sDateStr) {
-                const sDate = new Date(sDateStr);
-                if (filterTime === "Tuần này") {
-                    if (getWeekNumber(sDate) !== currentWeekFilter || sDate.getFullYear() !== currentYearFilter) return false;
-                } else if (filterTime === "Tháng này") {
-                    if (sDate.getMonth() !== now.getMonth() || sDate.getFullYear() !== currentYearFilter) return false;
+                const sDate = parseSafeDate(sDateStr);
+                if (sDate) {
+                    if (filterTime === "Tuần này") {
+                        if (getWeekNumber(sDate) !== currentWeekFilter || sDate.getFullYear() !== currentYearFilter) return false;
+                    } else if (filterTime === "Tháng này") {
+                        if (sDate.getMonth() !== now.getMonth() || sDate.getFullYear() !== currentYearFilter) return false;
+                    }
                 }
             }
         }
@@ -171,15 +176,22 @@ export function ScheduleManager() {
     }).sort((a, b) => {
         if (!a.startDate) return 1;
         if (!b.startDate) return -1;
-        return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+        const dateA = parseSafeDate(a.startDate);
+        const dateB = parseSafeDate(b.startDate);
+        if (!dateA) return 1;
+        if (!dateB) return -1;
+        return dateA.getTime() - dateB.getTime();
     });
 
     const uniqueUnits = Array.from(new Set(schedules.map(s => s.unit))).filter(Boolean);
 
     // Helper to get precise Date from date string and time string
     const getPreciseDate = (dateStr: string, timeStr: string) => {
-        // Assume dateStr is YYYY-MM-DD, timeStr is HH:mm
-        return new Date(`${dateStr}T${timeStr}:00`);
+        const date = parseSafeDate(dateStr);
+        if (!date) return new Date(); // Fallback
+        const [hours, minutes] = (timeStr || "00:00").split(':').map(Number);
+        date.setHours(hours || 0, minutes || 0, 0, 0);
+        return date;
     };
 
     const overlapMap = new Map<string, number>();
@@ -256,7 +268,8 @@ export function ScheduleManager() {
     let displayRefDate = now;
     const hoveredSchedule = hoveredScheduleId ? filteredSchedules.find(s => s.id === hoveredScheduleId) : null;
     if (hoveredSchedule && hoveredSchedule.startDate) {
-        displayRefDate = new Date(hoveredSchedule.startDate);
+        const parsed = parseSafeDate(hoveredSchedule.startDate);
+        if (parsed) displayRefDate = parsed;
     }
 
     const displayYear = displayRefDate.getFullYear();
@@ -296,8 +309,8 @@ export function ScheduleManager() {
                             </div>
                             <div className="grid grid-cols-7 gap-1">
                                 {calendarDays.map((day, idx) => {
-                                    const dayStr = day.toLocaleDateString("en-CA"); // YYYY-MM-DD
-                                    const isToday = dayStr === now.toLocaleDateString("en-CA");
+                                    const dayStr = day.getFullYear() + '-' + String(day.getMonth() + 1).padStart(2, '0') + '-' + String(day.getDate()).padStart(2, '0');
+                                    const isToday = dayStr === now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
                                     const isCurrentMonth = day.getMonth() === displayMonth;
 
                                     let dayColorClass = isCurrentMonth

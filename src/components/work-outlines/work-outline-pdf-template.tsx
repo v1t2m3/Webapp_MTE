@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import { WorkOutline, Personnel, Vehicle, Schedule, Contract } from '@/types';
 import { format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { toDisplayDate, parseSafeDate } from '@/lib/date-utils';
 
 interface WorkOutlinePdfTemplateProps {
     workOutline: WorkOutline | null;
@@ -28,15 +29,6 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
             deviceName = schedule.deviceName;
         }
 
-        // Helper function to format date
-        const formatDate = (dateString?: string) => {
-            if (!dateString) return "...";
-            try {
-                return format(parseISO(dateString), "dd/MM/yyyy");
-            } catch (e) {
-                return dateString;
-            }
-        };
 
         // Get unique sorted roles
         const sortedPersonnelAssignments = [...(workOutline.personnelAssignments || [])].sort((a, b) => {
@@ -149,28 +141,30 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                                                         pa.endDate !== workOutline.endDate);
                                                 if (hasCustomTime && pa.startDate && pa.endDate) {
                                                     try {
-                                                        const sd = parseISO(pa.startDate);
-                                                        const ed = parseISO(pa.endDate);
-                                                        const sDay = format(sd, 'dd');
-                                                        const sMon = format(sd, 'MM');
-                                                        const eDay = format(ed, 'dd');
-                                                        const eMon = format(ed, 'MM');
-                                                        const eYear = format(ed, 'yy');
-                                                        if (sMon === eMon && sDay !== eDay) {
-                                                            // Same month: "03-06/03/26"
-                                                            customTimeDisplay = `(${sDay}-${eDay}/${eMon}/${eYear})`;
-                                                        } else {
-                                                            if (sDay === eDay && sMon === eMon) {
-                                                                // Same date: "04/03/26"
-                                                                customTimeDisplay = `(${eDay}/${eMon}/${eYear})`;
-                                                            }
-                                                            else {
-                                                                // Different month: "28/02-03/03/26"
-                                                                customTimeDisplay = `(${sDay}/${sMon}-${eDay}/${eMon}/${eYear})`;
+                                                        const sd = parseSafeDate(pa.startDate);
+                                                        const ed = parseSafeDate(pa.endDate);
+                                                        if (sd && ed) {
+                                                            const sDay = format(sd, 'dd');
+                                                            const sMon = format(sd, 'MM');
+                                                            const eDay = format(ed, 'dd');
+                                                            const eMon = format(ed, 'MM');
+                                                            const eYear = format(ed, 'yy');
+                                                            if (sMon === eMon && sDay !== eDay) {
+                                                                // Same month: "03-06/03/26"
+                                                                customTimeDisplay = `(${sDay}-${eDay}/${eMon}/${eYear})`;
+                                                            } else {
+                                                                if (sDay === eDay && sMon === eMon) {
+                                                                    // Same date: "04/03/26"
+                                                                    customTimeDisplay = `(${eDay}/${eMon}/${eYear})`;
+                                                                }
+                                                                else {
+                                                                    // Different month: "28/02-03/03/26"
+                                                                    customTimeDisplay = `(${sDay}/${sMon}-${eDay}/${eMon}/${eYear})`;
+                                                                }
                                                             }
                                                         }
                                                     } catch {
-                                                        customTimeDisplay = `(${formatDate(pa.startDate)}-${formatDate(pa.endDate)})`;
+                                                        customTimeDisplay = `(${toDisplayDate(pa.startDate)}-${toDisplayDate(pa.endDate)})`;
                                                     }
                                                 }
 
@@ -195,7 +189,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                         <div className="mb-2">
                             <div className="font-bold mb-1" style={{ textIndent: '12.7mm' }}>III. Thời gian công tác:</div>
                             <div style={{ textIndent: '12.7mm' }}>
-                                Từ ngày {formatDate(workOutline.startDate)} đến hết ngày {formatDate(workOutline.endDate)}
+                                Từ ngày {toDisplayDate(workOutline.startDate)} đến hết ngày {toDisplayDate(workOutline.endDate)}
                             </div>
                         </div>
 
@@ -236,22 +230,24 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
 
                                         if (hasCustomTime && va.startDate && va.endDate) {
                                             try {
-                                                const sd = parseISO(va.startDate);
-                                                const ed = parseISO(va.endDate);
-                                                const sDay = format(sd, 'dd');
-                                                const sMon = format(sd, 'MM');
-                                                const eDay = format(ed, 'dd');
-                                                const eMon = format(ed, 'MM');
-                                                const eYear = format(ed, 'yy');
-                                                if (sMon === eMon && sDay !== eDay) {
-                                                    vTimeDisplay = `(${sDay}-${eDay}/${eMon}/${eYear})`;
-                                                } else if (sDay === eDay && sMon === eMon) {
-                                                    vTimeDisplay = `(${eDay}/${eMon}/${eYear})`;
-                                                } else {
-                                                    vTimeDisplay = `(${sDay}/${sMon}-${eDay}/${eMon}/${eYear})`;
+                                                const sd = parseSafeDate(va.startDate);
+                                                const ed = parseSafeDate(va.endDate);
+                                                if (sd && ed) {
+                                                    const sDay = format(sd, 'dd');
+                                                    const sMon = format(sd, 'MM');
+                                                    const eDay = format(ed, 'dd');
+                                                    const eMon = format(ed, 'MM');
+                                                    const eYear = format(ed, 'yy');
+                                                    if (sMon === eMon && sDay !== eDay) {
+                                                        vTimeDisplay = `(${sDay}-${eDay}/${eMon}/${eYear})`;
+                                                    } else if (sDay === eDay && sMon === eMon) {
+                                                        vTimeDisplay = `(${eDay}/${eMon}/${eYear})`;
+                                                    } else {
+                                                        vTimeDisplay = `(${sDay}/${sMon}-${eDay}/${eMon}/${eYear})`;
+                                                    }
                                                 }
                                             } catch {
-                                                vTimeDisplay = `(${formatDate(va.startDate)}-${formatDate(va.endDate)})`;
+                                                vTimeDisplay = `(${toDisplayDate(va.startDate)}-${toDisplayDate(va.endDate)})`;
                                             }
                                         }
 

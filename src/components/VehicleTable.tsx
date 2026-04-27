@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Vehicle } from "@/types";
 import { Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toDisplayDate } from "@/lib/date-utils";
 
 interface VehicleTableProps {
     data: Vehicle[];
@@ -20,14 +21,6 @@ interface VehicleTableProps {
 }
 
 export function VehicleTable({ data, onEdit, onDelete }: VehicleTableProps) {
-    const formatDate = (dateString?: string) => {
-        if (!dateString) return "";
-        const parts = dateString.split("-");
-        if (parts.length === 3) {
-            return `${parts[2]}/${parts[1]}/${parts[0]}`;
-        }
-        return dateString;
-    };
 
     return (
         <div className="rounded-md border bg-card text-card-foreground shadow-sm animate-fade-in">
@@ -59,8 +52,8 @@ export function VehicleTable({ data, onEdit, onDelete }: VehicleTableProps) {
                                     {item.licensePlate}
                                 </Badge>
                             </TableCell>
-                            <TableCell>{formatDate(item.inspectionExpiry)}</TableCell>
-                            <TableCell>{formatDate(item.insuranceExpiry)}</TableCell>
+                            <TableCell>{toDisplayDate(item.inspectionExpiry)}</TableCell>
+                            <TableCell>{toDisplayDate(item.insuranceExpiry)}</TableCell>
                             <TableCell>
                                 <Badge className={`whitespace-nowrap ${item.status === "Available" ? "bg-[#4cc9f0] hover:bg-[#4cc9f0]/80" :
                                     item.status === "Maintenance" ? "bg-[#f72585] hover:bg-[#f72585]/80" :

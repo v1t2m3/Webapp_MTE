@@ -1,7 +1,8 @@
 import React, { forwardRef } from 'react';
 import { WorkOutline, Schedule } from '@/types';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { parseSafeDate } from '@/lib/date-utils';
 
 export interface VehicleDispatchPrintData {
     workOutlineId: string;
@@ -40,11 +41,8 @@ export const VehicleDispatchPdfTemplate = forwardRef<HTMLDivElement, VehicleDisp
         // Parse date for signatures
         let dateObj = new Date();
         if (printData.dispatchDate) {
-            try {
-                dateObj = parseISO(printData.dispatchDate);
-            } catch (e) {
-                // fallback
-            }
+            const parsed = parseSafeDate(printData.dispatchDate);
+            if (parsed) dateObj = parsed;
         }
 
         const dayStr = format(dateObj, 'dd', { locale: vi });

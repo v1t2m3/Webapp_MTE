@@ -2,45 +2,10 @@ import { google } from 'googleapis';
 import { JWT } from 'google-auth-library';
 
 // Types for our data
-import { Contract, Personnel, Schedule, Vehicle, WorkOutline, SupplementalReport, Equipment, Consumable, CAPA, Document, ConstructionMachine, Standard, Method } from '@/types';
+import { Contract, Personnel, Schedule, Vehicle, WorkOutline, SupplementalReport, Equipment, Consumable, CAPA, Document, ConstructionMachine, Standard } from '@/types';
+import { toSheetDate, toInputDate, parseSafeDate } from './date-utils';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
-
-// Helper to safely parse JSON
-function safeJSONParse(jsonStr: string, fallback: any = []) {
-    if (!jsonStr || typeof jsonStr !== 'string') return fallback;
-    try {
-        return JSON.parse(jsonStr);
-    } catch (error) {
-        console.error('JSON parse error for string:', jsonStr, error);
-        return fallback;
-    }
-}
-
-// Helper to convert sheet format (dd/MM/yyyy) to internal format (yyyy-MM-dd)
-function sheetDateToInternal(dateStr: string): string {
-    if (!dateStr || typeof dateStr !== 'string') return '';
-    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return dateStr;
-    const parts = dateStr.includes('/') ? dateStr.split('/') : dateStr.split('-');
-    if (parts.length === 3) {
-        if (parts[0].length === 4) {
-            return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
-        } else {
-            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-        }
-    }
-    return dateStr;
-}
-
-// Helper to convert internal format (yyyy-MM-dd) to sheet format (dd/MM/yyyy)
-function internalDateToSheet(dateStr: string): string {
-    if (!dateStr || typeof dateStr !== 'string') return '';
-    const parts = dateStr.split('-');
-    if (parts.length === 3 && parts[0].length === 4) {
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-    return dateStr;
-}
 
 // Function to get authenticated client
 async function getAuthClient() {
@@ -76,12 +41,15 @@ export const googleSheetsService = {
             return rows
                 .filter(row => row[0]) // Filter out empty rows (cleared rows)
                 .map((row) => {
-                    let leaveDates: string[] = safeJSONParse(row[10], []);
-                    // Convert any sheet dates in leaveDates to internal if needed
-                    leaveDates = leaveDates.map((d: string) => sheetDateToInternal(d));
+                    let leaveDates: string[] = [];
+                    try {
+                        leaveDates = row[10] ? JSON.parse(row[10]) : [];
+                    } catch {
+                        leaveDates = [];
+                    }
 
                     const today = new Date();
-                    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                    const todayStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
                     const isOnLeaveToday = leaveDates.some((d: string) => d.includes(todayStr));
 
                     return {
@@ -153,7 +121,7 @@ export const googleSheetsService = {
                     personnel.contractType,
                     personnel.section || '',
                     personnel.leaveType || '',
-                    JSON.stringify((personnel.leaveDates || []).map((d: string) => internalDateToSheet(d))),
+                    JSON.stringify(personnel.leaveDates || []),
                     personnel.profileLink || '',
                 ],
             ];
@@ -193,7 +161,7 @@ export const googleSheetsService = {
                     personnel.contractType,
                     personnel.section || '',
                     personnel.leaveType || '',
-                    JSON.stringify((personnel.leaveDates || []).map((d: string) => internalDateToSheet(d))),
+                    JSON.stringify(personnel.leaveDates || []),
                     personnel.profileLink || '',
                 ],
             ];
@@ -257,8 +225,8 @@ export const googleSheetsService = {
                     name: row[1],
                     type: row[2],
                     licensePlate: row[3],
-                    inspectionExpiry: sheetDateToInternal(row[4]),
-                    insuranceExpiry: sheetDateToInternal(row[5]),
+                    inspectionExpiry: toSheetDate(row[4]),
+                    insuranceExpiry: toSheetDate(row[5]),
                     status: row[6] || 'Available',
                     driverId: row[7],
                 }));
@@ -302,8 +270,8 @@ export const googleSheetsService = {
                     vehicle.name,
                     vehicle.type,
                     vehicle.licensePlate,
-                    internalDateToSheet(vehicle.inspectionExpiry || ''),
-                    internalDateToSheet(vehicle.insuranceExpiry || ''),
+                    toSheetDate(vehicle.inspectionExpiry),
+                    toSheetDate(vehicle.insuranceExpiry),
                     vehicle.status,
                     vehicle.driverId,
                 ],
@@ -338,8 +306,8 @@ export const googleSheetsService = {
                     vehicle.name,
                     vehicle.type,
                     vehicle.licensePlate,
-                    internalDateToSheet(vehicle.inspectionExpiry || ''),
-                    internalDateToSheet(vehicle.insuranceExpiry || ''),
+                    toSheetDate(vehicle.inspectionExpiry),
+                    toSheetDate(vehicle.insuranceExpiry),
                     vehicle.status,
                     vehicle.driverId,
                 ],
@@ -403,8 +371,8 @@ export const googleSheetsService = {
                     code: row[1],
                     name: row[2],
                     value: row[3],
-                    startDate: sheetDateToInternal(row[4]),
-                    endDate: sheetDateToInternal(row[5]),
+                    startDate: toSheetDate(row[4]),
+                    endDate: toSheetDate(row[5]),
                     investorRep: row[6],
                     operationsManagementUnit: row[7] || '',
                 }));
@@ -448,8 +416,8 @@ export const googleSheetsService = {
                     contract.code,
                     contract.name,
                     contract.value,
-                    internalDateToSheet(contract.startDate || ''),
-                    internalDateToSheet(contract.endDate || ''),
+                    toSheetDate(contract.startDate),
+                    toSheetDate(contract.endDate),
                     contract.investorRep,
                     contract.operationsManagementUnit || '',
                 ],
@@ -484,8 +452,8 @@ export const googleSheetsService = {
                     contract.code,
                     contract.name,
                     contract.value,
-                    internalDateToSheet(contract.startDate || ''),
-                    internalDateToSheet(contract.endDate || ''),
+                    toSheetDate(contract.startDate),
+                    toSheetDate(contract.endDate),
                     contract.investorRep,
                     contract.operationsManagementUnit || '',
                 ],
@@ -549,9 +517,9 @@ export const googleSheetsService = {
                     unit: row[1] || '',
                     deviceName: row[2] || '',
                     startTime: row[3] || '',
-                    startDate: sheetDateToInternal(row[4]),
+                    startDate: toSheetDate(row[4]),
                     endTime: row[5] || '',
-                    endDate: sheetDateToInternal(row[6]),
+                    endDate: toSheetDate(row[6]),
                     target: row[7] || '',
                     content: row[8] || '',
                     type: row[9] || '',
@@ -600,9 +568,9 @@ export const googleSheetsService = {
                     schedule.unit,
                     schedule.deviceName,
                     schedule.startTime,
-                    internalDateToSheet(schedule.startDate || ''),
+                    toSheetDate(schedule.startDate),
                     schedule.endTime,
-                    internalDateToSheet(schedule.endDate || ''),
+                    toSheetDate(schedule.endDate),
                     schedule.target,
                     schedule.content,
                     schedule.type,
@@ -641,9 +609,9 @@ export const googleSheetsService = {
                     schedule.unit,
                     schedule.deviceName,
                     schedule.startTime,
-                    internalDateToSheet(schedule.startDate || ''),
+                    toSheetDate(schedule.startDate),
                     schedule.endTime,
-                    internalDateToSheet(schedule.endDate || ''),
+                    toSheetDate(schedule.endDate),
                     schedule.target,
                     schedule.content,
                     schedule.type,
@@ -709,23 +677,19 @@ export const googleSheetsService = {
                 .map((row) => ({
                     id: row[0] || '',
                     scheduleId: row[1] || '',
-                    startDate: sheetDateToInternal(row[2]),
+                    startDate: toSheetDate(row[2]),
                     startTime: row[3] || '',
-                    endDate: sheetDateToInternal(row[4]),
+                    endDate: toSheetDate(row[4]),
                     endTime: row[5] || '',
-                    personnelAssignments: safeJSONParse(row[6], []),
-                    vehicleAssignments: safeJSONParse(row[7], []).map((v: any) =>
+                    personnelAssignments: row[6] ? JSON.parse(row[6]) : [],
+                    vehicleAssignments: (row[7] ? JSON.parse(row[7]) : []).map((v: any) =>
                         typeof v === 'string' ? {
                             vehicleId: v,
-                            startDate: sheetDateToInternal(row[2]),
+                            startDate: row[2] || '',
                             startTime: row[3] || '',
-                            endDate: sheetDateToInternal(row[4]),
+                            endDate: row[4] || '',
                             endTime: row[5] || ''
-                        } : {
-                            ...v,
-                            startDate: sheetDateToInternal(v.startDate || row[2]),
-                            endDate: sheetDateToInternal(v.endDate || row[4])
-                        }
+                        } : v
                     ),
                     isCustom: row[8] === 'TRUE' || row[8] === 'true',
                     customContractId: row[9] || '',
@@ -770,16 +734,12 @@ export const googleSheetsService = {
                 [
                     workOutline.id,
                     workOutline.scheduleId,
-                    internalDateToSheet(workOutline.startDate || ''),
+                    toSheetDate(workOutline.startDate),
                     workOutline.startTime,
-                    internalDateToSheet(workOutline.endDate || ''),
+                    toSheetDate(workOutline.endDate),
                     workOutline.endTime,
                     JSON.stringify(workOutline.personnelAssignments || []),
-                    JSON.stringify((workOutline.vehicleAssignments || []).map((v: any) => typeof v === 'string' ? v : {
-                        ...v,
-                        startDate: internalDateToSheet(v.startDate || ''),
-                        endDate: internalDateToSheet(v.endDate || '')
-                    })),
+                    JSON.stringify(workOutline.vehicleAssignments || []),
                     workOutline.isCustom ? 'TRUE' : 'FALSE',
                     workOutline.customContractId || '',
                     workOutline.customContractName || '',
@@ -814,16 +774,12 @@ export const googleSheetsService = {
                 [
                     id,
                     workOutline.scheduleId,
-                    internalDateToSheet(workOutline.startDate || ''),
+                    toSheetDate(workOutline.startDate),
                     workOutline.startTime,
-                    internalDateToSheet(workOutline.endDate || ''),
+                    toSheetDate(workOutline.endDate),
                     workOutline.endTime,
                     JSON.stringify(workOutline.personnelAssignments || []),
-                    JSON.stringify((workOutline.vehicleAssignments || []).map((v: any) => typeof v === 'string' ? v : {
-                        ...v,
-                        startDate: internalDateToSheet(v.startDate || ''),
-                        endDate: internalDateToSheet(v.endDate || '')
-                    })),
+                    JSON.stringify(workOutline.vehicleAssignments || []),
                     workOutline.isCustom ? 'TRUE' : 'FALSE',
                     workOutline.customContractId || '',
                     workOutline.customContractName || '',
@@ -887,8 +843,8 @@ export const googleSheetsService = {
                     id: row[0],
                     reportType: row[1] || '',
                     referenceId: row[2] || '',
-                    startDate: row[3] || '',
-                    endDate: row[4] || '',
+                    startDate: toSheetDate(row[3]),
+                    endDate: toSheetDate(row[4]),
                     unit: row[5] || '',
                     content: row[6] || ''
                 }));
@@ -909,8 +865,8 @@ export const googleSheetsService = {
                     report.id,
                     report.reportType || '',
                     report.referenceId || '',
-                    report.startDate || '',
-                    report.endDate || '',
+                    toSheetDate(report.startDate),
+                    toSheetDate(report.endDate),
                     report.unit || '',
                     report.content || ''
                 ],
@@ -1016,8 +972,8 @@ export const googleSheetsService = {
                 serialNumber: row[2] || '',
                 location: row[3] || '',
                 calibrationFrequency: row[4] || '',
-                lastCalibrationDate: row[5] || '',
-                nextCalibrationDate: row[6] || '',
+                lastCalibrationDate: toSheetDate(row[5]),
+                nextCalibrationDate: toSheetDate(row[6]),
                 calibrationAgent: row[7] || '',
                 status: row[8] || 'Active',
                 calibrationReportUrl: row[9] || '',
@@ -1042,8 +998,8 @@ export const googleSheetsService = {
                     equipment.serialNumber || '',
                     equipment.location || '',
                     (equipment.calibrationFrequency || '').toString(),
-                    equipment.lastCalibrationDate || '',
-                    equipment.nextCalibrationDate || '',
+                    toSheetDate(equipment.lastCalibrationDate),
+                    toSheetDate(equipment.nextCalibrationDate),
                     equipment.calibrationAgent || '',
                     equipment.status || 'Active',
                     equipment.calibrationReportUrl || '',
@@ -1103,8 +1059,8 @@ export const googleSheetsService = {
                     equipment.serialNumber || '',
                     equipment.location || '',
                     (equipment.calibrationFrequency || '').toString(),
-                    equipment.lastCalibrationDate || '',
-                    equipment.nextCalibrationDate || '',
+                    toSheetDate(equipment.lastCalibrationDate),
+                    toSheetDate(equipment.nextCalibrationDate),
                     equipment.calibrationAgent || '',
                     equipment.status || 'Active',
                     equipment.calibrationReportUrl || '',
@@ -1175,7 +1131,7 @@ export const googleSheetsService = {
                     job: row[3] || '',
                     authorizedMethods: row[4] || '',
                     authorizedEquipments: row[5] || '',
-                    lastTrainingDate: row[6] || '',
+                    lastTrainingDate: toSheetDate(row[6]),
                     status: isOnLeave ? 'Nghỉ phép' : 'Hoạt động',
                     leaveDates,
                     // Stub out required fields
@@ -1202,7 +1158,7 @@ export const googleSheetsService = {
                     personnel.job || personnel.position || '',
                     personnel.authorizedMethods || '',
                     personnel.authorizedEquipments || '',
-                    personnel.lastTrainingDate || '',
+                    toSheetDate(personnel.lastTrainingDate),
                     personnel.status || 'Active',
                 ],
             ];
@@ -1256,7 +1212,7 @@ export const googleSheetsService = {
                 personnel.job || personnel.position || '',
                 personnel.authorizedMethods || '',
                 personnel.authorizedEquipments || '',
-                personnel.lastTrainingDate || '',
+                toSheetDate(personnel.lastTrainingDate),
                 personnel.status || 'Active',
             ]];
 
@@ -1311,9 +1267,9 @@ export const googleSheetsService = {
                 category: row[2] || '',
                 supplier: row[3] || '',
                 lotNumber: row[4] || '',
-                receiveDate: row[5] || '',
-                openDate: row[6] || '',
-                expiryDate: row[7] || '',
+                receiveDate: toSheetDate(row[5]),
+                openDate: toSheetDate(row[6]),
+                expiryDate: toSheetDate(row[7]),
                 quantity: parseFloat(row[8]) || 0,
                 unit: row[9] || '',
                 status: row[10] || 'Còn hạn',
@@ -1337,13 +1293,13 @@ export const googleSheetsService = {
             if (!rows) return [];
             return rows.filter(row => row[0]).map((row) => ({
                 id: row[0],
-                issueDate: row[1] || '',
+                issueDate: toSheetDate(row[1]),
                 source: row[2] || '',
                 description: row[3] || '',
                 assignee: row[4] || '',
                 actionPlan: row[5] || '',
-                deadline: row[6] || '',
-                closeDate: row[7] || '',
+                deadline: toSheetDate(row[6]),
+                closeDate: toSheetDate(row[7]),
                 status: row[8] || 'Yêu cầu xử lý',
                 level: row[9] || '',
                 linkFile: row[10] || '',
@@ -1381,13 +1337,13 @@ export const googleSheetsService = {
             const newId = `CP_${Date.now()}`;
             const values = [
                 newId,
-                data.issueDate,
+                toSheetDate(data.issueDate),
                 data.source,
                 data.description,
                 data.assignee,
                 data.actionPlan,
-                data.deadline,
-                data.closeDate,
+                toSheetDate(data.deadline),
+                toSheetDate(data.closeDate),
                 data.status,
                 data.level,
                 data.linkFile
@@ -1428,13 +1384,13 @@ export const googleSheetsService = {
 
             const updatedValues = [
                 id,
-                data.issueDate !== undefined ? data.issueDate : (existingRow[1] || ''),
+                data.issueDate !== undefined ? toSheetDate(data.issueDate) : (existingRow[1] || ''),
                 data.source !== undefined ? data.source : (existingRow[2] || ''),
                 data.description !== undefined ? data.description : (existingRow[3] || ''),
                 data.assignee !== undefined ? data.assignee : (existingRow[4] || ''),
                 data.actionPlan !== undefined ? data.actionPlan : (existingRow[5] || ''),
-                data.deadline !== undefined ? data.deadline : (existingRow[6] || ''),
-                data.closeDate !== undefined ? data.closeDate : (existingRow[7] || ''),
+                data.deadline !== undefined ? toSheetDate(data.deadline) : (existingRow[6] || ''),
+                data.closeDate !== undefined ? toSheetDate(data.closeDate) : (existingRow[7] || ''),
                 data.status !== undefined ? data.status : (existingRow[8] || 'Yêu cầu xử lý'),
                 data.level !== undefined ? data.level : (existingRow[9] || ''),
                 data.linkFile !== undefined ? data.linkFile : (existingRow[10] || ''),
@@ -1497,8 +1453,8 @@ export const googleSheetsService = {
                 category: row[3] || '',
                 subCategory: row[4] || '',
                 version: row[5] || '',
-                issueDate: row[6] || '',
-                expiryDate: row[7] || '',
+                issueDate: toSheetDate(row[6]),
+                expiryDate: toSheetDate(row[7]),
                 status: row[8] || 'Đang hiệu lực',
                 author: row[9] || '',
                 approver: row[10] || '',
@@ -1544,8 +1500,8 @@ export const googleSheetsService = {
                 doc.category || '',
                 doc.subCategory || '',
                 doc.version || '',
-                doc.issueDate || '',
-                doc.expiryDate || '',
+                toSheetDate(doc.issueDate),
+                toSheetDate(doc.expiryDate),
                 doc.status || 'Đang hiệu lực',
                 doc.author || '',
                 doc.approver || '',
@@ -1584,8 +1540,8 @@ export const googleSheetsService = {
                 doc.category || '',
                 doc.subCategory || '',
                 doc.version || '',
-                doc.issueDate || '',
-                doc.expiryDate || '',
+                toSheetDate(doc.issueDate),
+                toSheetDate(doc.expiryDate),
                 doc.status || 'Đang hiệu lực',
                 doc.author || '',
                 doc.approver || '',
@@ -1883,30 +1839,6 @@ export const googleSheetsService = {
         } catch (error) {
             console.error('Error deleting standard:', error);
             return false;
-        }
-    },
-
-    // --- METHODS MANAGEMENT ---
-
-    getMethods: async (): Promise<Method[]> => {
-        try {
-            if (!process.env.GOOGLE_SHEET_ID) return [];
-            const client = await getAuthClient();
-            const sheets = google.sheets({ version: 'v4', auth: client });
-            const response = await sheets.spreadsheets.values.get({
-                spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'Methods!A2:C',
-            });
-            const rows = response.data.values;
-            if (!rows) return [];
-            return rows.filter(row => row[0]).map(row => ({
-                id: row[0],
-                equipment: row[1] || '',
-                method: row[2] || '',
-            }));
-        } catch (error) {
-            console.error('Error fetching methods:', error);
-            return [];
         }
     },
 

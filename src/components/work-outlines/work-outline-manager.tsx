@@ -21,6 +21,7 @@ import {
 import { format } from "date-fns";
 import { useSession } from "next-auth/react";
 import { hasAccess } from "@/lib/rbac";
+import { toDisplayDate, parseSafeDate } from "@/lib/date-utils";
 
 export function WorkOutlineManager() {
     const { data: session } = useSession();
@@ -192,18 +193,11 @@ export function WorkOutlineManager() {
         };
     };
 
-    const formatDate = (dateString?: string) => {
-        if (!dateString) return "";
-        const parts = dateString.split("-");
-        if (parts.length === 3) {
-            return `${parts[2]}/${parts[1]}/${parts[0]}`;
-        }
-        return dateString;
-    };
 
     const isPastDeadline = (endDateStr: string) => {
         if (!endDateStr) return false;
-        const endDate = new Date(endDateStr);
+        const endDate = parseSafeDate(endDateStr);
+        if (!endDate) return false;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         return endDate < today;
@@ -218,7 +212,11 @@ export function WorkOutlineManager() {
     }).sort((a, b) => {
         if (!a.startDate) return 1;
         if (!b.startDate) return -1;
-        return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+        const dA = parseSafeDate(a.startDate);
+        const dB = parseSafeDate(b.startDate);
+        if (!dA) return 1;
+        if (!dB) return -1;
+        return dA.getTime() - dB.getTime();
     });
 
     return (
@@ -284,8 +282,8 @@ export function WorkOutlineManager() {
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex flex-col text-xs space-y-1">
-                                                        <div><span className="font-medium text-blue-700">Bắt đầu:</span> {item.startTime} {formatDate(item.startDate)}</div>
-                                                        <div><span className="font-medium text-pink-700">Kết thúc:</span> {item.endTime} {formatDate(item.endDate)}</div>
+                                                        <div><span className="font-medium text-blue-700">Bắt đầu:</span> {item.startTime} {toDisplayDate(item.startDate)}</div>
+                                                        <div><span className="font-medium text-pink-700">Kết thúc:</span> {item.endTime} {toDisplayDate(item.endDate)}</div>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>

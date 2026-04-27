@@ -18,6 +18,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { addMonths, format, parse } from "date-fns";
+import { toInputDate, toSheetDate } from "@/lib/date-utils";
 
 export function EquipmentForm({
     open,
@@ -30,23 +31,6 @@ export function EquipmentForm({
 }) {
     const isEditing = !!initialData;
 
-    // Convert DD/MM/YYYY to YYYY-MM-DD for input type="date"
-    const formatDateForInput = (dateStr?: string) => {
-        if (!dateStr) return "";
-        if (dateStr.includes('-')) return dateStr;
-        const parts = dateStr.split('/');
-        if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-        return "";
-    };
-
-    // Convert YYYY-MM-DD to DD/MM/YYYY for saving
-    const formatDateForSave = (dateStr?: string) => {
-        if (!dateStr) return "";
-        if (dateStr.includes('/')) return dateStr;
-        const parts = dateStr.split('-');
-        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-        return "";
-    };
 
     const defaultValues = {
         name: "",
@@ -80,8 +64,8 @@ export function EquipmentForm({
             if (isEditing && initialData) {
                 reset({
                     ...initialData,
-                    lastCalibrationDate: formatDateForInput(initialData.lastCalibrationDate),
-                    nextCalibrationDate: formatDateForInput(initialData.nextCalibrationDate),
+                    lastCalibrationDate: toInputDate(initialData.lastCalibrationDate),
+                    nextCalibrationDate: toInputDate(initialData.nextCalibrationDate),
                     calibrationFrequency: initialData.calibrationFrequency?.toString() || "12",
                     status: initialData.status === "Broken" || initialData.status === "Đang hỏng" ? "Đang hỏng" :
                         initialData.status === "Liquidated" || initialData.status === "Đã thanh lý" ? "Đã thanh lý" :
@@ -117,8 +101,8 @@ export function EquipmentForm({
             const formattedData = {
                 ...data,
                 id: isEditing ? initialData?.id : undefined,
-                lastCalibrationDate: formatDateForSave(data.lastCalibrationDate),
-                nextCalibrationDate: formatDateForSave(data.nextCalibrationDate),
+                lastCalibrationDate: toSheetDate(data.lastCalibrationDate),
+                nextCalibrationDate: toSheetDate(data.nextCalibrationDate),
             };
 
             const url = isEditing ? `/api/equipments/${initialData?.id}` : '/api/equipments';

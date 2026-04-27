@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CAPA, Personnel } from "@/types";
+import { toInputDate, toSheetDate } from "@/lib/date-utils";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -32,26 +33,6 @@ const defaultValues = {
     linkFile: "",
 };
 
-// Helper for date conversion
-const formatDateForInput = (dateStr: string | undefined) => {
-    if (!dateStr) return "";
-    if (dateStr.includes('-')) return dateStr;
-    const parts = dateStr.split('/');
-    if (parts.length === 3) {
-        return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-    }
-    return "";
-};
-
-const formatDateForSave = (dateStr: string | undefined) => {
-    if (!dateStr) return "";
-    if (dateStr.includes('/')) return dateStr;
-    const parts = dateStr.split('-');
-    if (parts.length === 3) {
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
-    }
-    return "";
-};
 
 export function CapaForm({ open, onOpenChange, initialData, personnel }: CapaFormProps) {
     const isEditing = !!initialData;
@@ -82,9 +63,9 @@ export function CapaForm({ open, onOpenChange, initialData, personnel }: CapaFor
 
                 reset({
                     ...initialData,
-                    issueDate: formatDateForInput(initialData.issueDate),
-                    deadline: formatDateForInput(initialData.deadline),
-                    closeDate: formatDateForInput(initialData.closeDate),
+                    issueDate: toInputDate(initialData.issueDate),
+                    deadline: toInputDate(initialData.deadline),
+                    closeDate: toInputDate(initialData.closeDate),
                     status: baseStatus,
                 });
             } else {
@@ -107,9 +88,9 @@ export function CapaForm({ open, onOpenChange, initialData, personnel }: CapaFor
             const formattedData = {
                 ...data,
                 id: isEditing ? initialData?.id : undefined,
-                issueDate: formatDateForSave(data.issueDate),
-                deadline: formatDateForSave(data.deadline),
-                closeDate: formatDateForSave(data.closeDate),
+                issueDate: toSheetDate(data.issueDate),
+                deadline: toSheetDate(data.deadline),
+                closeDate: toSheetDate(data.closeDate),
             };
 
             const url = isEditing ? `/api/capa/${initialData?.id}` : '/api/capa';

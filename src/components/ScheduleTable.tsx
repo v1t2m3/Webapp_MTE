@@ -13,6 +13,7 @@ import { Schedule, Contract } from "@/types";
 import { Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
+import { toDisplayDate } from "@/lib/date-utils";
 
 interface ScheduleTableProps {
     data: Schedule[];
@@ -29,15 +30,6 @@ export function ScheduleTable({ data, contracts = [], onEdit, onDelete, overlapM
         if (!id) return "---";
         const contract = contracts.find(c => c.id === id);
         return contract ? `${contract.code} - ${contract.name}` : id;
-    };
-
-    const formatDate = (dateString?: string) => {
-        if (!dateString) return "";
-        const parts = dateString.split("-");
-        if (parts.length === 3) {
-            return `${parts[2]}/${parts[1]}/${parts[0]}`;
-        }
-        return dateString;
     };
 
     return (
@@ -75,13 +67,13 @@ export function ScheduleTable({ data, contracts = [], onEdit, onDelete, overlapM
                                 <TableCell>
                                     <div className="flex flex-col text-xs">
                                         <span className="font-semibold text-blue-700">{item.startTime}</span>
-                                        <span className="text-muted-foreground">{formatDate(item.startDate)}</span>
+                                        <span className="text-muted-foreground">{toDisplayDate(item.startDate)}</span>
                                     </div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex flex-col text-xs">
                                         <span className="font-semibold text-pink-700">{item.endTime}</span>
-                                        <span className="text-muted-foreground">{formatDate(item.endDate)}</span>
+                                        <span className="text-muted-foreground">{toDisplayDate(item.endDate)}</span>
                                     </div>
                                 </TableCell>
                                 <TableCell className="max-w-[150px] whitespace-normal break-words">{item.target}</TableCell>
