@@ -1,535 +1,210 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Calculator, Save, AlertTriangle } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast"; // Assuming use-toast hook exists, else we can mock it
+import { Download, Smartphone, Globe, Apple, MonitorSmartphone, ArrowRight, Share, PlusSquare } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Badge } from "@/components/ui/badge";
 
-
-
-export default function CalculationsPage() {
+export default function AppDownloadPage() {
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-[#3a0ca3] dark:text-primary-foreground">
-                        Công cụ Tính toán MTE
-                    </h1>
-                    <p className="text-muted-foreground mt-1">
-                        Tự động hóa quy đổi nhiệt độ, tính toán sai số và độ không đảm bảo đo
-                    </p>
+        <div className="space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto pb-12">
+            <div className="text-center space-y-4 flex flex-col items-center">
+                <div className="relative w-36 h-36 mb-2 drop-shadow-xl overflow-hidden rounded-[1.8rem] border-1  border-slate-100/10 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+                    <Image src="/images/cong-cu/Cal_notes_icon.png" alt="MTE-LAB Cal-Notes Icon" fill className="object-cover" />
                 </div>
+                <h1 className="text-4xl p-2 md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
+                    Ứng dụng MTE-LAB Cal-Notes
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Thay thế cho các công cụ tính toán cũ, nay chúng tôi cung cấp giải pháp toàn diện và tiện lợi hơn thông qua ứng dụng di động và nền tảng Web App PWA.
+                </p>
             </div>
 
-            <Tabs defaultValue="dc-resistance" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 bg-muted/50 p-1">
-                    <TabsTrigger value="dc-resistance">Điện trở 1 chiều</TabsTrigger>
-                    <TabsTrigger value="contact-resistance">Điện trở tiếp xúc</TabsTrigger>
-                    <TabsTrigger value="tan-delta">Đo tgδ</TabsTrigger>
-                    <TabsTrigger value="turns-ratio">Tỉ số biến</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="dc-resistance" className="mt-6">
-                    <DcResistanceCalculator />
-                </TabsContent>
-
-                <TabsContent value="contact-resistance" className="mt-6">
-                    <ContactResistanceCalculator />
-                </TabsContent>
-
-                <TabsContent value="tan-delta" className="mt-6">
-                    <TanDeltaCalculator />
-                </TabsContent>
-
-                <TabsContent value="turns-ratio" className="mt-6">
-                    <TurnsRatioCalculator />
-                </TabsContent>
-            </Tabs>
-        </div>
-    );
-}
-
-// Dedicated Components for each Calculator
-function DcResistanceCalculator() {
-    const { toast } = useToast();
-
-    // Measurement Inputs
-    const [r1, setR1] = useState<string>(''); // R1 đo được
-    const [t1, setT1] = useState<string>(''); // Nhiệt độ đo
-
-    // Target Conversion
-    const [t2, setT2] = useState<string>('75'); // Nhiệt độ quy đổi (Thường 75C)
-    const [materialK, setMaterialK] = useState<string>('235'); // Hệ số Đồng = 235, Nhôm = 225
-
-    // Standard Device Data (Saved in LocalStorage)
-    const [uStandard, setUStandard] = useState<string>('');
-    const [resolution, setResolution] = useState<string>(''); // Độ phân giải
-
-    // Results
-    const [resultR2, setResultR2] = useState<number | null>(null);
-    const [uncertainty, setUncertainty] = useState<number | null>(null);
-
-    // Load saved settings on mount
-    useEffect(() => {
-        const savedU = localStorage.getItem('MTE_DC_U_STANDARD');
-        const savedRes = localStorage.getItem('MTE_DC_RESOLUTION');
-        if (savedU) setUStandard(savedU);
-        if (savedRes) setResolution(savedRes);
-    }, []);
-
-    const saveSettings = () => {
-        localStorage.setItem('MTE_DC_U_STANDARD', uStandard);
-        localStorage.setItem('MTE_DC_RESOLUTION', resolution);
-        toast({ title: "Đã lưu thông số thiết bị chuẩn", className: "bg-green-500 text-white" });
-    };
-
-    const calculate = () => {
-        const R1 = parseFloat(r1);
-        const T1 = parseFloat(t1);
-        const T2 = parseFloat(t2);
-        const K = parseFloat(materialK);
-
-        if (isNaN(R1) || isNaN(T1) || isNaN(T2) || isNaN(K)) {
-            toast({ title: "Lỗi", description: "Vui lòng nhập đầy đủ các thông số đo", variant: "destructive" });
-            return;
-        }
-
-        // Formula: R2 = R1 * (K + t2) / (K + t1)
-        const R2 = R1 * ((K + T2) / (K + T1));
-        setResultR2(R2);
-
-        // Calculate Type A & Type B Uncertainty if parameters are provided
-        const u_std = parseFloat(uStandard);
-        const res = parseFloat(resolution);
-
-        if (!isNaN(u_std) && !isNaN(res)) {
-            // Type B from standard calibration certificate (Assume normal distribution k=2)
-            const uB_std = u_std / 2;
-
-            // Type B from resolution (Assume rectangular distribution sqrt(3))
-            const uB_res = (res / 2) / Math.sqrt(3);
-
-            // Combined Standard Uncertainty (Simplified just for Type B here as demo)
-            const uc = Math.sqrt(Math.pow(uB_std, 2) + Math.pow(uB_res, 2));
-
-            // Expanded Uncertainty (k=2, 95% confidence)
-            const U = uc * 2;
-            setUncertainty(U);
-        } else {
-            setUncertainty(null);
-        }
-    };
-
-    return (
-        <Card className="border-t-4 border-t-[#3a0ca3] shadow-md">
-            <CardHeader className="bg-muted/20 border-b">
-                <CardTitle className="flex items-center gap-2">
-                    <Calculator className="h-5 w-5 text-[#f72585]" />
-                    Quy đổi Nhiệt độ Điện trở Một chiều (DC)
-                </CardTitle>
-                <CardDescription>
-                    Sử dụng công thức R₂ = R₁ × (K + t₂) / (K + t₁) và tính ĐKĐBĐ Type B
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-
-                {/* Cột 1: Thông số Nhập liệu */}
-                <div className="space-y-6">
-                    <div className="bg-primary/5 p-4 rounded-lg border border-primary/10">
-                        <h3 className="font-semibold text-primary mb-4">1. Thông số đo thực tế</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="r1">Điện trở đo được (R₁)</Label>
-                                <Input id="r1" type="number" value={r1} onChange={e => setR1(e.target.value)} placeholder="0.00" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="t1">Nhiệt độ lúc đo (t₁ °C)</Label>
-                                <Input id="t1" type="number" value={t1} onChange={e => setT1(e.target.value)} placeholder="25" />
-                            </div>
-                        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+                {/* Android Card */}
+                <Card className="relative overflow-hidden border-t-4 border-t-green-500 rounded-[1.8rem] shadow-lg hover:shadow-xl transition-all duration-300 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <Smartphone className="w-32 h-32" />
                     </div>
-
-                    <div className="bg-muted/30 p-4 rounded-lg border shadow-sm">
-                        <h3 className="font-semibold mb-4">2. Thông số Quy đổi</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="materialK">Hệ số vật liệu (K)</Label>
-                                <select
-                                    id="materialK"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                                    value={materialK}
-                                    onChange={e => setMaterialK(e.target.value)}
-                                >
-                                    <option value="235">Đồng (Cu) - 235</option>
-                                    <option value="225">Nhôm (Al) - 225</option>
-                                </select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="t2">Nhiệt độ đích (t₂ °C)</Label>
-                                <Input id="t2" type="number" value={t2} onChange={e => setT2(e.target.value)} />
-                            </div>
+                    <CardHeader>
+                        <div className="flex items-center gap-2 mb-2">
+                            <Badge className="bg-green-500 hover:bg-green-600 text-white">Android</Badge>
                         </div>
+                        <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                            Tải App Android (APK)
+                        </CardTitle>
+                        <CardDescription className="text-base">
+                            Cài đặt trực tiếp ứng dụng lên điện thoại Android của bạn để sử dụng offline mọi lúc mọi nơi.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6 relative z-10">
+                        <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-xl border border-green-200 dark:border-green-900">
+                            <h4 className="font-semibold text-green-800 dark:text-green-400 mb-2 flex items-center gap-2">
+                                <Download className="w-4 h-4" /> Hướng dẫn cài đặt
+                            </h4>
+                            <ul className="space-y-2 text-sm text-green-700 dark:text-green-500/90 list-decimal list-inside">
+                                <li>Nhấn nút <strong>Tải file APK</strong> bên dưới.</li>
+                                <li>Mở file <code className="bg-white/50 dark:bg-black/50 px-1 rounded">app-release.apk</code> vừa tải về.</li>
+                                <li>Nếu hệ thống yêu cầu, hãy chọn <strong>Cấp quyền (Cho phép) cài đặt ứng dụng từ nguồn không xác định</strong>.</li>
+                                <li>Hoàn tất cài đặt và mở ứng dụng <strong>MTE Cal-Notes</strong>.</li>
+                            </ul>
+                        </div>
+                    </CardContent>
+                    <CardFooter className="relative z-10 pt-4">
+                        <Button asChild size="lg" className="w-full h-14 text-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg transition-all group">
+                            <Link href="/apk/app-release.apk" target="_blank" download>
+                                <Download className="mr-2 h-5 w-5 group-hover:-translate-y-1 transition-transform" />
+                                Tải file APK (Android)
+                            </Link>
+                        </Button>
+                    </CardFooter>
+                </Card>
+
+                {/* iOS & Desktop Card */}
+                <Card className="relative overflow-hidden border-t-4 border-t-blue-500 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <Globe className="w-32 h-32" />
                     </div>
-                </div>
-
-                {/* Cột 2: Cấu hình Thiết bị & Kết quả */}
-                <div className="space-y-6">
-                    <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg border border-amber-200">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-semibold text-amber-900 dark:text-amber-500 flex items-center gap-2">
-                                <AlertTriangle className="h-4 w-4" /> 3. Thông số Thiết bị chuẩn
-                            </h3>
-                            <Button variant="outline" size="sm" onClick={saveSettings} className="h-8 text-xs">
-                                <Save className="h-3 w-3 mr-1" /> Lưu Config
-                            </Button>
+                    <CardHeader>
+                        <div className="flex items-center gap-2 mb-2">
+                            <Badge className="bg-blue-500 hover:bg-blue-600 text-white"><Apple className="w-3 h-3 mr-1" /> iOS</Badge>
+                            <Badge variant="outline" className="border-blue-200 text-blue-600 dark:border-blue-800 dark:text-blue-400"><MonitorSmartphone className="w-3 h-3 mr-1" /> Máy tính</Badge>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="uStandard" className="text-amber-900/80 dark:text-amber-500/80">ĐKĐBĐ Mở rộng (U chuẩn)</Label>
-                                <Input id="uStandard" type="number" value={uStandard} onChange={e => setUStandard(e.target.value)} placeholder="Ví dụ: 0.05" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="resolution" className="text-amber-900/80 dark:text-amber-500/80">Độ phân giải máy đo</Label>
-                                <Input id="resolution" type="number" value={resolution} onChange={e => setResolution(e.target.value)} placeholder="Ví dụ: 0.001" />
-                            </div>
+                        <CardTitle className="text-2xl font-bold">
+                            Sử dụng Web App (PWA)
+                        </CardTitle>
+                        <CardDescription className="text-base">
+                            Sử dụng phiên bản Web App siêu nhẹ, có thể lưu ra màn hình chính và chạy offline như app thật.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6 relative z-10">
+                        <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl border border-blue-200 dark:border-blue-900">
+                            <h4 className="font-semibold text-blue-800 dark:text-blue-400 mb-2 flex items-center gap-2">
+                                <Apple className="w-4 h-4" /> Hướng dẫn cài lên iPhone/iPad
+                            </h4>
+                            <ul className="space-y-2 text-sm text-blue-700 dark:text-blue-500/90 list-decimal list-inside">
+                                <li>Mở link web bằng trình duyệt <strong>Safari</strong>.</li>
+                                <li>Nhấn vào biểu tượng <strong>Chia sẻ (Share)</strong> <Share className="inline w-3 h-3 mx-1" /> ở thanh công cụ.</li>
+                                <li>Kéo xuống và chọn <strong>Thêm vào MH chính (Add to Home Screen)</strong> <PlusSquare className="inline w-3 h-3 mx-1" />.</li>
+                                <li>Ra màn hình chính để mở ứng dụng.</li>
+                            </ul>
                         </div>
-                        <p className="text-xs text-amber-700 mt-2 italic">
-                            * Hệ thống sẽ lưu ID thiết bị này tại Local Storage để không phải nhập lại lần sau.
-                        </p>
-                    </div>
 
-                    <Button onClick={calculate} size="lg" className="w-full text-lg h-14 bg-[#f72585] hover:bg-[#b5179e] transition-colors">
-                        Tính Toán
-                    </Button>
-
-                    {resultR2 !== null && (
-                        <div className="mt-6 p-6 rounded-xl bg-green-50 dark:bg-green-950/30 border-2 border-green-500 flex flex-col items-center justify-center animate-in zoom-in-95 duration-300">
-                            <h4 className="text-green-800 dark:text-green-400 font-medium mb-2">Kết quả Điện trở tại {t2}°C</h4>
-                            <div className="text-5xl font-bold tracking-tighter text-green-600 dark:text-green-500">
-                                {resultR2.toFixed(4)} <span className="text-2xl font-normal text-muted-foreground">Ω</span>
-                            </div>
-
-                            {uncertainty !== null && (
-                                <div className="mt-4 pt-4 border-t border-green-200 dark:border-green-800 w-full text-center">
-                                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400 block mb-1">
-                                        Độ không đảm bảo đo (U) với k=2, 95%:
-                                    </span>
-                                    <span className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-                                        ± {uncertainty.toFixed(6)} <span className="text-base font-normal opacity-70">Ω</span>
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
-
-// Tan Delta Calculator
-function TanDeltaCalculator() {
-    const { toast } = useToast();
-
-    // Inputs
-    const [measuredTanD, setMeasuredTanD] = useState<string>(''); // tgD do duoc (%)
-    const [t1, setT1] = useState<string>(''); // Nhiet do do
-    const [t2, setT2] = useState<string>('20'); // Nhiet do quy doi (Thuong 20C)
-
-    // Type of Equipment for K1 coefficient 
-    // Theo TCVN hoặc IEEE, hệ số K cho Máy biến áp thường Tra Bảng, giả lập K = 1.04 ^ (T2 - T1)
-    const [equipmentType, setEquipmentType] = useState<string>('transformer');
-
-    // Results
-    const [resultTanD, setResultTanD] = useState<number | null>(null);
-
-    const calculate = () => {
-        const tgD1 = parseFloat(measuredTanD);
-        const T1 = parseFloat(t1);
-        const T2 = parseFloat(t2);
-
-        if (isNaN(tgD1) || isNaN(T1) || isNaN(T2)) {
-            toast({ title: "Lỗi", description: "Vui lòng nhập đầy đủ các thông số đo", variant: "destructive" });
-            return;
-        }
-
-        // Empirical Formula for Transformers (Often K=1.04 per Degree C difference, roughly K20 = Kt / 1.04^(T-20))
-        // tgD_20 = tgD_T / K
-        // Where K = 1.3 for 10C diff, etc. Standard IEEE approximation: K = 1.04^(T - 20)
-        let K_factor = 1.0;
-
-        if (equipmentType === 'transformer') {
-            K_factor = Math.pow(1.04, (T1 - T2));
-        } else if (equipmentType === 'bushing') {
-            // Bushing OIP is different, roughly 1.03
-            K_factor = Math.pow(1.03, (T1 - T2));
-        } else {
-            // Cáp khô (XLPE) tgD ít phụ thuộc nhiệt độ ở dải thường, K ~ 1
-            K_factor = 1.0;
-        }
-
-        const tgD2 = tgD1 / K_factor;
-        setResultTanD(tgD2);
-    };
-
-    return (
-        <Card className="border-t-4 border-t-[#7209b7] shadow-md">
-            <CardHeader className="bg-muted/20 border-b">
-                <CardTitle className="flex items-center gap-2">
-                    <Calculator className="h-5 w-5 text-[#4cc9f0]" />
-                    Quy đổi Tổn hao điện môi (tgδ %)
-                </CardTitle>
-                <CardDescription>
-                    Hiệu chỉnh nhiệt độ cho phép đo tgδ theo tiêu chuẩn IEEE / TCVN (Hệ số K)
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-
-                <div className="space-y-6">
-                    <div className="bg-primary/5 p-4 rounded-lg border border-primary/10">
-                        <h3 className="font-semibold text-primary mb-4">1. Thông số đo thực tế</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="tgd1">tgδ đo được (%)</Label>
-                                <Input id="tgd1" type="number" step="0.01" value={measuredTanD} onChange={e => setMeasuredTanD(e.target.value)} placeholder="Ví dụ: 0.35" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="ttgd1">Nhiệt độ lúc đo (t₁ °C)</Label>
-                                <Input id="ttgd1" type="number" value={t1} onChange={e => setT1(e.target.value)} placeholder="32" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-muted/30 p-4 rounded-lg border shadow-sm">
-                        <h3 className="font-semibold mb-4">2. Thông số Quy đổi</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="eqType">Đối tượng thiết bị</Label>
-                                <select
-                                    id="eqType"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-                                    value={equipmentType}
-                                    onChange={e => setEquipmentType(e.target.value)}
-                                >
-                                    <option value="transformer">Máy biến áp (K~1.04)</option>
-                                    <option value="bushing">Sứ (OIP) (K~1.03)</option>
-                                    <option value="cable">Cáp XLPE (K~1.00)</option>
-                                </select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="ttgd2">Nhiệt độ đích (t₂ °C)</Label>
-                                <Input id="ttgd2" type="number" value={t2} onChange={e => setT2(e.target.value)} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="space-y-6 flex flex-col justify-center">
-                    <Button onClick={calculate} size="lg" className="w-full text-lg h-14 bg-[#7209b7] hover:bg-[#560bad] transition-colors shadow-lg">
-                        Xử lý Số liệu tgδ
-                    </Button>
-
-                    {resultTanD !== null && (
-                        <div className="mt-6 p-6 rounded-xl bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-500 flex flex-col items-center justify-center animate-in zoom-in-95 duration-300">
-                            <h4 className="text-blue-800 dark:text-blue-400 font-medium mb-2">Kết quả tgδ tại {t2}°C</h4>
-                            <div className="text-6xl font-black tracking-tighter text-blue-600 dark:text-blue-500 drop-shadow-sm">
-                                {resultTanD.toFixed(3)} <span className="text-3xl font-bold text-blue-400">%</span>
-                            </div>
-                            <p className="text-sm text-blue-600/70 mt-4 text-center">
-                                * Lưu ý: Kết quả quy đổi chỉ mang tính chất tham khảo gần đúng theo công thức thực nghiệm bề mặt.
+                        <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <h4 className="font-semibold text-slate-800 dark:text-slate-300 mb-2 flex items-center gap-2">
+                                <MonitorSmartphone className="w-4 h-4" /> Hướng dẫn với Máy tính / Chrome
+                            </h4>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
+                                Truy cập link, nhấn vào biểu tượng <strong>Cài đặt ứng dụng</strong> ở góc phải thanh địa chỉ (Address bar) để cài đặt dạng Desktop App.
                             </p>
                         </div>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
+                    </CardContent>
+                    <CardFooter className="relative z-10 pt-4">
+                        <Button asChild size="lg" className="w-full h-14 text-lg bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all group">
+                            <Link href="https://cal-note.vercel.app/" target="_blank" rel="noopener noreferrer">
+                                <Globe className="mr-2 h-5 w-5" />
+                                Truy cập Web App
+                                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </div>
 
-// Contact Resistance Calculator
-function ContactResistanceCalculator() {
-    const { toast } = useToast();
-
-    // Inputs (Ohm's Law: R = U / I)
-    const [voltageDrop, setVoltageDrop] = useState<string>(''); // Điện áp rơi (mV)
-    const [currentInject, setCurrentInject] = useState<string>('100'); // Dòng điện bơm (A), thường là 100A
-
-    // Results
-    const [resultMicroOhm, setResultMicroOhm] = useState<number | null>(null);
-
-    const calculate = () => {
-        const U_mV = parseFloat(voltageDrop);
-        const I_A = parseFloat(currentInject);
-
-        if (isNaN(U_mV) || isNaN(I_A) || I_A === 0) {
-            toast({ title: "Lỗi", description: "Vui lòng nhập Thông số đo hợp lệ (Dòng điện phải > 0)", variant: "destructive" });
-            return;
-        }
-
-        // R (Ohm) = U (Volt) / I (Ampere)
-        // U_Volt = U_mV / 1000
-        // R_MicroOhm = (U_Volt / I_A) * 1_000_000 
-        // Suy ra: R_MicroOhm = (U_mV / I_A) * 1000 
-        const R_uOhm = (U_mV / I_A) * 1000;
-
-        setResultMicroOhm(R_uOhm);
-    };
-
-    return (
-        <Card className="border-t-4 border-t-[#f77f00] shadow-md">
-            <CardHeader className="bg-muted/20 border-b">
-                <CardTitle className="flex items-center gap-2">
-                    <Calculator className="h-5 w-5 text-[#f77f00]" />
-                    Tính toán Điện trở Tiếp xúc (Micro-Ohm)
-                </CardTitle>
-                <CardDescription>
-                    Nhanh chóng quy đổi Điện áp rơi (mV) và Dòng cực đại (A) ra Micro-Ohms (µΩ)
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-
-                <div className="space-y-6">
-                    <div className="bg-primary/5 p-4 rounded-lg border border-primary/10">
-                        <h3 className="font-semibold text-primary mb-4">Thông số Bơm dòng</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="u_drop">Điện áp rơi (mV)</Label>
-                                <Input id="u_drop" type="number" step="0.01" value={voltageDrop} onChange={e => setVoltageDrop(e.target.value)} placeholder="Ví dụ: 1.5" />
+            {/* Visual Guide Section */}
+            <div className="mt-16 text-center space-y-8">
+                <h3 className="text-2xl font-bold tracking-tight">Giao diện Ứng dụng Trực quan</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 px-4">
+                    {/* Mockup 1: Main Menu */}
+                    <div className="rounded-[2rem] overflow-hidden border-8 border-slate-200 dark:border-slate-800 shadow-2xl aspect-[1/2] bg-[#0a1128] flex items-center justify-center relative transform transition duration-500 hover:scale-105">
+                        <div className="absolute inset-0 flex flex-col pt-6">
+                            <div className="w-full px-4 mb-4 flex items-center justify-between text-white">
+                                <div className="w-6 h-1 bg-white/50 rounded"></div>
+                                <div className="text-xs font-bold">MTE-LAB Cal-Notes</div>
+                                <div className="w-4 h-4 rounded-full border-2 border-white/50"></div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="i_inj">Dòng điện thử (A)</Label>
-                                <Input id="i_inj" type="number" value={currentInject} onChange={e => setCurrentInject(e.target.value)} placeholder="100" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="space-y-6 flex flex-col justify-center">
-                    <Button onClick={calculate} size="lg" className="w-full text-lg h-14 bg-[#f77f00] hover:bg-[#d66e00] transition-colors shadow-lg">
-                        Xử lý Số liệu µΩ
-                    </Button>
-
-                    {resultMicroOhm !== null && (
-                        <div className="mt-6 p-6 rounded-xl bg-orange-50 dark:bg-orange-950/30 border-2 border-orange-500 flex flex-col items-center justify-center animate-in zoom-in-95 duration-300">
-                            <h4 className="text-orange-800 dark:text-orange-400 font-medium mb-2">Kết quả Điện trở Tiếp xúc</h4>
-                            <div className="text-6xl font-black tracking-tighter text-orange-600 dark:text-orange-500 drop-shadow-sm">
-                                {resultMicroOhm.toFixed(2)} <span className="text-3xl font-bold text-orange-400">µΩ</span>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
-
-// Turns Ratio Calculator
-function TurnsRatioCalculator() {
-    const { toast } = useToast();
-
-    // Inputs
-    const [vPrimary, setVPrimary] = useState<string>(''); // HV (Cao ap)
-    const [vSecondary, setVSecondary] = useState<string>(''); // LV (Ha ap)
-    const [kMeasured, setKMeasured] = useState<string>(''); // K_do
-
-    // Results
-    const [kNominal, setKNominal] = useState<number | null>(null);
-    const [errorMargin, setErrorMargin] = useState<number | null>(null);
-
-    const calculate = () => {
-        const VP = parseFloat(vPrimary);
-        const VS = parseFloat(vSecondary);
-        const K_do = parseFloat(kMeasured);
-
-        if (isNaN(VP) || isNaN(VS) || isNaN(K_do) || VS === 0) {
-            toast({ title: "Lỗi", description: "Vui lòng nhập Thông số điện áp định mức hợp lệ", variant: "destructive" });
-            return;
-        }
-
-        // Tỉ số biến định mức
-        const K_dm = VP / VS;
-        setKNominal(K_dm);
-
-        // Sai số vòng dây Delta U % = ((K_do - K_dm) / K_dm) * 100
-        const deltaU = ((K_do - K_dm) / K_dm) * 100;
-        setErrorMargin(deltaU);
-    };
-
-    return (
-        <Card className="border-t-4 border-t-[#06d6a0] shadow-md">
-            <CardHeader className="bg-muted/20 border-b">
-                <CardTitle className="flex items-center gap-2">
-                    <Calculator className="h-5 w-5 text-[#06d6a0]" />
-                    Tính toán Sai số Tỉ số biến (ΔU %)
-                </CardTitle>
-                <CardDescription>
-                    Tính Tỉ số định mức (K_{"dm"}) và Phần trăm sai số giữa thực đo so với nhãn máy
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-
-                <div className="space-y-6">
-                    <div className="bg-primary/5 p-4 rounded-lg border border-primary/10">
-                        <h3 className="font-semibold text-primary mb-4">1. Điện áp Định mức Nấc hiện tại</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="vP">Cao áp U1 (V)</Label>
-                                <Input id="vP" type="number" step="0.1" value={vPrimary} onChange={e => setVPrimary(e.target.value)} placeholder="Ví dụ: 110000" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="vS">Hạ áp U2 (V)</Label>
-                                <Input id="vS" type="number" step="0.1" value={vSecondary} onChange={e => setVSecondary(e.target.value)} placeholder="Ví dụ: 22000" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-muted/30 p-4 rounded-lg border shadow-sm">
-                        <h3 className="font-semibold mb-4">2. Thông số đo thực tế</h3>
-                        <div className="space-y-2 w-1/2">
-                            <Label htmlFor="kDo">Tỉ số đo được (K_{"đo"})</Label>
-                            <Input id="kDo" type="number" step="0.0001" value={kMeasured} onChange={e => setKMeasured(e.target.value)} placeholder="Ví dụ: 5.002" />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="space-y-6 flex flex-col justify-center">
-                    <Button onClick={calculate} size="lg" className="w-full text-lg h-14 bg-[#06d6a0] hover:bg-[#04a077] transition-colors shadow-lg">
-                        Xử lý Sai số Tỉ số biến
-                    </Button>
-
-                    {errorMargin !== null && kNominal !== null && (
-                        <div className="mt-6 space-y-4 animate-in zoom-in-95 duration-300">
-
-                            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 flex justify-between items-center">
-                                <span className="font-medium text-slate-600">Máy Tỉ số Định mức (K_{"dm"}):</span>
-                                <span className="text-2xl font-bold text-slate-700 dark:text-slate-300">{kNominal.toFixed(4)}</span>
-                            </div>
-
-                            <div className={`p-6 rounded-xl border-2 flex flex-col items-center justify-center 
-                                ${Math.abs(errorMargin) > 0.5 ? 'bg-red-50 dark:bg-red-950/30 border-red-500' : 'bg-green-50 dark:bg-green-950/30 border-green-500'}`}
-                            >
-                                <h4 className={`font-medium mb-2 ${Math.abs(errorMargin) > 0.5 ? 'text-red-800 dark:text-red-400' : 'text-green-800 dark:text-green-400'}`}>
-                                    Sai số Vòng dây (ΔU %)
-                                </h4>
-                                <div className={`text-6xl font-black tracking-tighter drop-shadow-sm ${Math.abs(errorMargin) > 0.5 ? 'text-red-600 dark:text-red-500' : 'text-green-600 dark:text-green-500'}`}>
-                                    {errorMargin > 0 ? '+' : ''}{errorMargin.toFixed(3)} <span className="text-3xl font-bold opacity-70">%</span>
+                            <div className="grid grid-cols-2 gap-3 px-3 w-full mt-4">
+                                <div className="aspect-[4/5] bg-[#162145] rounded-xl flex flex-col items-center justify-center gap-3 border border-white/5">
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-[#ff6b35]">⚡</div>
+                                    <div className="text-[10px] text-white font-medium">Máy Biến Áp</div>
                                 </div>
-                                <p className={`text-sm mt-4 font-bold flex items-center gap-2 ${Math.abs(errorMargin) > 0.5 ? 'text-red-600 dark:text-red-500' : 'text-green-600 dark:text-green-500'}`}>
-                                    {Math.abs(errorMargin) > 0.5 ? (
-                                        <><AlertTriangle className="h-4 w-4" /> KHÔNG ĐẠT (Theo IEC &gt; 0.5%)</>
-                                    ) : (
-                                        <>✓ ĐẠT TIÊU CHUẨN</>
-                                    )}
-                                </p>
+                                <div className="aspect-[4/5] bg-[#162145] rounded-xl flex flex-col items-center justify-center gap-3 border border-white/5">
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-[#ff6b35]">🔌</div>
+                                    <div className="text-[10px] text-white font-medium">Máy Cắt</div>
+                                </div>
+                                <div className="aspect-[4/5] bg-[#162145] rounded-xl flex flex-col items-center justify-center gap-3 border border-white/5">
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-[#ff6b35]">🔋</div>
+                                    <div className="text-[10px] text-white font-medium">TI / TU</div>
+                                </div>
+                                <div className="aspect-[4/5] bg-[#162145] rounded-xl flex flex-col items-center justify-center gap-3 border border-white/5">
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-[#ff6b35]">⛈️</div>
+                                    <div className="text-[10px] text-white font-medium">Chống Sét Van</div>
+                                </div>
                             </div>
                         </div>
-                    )}
+                    </div>
+
+                    {/* Mockup 2: Calculation Page */}
+                    <div className="rounded-[2rem] overflow-hidden border-8 border-slate-200 dark:border-slate-800 shadow-2xl aspect-[1/2] bg-[#0a1128] flex items-center justify-center relative transform transition duration-500 hover:scale-105">
+                        <div className="absolute inset-0 flex flex-col pt-6 px-4">
+                            <div className="w-full flex items-center mb-6 text-white">
+                                <div className="w-4 h-4 border-l-2 border-t-2 border-white transform -rotate-45 mr-3"></div>
+                                <div className="text-xs font-bold uppercase">TÍNH TOÁN MBA 3 PHA</div>
+                            </div>
+                            <div className="w-full space-y-4">
+                                <div className="p-3 bg-[#162145] rounded-xl border border-blue-900 w-full space-y-2">
+                                    <div className="text-[9px] text-blue-300 font-bold">1. ĐIỆN TRỞ CÁCH ĐIỆN (MΩ)</div>
+                                    <div className="flex gap-2">
+                                        <div className="h-6 bg-[#0a1128] rounded border border-blue-900/50 flex-1 flex items-center px-2 text-[8px] text-white/50">C-H</div>
+                                        <div className="h-6 bg-[#0a1128] rounded border border-blue-900/50 flex-1 flex items-center px-2 text-[8px] text-white/50">C-V</div>
+                                        <div className="h-6 bg-[#0a1128] rounded border border-blue-900/50 flex-1 flex items-center px-2 text-[8px] text-white/50">H-V</div>
+                                    </div>
+                                    <div className="h-7 bg-blue-600 rounded text-white text-[9px] font-bold flex items-center justify-center mt-2">CẬP NHẬT Rcd</div>
+                                </div>
+                                <div className="p-3 bg-[#162145] rounded-xl border border-blue-900 w-full space-y-2">
+                                    <div className="text-[9px] text-blue-300 font-bold">2. ĐIỆN TRỞ MỘT CHIỀU QUY ĐỔI</div>
+                                    <div className="flex gap-2">
+                                        <div className="h-6 bg-[#0a1128] rounded border border-blue-900/50 flex-1"></div>
+                                        <div className="h-6 bg-[#0a1128] rounded border border-blue-900/50 flex-1"></div>
+                                        <div className="h-6 bg-[#0a1128] rounded border border-blue-900/50 flex-1"></div>
+                                    </div>
+                                    <div className="h-7 bg-blue-600 rounded text-white text-[9px] font-bold flex items-center justify-center mt-2">TÍNH QUY ĐỔI</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Mockup 3: iOS Home Screen */}
+                    <div className="rounded-[2rem] overflow-hidden border-8 border-slate-200 dark:border-slate-800 shadow-2xl aspect-[1/2] bg-gradient-to-b from-green-800 to-blue-900 flex items-center justify-center relative transform transition duration-500 hover:scale-105">
+                        <div className="absolute inset-0 flex flex-col p-4">
+                            <div className="mt-8 grid grid-cols-4 gap-3 mb-8">
+                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(i => <div key={i} className="aspect-square bg-white/20 rounded-xl shadow-sm"></div>)}
+                            </div>
+
+                            <div className="absolute bottom-24 left-4 flex flex-col items-center gap-1">
+                                <div className="w-14 h-14 bg-black rounded-[1.2rem] flex items-center justify-center shadow-lg overflow-hidden border-2 border-slate-800/50">
+                                    <div className="relative w-full h-full">
+                                        <Image src="/images/cong-cu/Cal_notes_icon.png" alt="Icon" fill className="object-cover" />
+                                    </div>
+                                </div>
+                                <div className="text-[9px] text-white font-medium drop-shadow-md">MTE Cal-Notes</div>
+                            </div>
+
+                            <div className="mt-auto mb-2 mx-auto w-full max-w-[80%] h-16 bg-white/20 backdrop-blur-md rounded-[2rem] flex justify-between items-center px-4">
+                                <div className="w-10 h-10 bg-green-500 rounded-xl"></div>
+                                <div className="w-10 h-10 bg-blue-400 rounded-xl"></div>
+                                <div className="w-10 h-10 bg-blue-500 rounded-xl"></div>
+                                <div className="w-10 h-10 bg-orange-400 rounded-xl"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </CardContent>
-        </Card>
+                <p className="text-sm text-muted-foreground mt-8 italic">
+                    *Giao diện trực quan, đồng bộ và chuyên nghiệp trên mọi nền tảng. Thiết kế dành riêng cho kỹ sư thí nghiệm điện.
+                </p>
+            </div>
+        </div>
     );
 }
