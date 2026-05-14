@@ -46,7 +46,7 @@ export default function AppDownloadPage() {
                             </h4>
                             <ul className="space-y-2 text-sm text-green-700 dark:text-green-500/90 list-decimal list-inside">
                                 <li>Nhấn nút <strong>Tải file APK</strong> bên dưới.</li>
-                                <li>Mở file <code className="bg-white/50 dark:bg-black/50 px-1 rounded">app-release.apk</code> vừa tải về.</li>
+                                <li>Mở file <code className="bg-white/50 dark:bg-black/50 px-1 rounded">MTELAB_CalNotes.apk</code> vừa tải về.</li>
                                 <li>Nếu hệ thống yêu cầu, hãy chọn <strong>Cấp quyền (Cho phép) cài đặt ứng dụng từ nguồn không xác định</strong>.</li>
                                 <li>Hoàn tất cài đặt và mở ứng dụng <strong>MTE Cal-Notes</strong>.</li>
                             </ul>
@@ -54,7 +54,7 @@ export default function AppDownloadPage() {
                     </CardContent>
                     <CardFooter className="relative z-10 pt-4">
                         <Button asChild size="lg" className="w-full h-14 text-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg transition-all group">
-                            <Link href="/apk/app-release.apk" target="_blank" download>
+                            <Link href="/apk/MTELAB_CalNotes.apk" target="_blank" download>
                                 <Download className="mr-2 h-5 w-5 group-hover:-translate-y-1 transition-transform" />
                                 Tải file APK (Android)
                             </Link>
