@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Equipment, Personnel } from "@/types";
 import { useRouter } from "next/navigation";
+import { toInputDate } from "@/lib/date-utils";
 import {
     Dialog,
     DialogContent,
@@ -51,13 +52,7 @@ export function IsoPersonnelForm({
     useEffect(() => {
         if (open) {
             if (initialData) {
-                let formattedDate = initialData.lastTrainingDate || "";
-                if (formattedDate.includes('/')) {
-                    const parts = formattedDate.split('/');
-                    if (parts.length === 3) {
-                        formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-                    }
-                }
+                let formattedDate = toInputDate(initialData.lastTrainingDate);
                 reset({
                     ...initialData,
                     lastTrainingDate: formattedDate

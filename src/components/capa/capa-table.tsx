@@ -13,17 +13,8 @@ import { CAPA } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Edit2, ExternalLink, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { parseSafeDate, toDisplayDate } from "@/lib/date-utils";
 
-function parseDateStr(dateStr: string | undefined): Date | null {
-    if (!dateStr) return null;
-    const parts = dateStr.split('/');
-    if (parts.length === 3) {
-        return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-    } else if (dateStr.includes('-')) {
-        return new Date(dateStr);
-    }
-    return null;
-}
 
 export function CapaTable({ data, onEdit, onDelete }: { data: CAPA[], onEdit?: (item: CAPA) => void, onDelete?: (id: string) => void }) {
     const sortedData = useMemo(() => {
@@ -93,7 +84,7 @@ export function CapaTable({ data, onEdit, onDelete }: { data: CAPA[], onEdit?: (
                             today.setHours(0, 0, 0, 0);
 
                             if (baseStatusLower === "đang xử lý") {
-                                const deadlineDate = parseDateStr(item.deadline);
+                                const deadlineDate = parseSafeDate(item.deadline);
                                 if (deadlineDate && today > deadlineDate) {
                                     displayStatus = "Đang quá hạn";
                                 }
@@ -109,8 +100,8 @@ export function CapaTable({ data, onEdit, onDelete }: { data: CAPA[], onEdit?: (
                             } else if (displayStatus === "Đang quá hạn") {
                                 badgeClasses = "whitespace-nowrap px-3 py-1 font-semibold bg-red-100 text-red-800 border-red-200 shadow-sm dark:bg-red-900/40 dark:text-red-400 dark:border-red-800/50";
                             } else if (displayStatus === "Hoàn thành") {
-                                const deadlineDate = parseDateStr(item.deadline);
-                                const closeDate = parseDateStr(item.closeDate);
+                                const deadlineDate = parseSafeDate(item.deadline);
+                                const closeDate = parseSafeDate(item.closeDate);
                                 if (closeDate && deadlineDate && closeDate > deadlineDate) {
                                     badgeClasses = "whitespace-nowrap px-3 py-1 font-medium bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800/50";
                                 } else {
@@ -140,17 +131,17 @@ export function CapaTable({ data, onEdit, onDelete }: { data: CAPA[], onEdit?: (
 
                             return (
                                 <TableRow key={item.id} className={rowClasses}>
-                                    <TableCell className="text-slate-600 dark:text-slate-400 whitespace-nowrap">{item.issueDate}</TableCell>
+                                    <TableCell className="text-slate-600 dark:text-slate-400 whitespace-nowrap">{toDisplayDate(item.issueDate)}</TableCell>
                                     <TableCell className="text-slate-700 dark:text-slate-300 font-medium min-w-[250px]" title={item.description}>
                                         <div className="whitespace-pre-wrap">{item.description}</div>
                                         {item.source && <span className="block text-xs font-normal text-slate-500 mt-1">Từ: {item.source}</span>}
                                     </TableCell>
                                     <TableCell className="text-slate-700 dark:text-slate-300">{item.assignee}</TableCell>
                                     <TableCell className="text-slate-700 dark:text-slate-300 font-medium">
-                                        {item.deadline}
+                                        {toDisplayDate(item.deadline)}
                                     </TableCell>
                                     <TableCell className="text-slate-700 dark:text-slate-300">
-                                        {item.closeDate || "-"}
+                                        {item.closeDate ? toDisplayDate(item.closeDate) : "-"}
                                     </TableCell>
                                     <TableCell>
                                         {item.level ? (

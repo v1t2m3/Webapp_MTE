@@ -10,11 +10,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar as CalendarIcon, Plus, Trash2, AlertCircle } from "lucide-react";
-import { format, isWithinInterval, parseISO } from "date-fns";
+import { format, isWithinInterval } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toDisplayDate, parseSafeDate } from "@/lib/date-utils";
 
 interface WorkOutlineFormProps {
     open: boolean;
@@ -79,7 +80,7 @@ export function WorkOutlineForm({
                     customContractName: "",
                     customContent: "",
                     startDate: "",
-                    startTime: "08:00",
+                    startTime: "06:30",
                     endDate: "",
                     endTime: "17:00",
                     personnelAssignments: [],
@@ -129,7 +130,7 @@ export function WorkOutlineForm({
                     personnelId: "",
                     role: "NVCT - Nhân viên công tác",
                     startDate: prev.startDate || "",
-                    startTime: prev.startTime || "08:00",
+                    startTime: prev.startTime || "06:30",
                     endDate: prev.endDate || "",
                     endTime: prev.endTime || "17:00"
                 }
@@ -159,19 +160,21 @@ export function WorkOutlineForm({
         const pInfo = personnel.find(p => p.id === personnelId);
         if (!pInfo) return null;
 
-        const checkDate = parseISO(startDate);
+        const checkDate = parseSafeDate(startDate);
+        if (!checkDate) return null;
 
         // 1. Check Leaves
         if (pInfo.leaveDates && pInfo.leaveDates.length > 0) {
             const isOnLeave = pInfo.leaveDates.some(leaveStr => {
-                const leaveDate = parseISO(leaveStr);
+                const leaveDate = parseSafeDate(leaveStr);
+                if (!leaveDate) return false;
                 return leaveDate.getFullYear() === checkDate.getFullYear() &&
                     leaveDate.getMonth() === checkDate.getMonth() &&
                     leaveDate.getDate() === checkDate.getDate();
             });
 
             if (isOnLeave) {
-                return `Nhân sự đang có lịch nghỉ (${pInfo.leaveType}) vào ngày ${format(checkDate, 'dd/MM/yyyy')}.`;
+                return `Nhân sự đang có lịch nghỉ (${pInfo.leaveType}) vào ngày ${toDisplayDate(startDate)}.`;
             }
         }
 
@@ -198,7 +201,7 @@ export function WorkOutlineForm({
                 {
                     vehicleId: "",
                     startDate: prev.startDate || "",
-                    startTime: prev.startTime || "08:00",
+                    startTime: prev.startTime || "06:30",
                     endDate: prev.endDate || "",
                     endTime: prev.endTime || "17:00"
                 }
@@ -248,14 +251,14 @@ export function WorkOutlineForm({
                         !value && "text-muted-foreground"
                     )}
                 >
-                    {value ? format(new Date(value), "dd/MM/yyyy") : <span>Chọn ngày</span>}
+                    {value ? toDisplayDate(value) : <span>Chọn ngày</span>}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                     mode="single"
-                    selected={value ? new Date(value) : undefined}
+                    selected={parseSafeDate(value) || undefined}
                     onSelect={(date) => {
                         if (date) {
                             const year = date.getFullYear();
@@ -352,15 +355,15 @@ export function WorkOutlineForm({
                                     <SelectContent className="max-h-[300px]">
                                         {[...schedules]
                                             .sort((a, b) => {
-                                                const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
-                                                const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
+                                                const dateA = parseSafeDate(a.startDate)?.getTime() || 0;
+                                                const dateB = parseSafeDate(b.startDate)?.getTime() || 0;
                                                 return dateB - dateA;
                                             })
                                             .map(s => (
-                                            <SelectItem key={s.id} value={s.id}>
-                                                <span className="font-semibold">{s.target}</span> - {s.deviceName} ({s.startDate ? format(new Date(s.startDate), 'dd/MM/yyyy') : ''})
-                                            </SelectItem>
-                                        ))}
+                                                <SelectItem key={s.id} value={s.id}>
+                                                    <span className="font-semibold">{s.target}</span> - {s.deviceName} ({toDisplayDate(s.startDate)})
+                                                </SelectItem>
+                                            ))}
                                     </SelectContent>
                                 </Select>
                                 {selectedSchedule && (

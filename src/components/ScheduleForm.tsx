@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { toDisplayDate, parseSafeDate } from "@/lib/date-utils";
 
 interface ScheduleFormProps {
     open: boolean;
@@ -108,7 +109,11 @@ export function ScheduleForm({ open, onOpenChange, initialData, onSubmit, contra
         }
 
         // Logic warning
-        const selectedDate = new Date(val);
+        const selectedDate = parseSafeDate(val);
+        if (!selectedDate) {
+            setDateWarning("");
+            return;
+        }
         selectedDate.setHours(0, 0, 0, 0);
 
         const today = new Date();
@@ -243,7 +248,7 @@ export function ScheduleForm({ open, onOpenChange, initialData, onSubmit, contra
                                             )}
                                         >
                                             {formData.startDate ? (
-                                                format(new Date(formData.startDate), "dd/MM/yyyy")
+                                                toDisplayDate(formData.startDate)
                                             ) : (
                                                 <span>Chọn ngày</span>
                                             )}
@@ -253,7 +258,7 @@ export function ScheduleForm({ open, onOpenChange, initialData, onSubmit, contra
                                     <PopoverContent className="w-auto p-0" align="start">
                                         <Calendar
                                             mode="single"
-                                            selected={formData.startDate ? new Date(formData.startDate) : undefined}
+                                            selected={parseSafeDate(formData.startDate) || undefined}
                                             onSelect={(date) => {
                                                 if (date) {
                                                     const year = date.getFullYear();
@@ -295,7 +300,7 @@ export function ScheduleForm({ open, onOpenChange, initialData, onSubmit, contra
                                             )}
                                         >
                                             {formData.endDate ? (
-                                                format(new Date(formData.endDate), "dd/MM/yyyy")
+                                                toDisplayDate(formData.endDate)
                                             ) : (
                                                 <span>Chọn ngày</span>
                                             )}
@@ -305,7 +310,7 @@ export function ScheduleForm({ open, onOpenChange, initialData, onSubmit, contra
                                     <PopoverContent className="w-auto p-0" align="start">
                                         <Calendar
                                             mode="single"
-                                            selected={formData.endDate ? new Date(formData.endDate) : undefined}
+                                            selected={parseSafeDate(formData.endDate) || undefined}
                                             onSelect={(date) => {
                                                 if (date) {
                                                     const year = date.getFullYear();

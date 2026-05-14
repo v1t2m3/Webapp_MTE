@@ -9,6 +9,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Contract } from "@/types";
+import { toDisplayDate } from "@/lib/date-utils";
 
 export function ContractTable({ data }: { data: Contract[] }) {
     return (
@@ -28,8 +29,8 @@ export function ContractTable({ data }: { data: Contract[] }) {
                         <TableRow key={item.id}>
                             <TableCell className="font-medium">{item.name}</TableCell>
                             <TableCell>{item.investorRep}</TableCell>
-                            <TableCell>{item.startDate}</TableCell>
-                            <TableCell>{item.endDate}</TableCell>
+                            <TableCell>{toDisplayDate(item.startDate)}</TableCell>
+                            <TableCell>{toDisplayDate(item.endDate)}</TableCell>
                             <TableCell>{item.code}</TableCell>
                         </TableRow>
                     ))}

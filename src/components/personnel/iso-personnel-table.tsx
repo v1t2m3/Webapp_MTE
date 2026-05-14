@@ -12,6 +12,7 @@ import { Personnel } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from "lucide-react";
+import { toDisplayDate } from "@/lib/date-utils";
 
 export function IsoPersonnelTable({
     data,
@@ -60,7 +61,7 @@ export function IsoPersonnelTable({
                                 <TableCell className="text-slate-600 dark:text-slate-400 max-w-[200px] truncate" title={item.authorizedEquipments}>
                                     {item.authorizedEquipments}
                                 </TableCell>
-                                <TableCell className="text-slate-600 dark:text-slate-400">{item.lastTrainingDate}</TableCell>
+                                <TableCell className="text-slate-600 dark:text-slate-400">{toDisplayDate(item.lastTrainingDate)}</TableCell>
                                 <TableCell>
                                     {item.profileLink ? (
                                         <a

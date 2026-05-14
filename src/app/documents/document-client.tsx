@@ -8,6 +8,7 @@ import { Plus, FileText, FileCheck, AlertTriangle, Clock } from "lucide-react";
 import { Document } from "@/types";
 import { useSession } from "next-auth/react";
 import { hasAccess } from "@/lib/rbac";
+import { parseSafeDate } from "@/lib/date-utils";
 
 function getExpiryStats(data: Document[]) {
     const today = new Date();
@@ -19,13 +20,7 @@ function getExpiryStats(data: Document[]) {
     data.forEach(doc => {
         if (!doc.expiryDate || doc.status === "Đã lỗi thời") return;
 
-        const parts = doc.expiryDate.split('/');
-        let expiry: Date | null = null;
-        if (parts.length === 3) {
-            expiry = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-        } else if (doc.expiryDate.includes('-')) {
-            expiry = new Date(doc.expiryDate);
-        }
+        const expiry = parseSafeDate(doc.expiryDate);
 
         if (!expiry || isNaN(expiry.getTime())) return;
 

@@ -9,6 +9,7 @@ import { AlertCircle, FileWarning, Settings2, ShieldAlert } from "lucide-react";
 import { Equipment } from "@/types";
 import { useSession } from "next-auth/react";
 import { hasAccess } from "@/lib/rbac";
+import { parseSafeDate } from "@/lib/date-utils";
 
 export function EquipmentClient({ data }: { data: Equipment[] }) {
     const { data: session } = useSession();
@@ -60,13 +61,7 @@ export function EquipmentClient({ data }: { data: Equipment[] }) {
         
         if (!isBroken && !isLiquidatedRow) {
             if (item.nextCalibrationDate) {
-                let nextDate: Date | null = null;
-                const parts = item.nextCalibrationDate.split('/');
-                if (parts.length === 3) {
-                    nextDate = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-                } else if (item.nextCalibrationDate.includes('-')) {
-                    nextDate = new Date(item.nextCalibrationDate);
-                }
+                let nextDate = parseSafeDate(item.nextCalibrationDate);
 
                 if (nextDate) {
                     const diffTime = nextDate.getTime() - today.getTime();

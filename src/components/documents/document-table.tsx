@@ -8,6 +8,7 @@ import { Edit2, Trash2, FileText, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useMemo } from "react";
+import { parseSafeDate, toDisplayDate } from "@/lib/date-utils";
 
 const CATEGORIES = [
     "Tài liệu hệ thống",
@@ -25,13 +26,7 @@ function getExpiryInfo(expiryDate: string) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let expiry: Date | null = null;
-    const parts = expiryDate.split('/');
-    if (parts.length === 3) {
-        expiry = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-    } else if (expiryDate.includes('-')) {
-        expiry = new Date(expiryDate);
-    }
+    const expiry = parseSafeDate(expiryDate);
 
     if (!expiry || isNaN(expiry.getTime())) return null;
 
@@ -184,7 +179,7 @@ export function DocumentTable({
                                         <TableCell className="text-slate-600 dark:text-slate-400 text-sm">{doc.category}</TableCell>
                                         <TableCell className="text-slate-600 dark:text-slate-400 text-sm">{doc.subCategory}</TableCell>
                                         <TableCell className="text-slate-600 dark:text-slate-400">{doc.approvalLevel}</TableCell>
-                                        <TableCell className="text-slate-600 dark:text-slate-400">{doc.issueDate}</TableCell>
+                                        <TableCell className="text-slate-600 dark:text-slate-400">{toDisplayDate(doc.issueDate)}</TableCell>
                                         <TableCell>
                                             {doc.fileLink ? (
                                                 <a

@@ -9,6 +9,7 @@ import { CAPA, Personnel } from "@/types";
 import { AlertCircle, FileCheck, FileWarning, Clock } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { hasAccess } from "@/lib/rbac";
+import { parseSafeDate } from "@/lib/date-utils";
 
 export function CapaClient({ data, personnel }: { data: CAPA[], personnel: Personnel[] }) {
     const { data: session } = useSession();
@@ -65,13 +66,7 @@ export function CapaClient({ data, personnel }: { data: CAPA[], personnel: Perso
         if (baseStatusLower === "đang xử lý") {
             let isOverdue = false;
             if (item.deadline) {
-                let deadlineDate: Date | null = null;
-                const parts = item.deadline.split('/');
-                if (parts.length === 3) {
-                    deadlineDate = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-                } else if (item.deadline.includes('-')) {
-                    deadlineDate = new Date(item.deadline);
-                }
+                let deadlineDate = parseSafeDate(item.deadline);
 
                 if (deadlineDate && today > deadlineDate) {
                     isOverdue = true;

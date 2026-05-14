@@ -2,7 +2,7 @@ import { google } from 'googleapis';
 import { JWT } from 'google-auth-library';
 
 // Types for our data
-import { Contract, Personnel, Schedule, Vehicle, WorkOutline, SupplementalReport, Equipment, Consumable, CAPA, Document, ConstructionMachine, Standard } from '@/types';
+import { Contract, Personnel, Schedule, Vehicle, WorkOutline, SupplementalReport, Equipment, Consumable, CAPA, Document, ConstructionMachine, Standard, Method } from '@/types';
 import { toSheetDate, toInputDate, parseSafeDate } from './date-utils';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
@@ -1839,6 +1839,28 @@ export const googleSheetsService = {
         } catch (error) {
             console.error('Error deleting standard:', error);
             return false;
+        }
+    },
+
+    getMethods: async (): Promise<Method[]> => {
+        try {
+            if (!process.env.GOOGLE_SHEET_ID) return [];
+            const client = await getAuthClient();
+            const sheets = google.sheets({ version: 'v4', auth: client });
+            const response = await sheets.spreadsheets.values.get({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: 'Methods!A2:C',
+            });
+            const rows = response.data.values;
+            if (!rows) return [];
+            return rows.filter(row => row[0]).map(row => ({
+                id: row[0],
+                equipment: row[1] || '',
+                method: row[2] || '',
+            }));
+        } catch (error) {
+            console.error('Error fetching methods:', error);
+            return [];
         }
     },
 

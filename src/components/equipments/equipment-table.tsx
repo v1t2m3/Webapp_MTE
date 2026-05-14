@@ -13,17 +13,9 @@ import { Equipment } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Edit2, FileText, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { parseSafeDate, toDisplayDate } from "@/lib/date-utils";
 
-const parseDateStr = (dateStr: string) => {
-    if (!dateStr) return null;
-    const parts = dateStr.split('/');
-    if (parts.length === 3) {
-        return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-    } else if (dateStr.includes('-')) {
-        return new Date(dateStr);
-    }
-    return null;
-};
+
 
 const getEquipmentDerivedStatus = (item: Equipment, today: Date) => {
     let displayStatus = item.status || "Đang hoạt động";
@@ -32,8 +24,8 @@ const getEquipmentDerivedStatus = (item: Equipment, today: Date) => {
     const isBrokenRow = baseStatusLower.includes("broken") || baseStatusLower.includes("hư hỏng") || baseStatusLower.includes("đang hỏng") || baseStatusLower.includes("bị hỏng");
 
     if (!isLiquidatedRow && !isBrokenRow) {
-        const lastDate = item.lastCalibrationDate ? parseDateStr(item.lastCalibrationDate) : null;
-        const nextDate = item.nextCalibrationDate ? parseDateStr(item.nextCalibrationDate) : null;
+        const lastDate = item.lastCalibrationDate ? parseSafeDate(item.lastCalibrationDate) : null;
+        const nextDate = item.nextCalibrationDate ? parseSafeDate(item.nextCalibrationDate) : null;
 
         if (lastDate && nextDate) {
             if (today < lastDate || today > nextDate) {
@@ -149,8 +141,8 @@ export function EquipmentTable({ data, onEdit, onDelete }: { data: Equipment[], 
                                     <TableCell className="text-slate-600 dark:text-slate-400 whitespace-nowrap">
                                         {item.calibrationFrequency} {item.calibrationFrequency && !isNaN(Number(item.calibrationFrequency)) && "tháng"}
                                     </TableCell>
-                                    {/* <TableCell className="text-slate-600 dark:text-slate-400">{item.lastCalibrationDate}</TableCell> */}
-                                    <TableCell className="text-slate-600 dark:text-slate-400">{item.nextCalibrationDate}</TableCell>
+                                    {/* <TableCell className="text-slate-600 dark:text-slate-400">{toDisplayDate(item.lastCalibrationDate)}</TableCell> */}
+                                    <TableCell className="text-slate-600 dark:text-slate-400">{toDisplayDate(item.nextCalibrationDate)}</TableCell>
                                     <TableCell className="text-slate-600 dark:text-slate-400">{item.calibrationAgent}</TableCell>
                                     <TableCell>
                                         {item.calibrationReportUrl ? (

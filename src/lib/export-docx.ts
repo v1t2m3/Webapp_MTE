@@ -2,6 +2,7 @@ import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { saveAs } from 'file-saver';
 import { WorkOutline, Schedule, Contract, Personnel } from '@/types';
+import { toDisplayDate } from '@/lib/date-utils';
 
 export const exportWorkOutlineDocx = async (
     outline: WorkOutline,
@@ -62,8 +63,8 @@ export const exportWorkOutlineDocx = async (
             yyyy: String(date.getFullYear()),
             Hop_dong: hopDong || '...',
             Noi_dung_cong_viec: noiDung || '...',
-            Start_date: outline.startDate ? outline.startDate.split('-').reverse().join('/') : '...',
-            End_date: outline.endDate ? outline.endDate.split('-').reverse().join('/') : '...',
+            Start_date: outline.startDate ? toDisplayDate(outline.startDate) : '...',
+            End_date: outline.endDate ? toDisplayDate(outline.endDate) : '...',
             Bo_phan: personnelOptions[0]?.section || '', // Fallback, will be overwritten if person exists
         };
 
@@ -93,8 +94,8 @@ export const exportWorkOutlineDocx = async (
                     // Trùng lịch công tác chung thì bỏ qua ngày giờ theo format user yêu cầu
                     timeStr = '';
                 } else {
-                    const startStr = assignment.startDate ? assignment.startDate.split('-').reverse().join('/') : '';
-                    const endStr = assignment.endDate ? assignment.endDate.split('-').reverse().join('/') : '';
+                    const startStr = assignment.startDate ? toDisplayDate(assignment.startDate) : '';
+                    const endStr = assignment.endDate ? toDisplayDate(assignment.endDate) : '';
                     timeStr = `${startStr}-${endStr}`;
                 }
 
