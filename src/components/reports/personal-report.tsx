@@ -99,6 +99,18 @@ export function PersonalReport({ data, printRef }: { data: ReportData, printRef?
                             isCustomReport: false,
                             assignment: assignment
                         } as Workload;
+                    } else {
+                        // Fallback for custom outlines that don't have a linked schedule
+                        return {
+                            id: wo.id,
+                            startDate: assignment.startDate || wo.startDate,
+                            endDate: assignment.endDate || wo.endDate,
+                            unit: wo.customContractName || "Tùy chọn",
+                            content: wo.customContent || "N/A",
+                            type: "Khác",
+                            isCustomReport: false,
+                            assignment: assignment
+                        } as Workload;
                     }
                 }
                 return null; // Return null for items that don't match criteria

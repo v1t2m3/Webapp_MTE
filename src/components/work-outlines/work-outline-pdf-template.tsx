@@ -99,7 +99,7 @@ export const WorkOutlinePdfTemplate = forwardRef<HTMLDivElement, WorkOutlinePdfT
                             {/* Contract Reference if available */}
                             {workOutline.isCustom && workOutline.customContractId && (
                                 <div className="mt-2 text-justify italic" style={{ textIndent: '12.7mm' }}>
-                                    (Căn cứ {workOutline.customContractName})
+                                    (Căn cứ HĐ/TTGV số {workOutline.customContractName})
                                 </div>
                             )}
                             {!workOutline.isCustom && schedule?.contractId && (

@@ -71,11 +71,10 @@ export function DepartmentReport({ data }: { data: ReportData }) {
 
             if (involvesDepartment) {
                 const sched = schedules.find(s => s.id === wo.scheduleId);
-                if (sched) {
-                    // Collect all assignments belonging to the selected department
-                    const assignmentsForDepartment = wo.personnelAssignments?.filter(pa => personnelIds.has(pa.personnelId)) || [];
+                const assignmentsForDepartment = wo.personnelAssignments?.filter(pa => personnelIds.has(pa.personnelId)) || [];
 
-                    if (assignmentsForDepartment.length > 0) {
+                if (assignmentsForDepartment.length > 0) {
+                    if (sched) {
                         // Pass the array of assignments to the workload object so we can calculate total man-hours
                         baseWorkloads.push({
                             id: sched.id,
@@ -87,6 +86,18 @@ export function DepartmentReport({ data }: { data: ReportData }) {
                             isCustomReport: false,
                             assignments: assignmentsForDepartment // Use array instead of single assignment
                         } as unknown as Workload); // Type assertion, assuming assignments gets injected
+                    } else {
+                        // Fallback for custom outlines that don't have a linked schedule
+                        baseWorkloads.push({
+                            id: wo.id,
+                            startDate: wo.startDate,
+                            endDate: wo.endDate,
+                            unit: wo.customContractName || "Tùy chọn",
+                            content: wo.customContent || "N/A",
+                            type: "Khác",
+                            isCustomReport: false,
+                            assignments: assignmentsForDepartment
+                        } as unknown as Workload);
                     }
                 }
             }
