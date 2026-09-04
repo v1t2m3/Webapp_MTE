@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toDisplayDate, parseSafeDate } from "@/lib/date-utils";
+import { SearchableCombobox } from "@/components/ui/combobox";
 
 interface WorkOutlineFormProps {
     open: boolean;
@@ -318,6 +319,61 @@ export function WorkOutlineForm({
         if (c) contractInfo = `${c.code} - ${c.name}`;
     }
 
+    // 1. Completed Contract IDs
+    const completedContractIds = new Set(contracts.filter(c => c.status === 'Hoàn thành').map(c => c.id));
+
+    // 2. Filter Schedules: Hide schedules whose contract is completed (unless it's the currently selected schedule in edit mode)
+    const availableSchedules = schedules.filter(s => {
+        if (s.id === formData.scheduleId) return true;
+        if (s.contractId && completedContractIds.has(s.contractId)) return false;
+        return true;
+    });
+
+    // 3. Priority Sort Schedules: Today/Future first (nearest upcoming date), then Past (newest past date)
+    const todayMs = new Date().setHours(0, 0, 0, 0);
+    const sortedSchedules = [...availableSchedules].sort((a, b) => {
+        const timeA = parseSafeDate(a.startDate)?.getTime() || 0;
+        const timeB = parseSafeDate(b.startDate)?.getTime() || 0;
+        const isFutureA = timeA >= todayMs;
+        const isFutureB = timeB >= todayMs;
+
+        if (isFutureA && !isFutureB) return -1;
+        if (!isFutureA && isFutureB) return 1;
+
+        if (isFutureA && isFutureB) {
+            return timeA - timeB; // Upcoming nearest first
+        }
+        return timeB - timeA; // Recent past first
+    });
+
+    const scheduleOptions = sortedSchedules.map(s => {
+        const c = contracts.find(con => con.id === s.contractId);
+        const displayDate = toDisplayDate(s.startDate);
+        const timeA = parseSafeDate(s.startDate)?.getTime() || 0;
+        const isFuture = timeA >= todayMs;
+        return {
+            value: s.id,
+            label: `${s.target} - ${s.deviceName}`,
+            subtitle: `${s.unit} | ${displayDate}${s.startTime ? ` (${s.startTime})` : ""} | ND: ${s.content}${c ? ` | HĐ: ${c.code}` : ""}`,
+            searchValue: `${s.target} ${s.deviceName} ${s.unit} ${s.content} ${displayDate} ${c?.code || ""} ${c?.name || ""}`,
+            badge: isFuture ? "Sắp tới" : undefined,
+        };
+    });
+
+    // 4. Custom Contracts Options (filtering completed contracts except currently selected)
+    const availableCustomContracts = contracts.filter(c => c.status !== 'Hoàn thành' || c.id === formData.customContractId);
+    const customContractOptions = [
+        { value: "none", label: "-- Không chọn / Bỏ qua --" },
+        ...availableCustomContracts.map(c => ({
+            value: c.id,
+            label: `${c.code} - ${c.name}`,
+            subtitle: c.investorRep ? `Đại diện CĐT: ${c.investorRep}` : undefined,
+            searchValue: `${c.code} ${c.name} ${c.investorRep || ""}`,
+            badge: c.status === 'Hoàn thành' ? 'Hoàn thành' : undefined,
+        })),
+        { value: "other", label: "-- Nhập tay --" },
+    ];
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-md">
@@ -348,24 +404,14 @@ export function WorkOutlineForm({
                         {!formData.isCustom ? (
                             <div className="flex flex-col gap-2 mt-1">
                                 <Label className="font-medium text-gray-700">Lịch công tác *</Label>
-                                <Select value={formData.scheduleId} onValueChange={handleScheduleChange} required={!formData.isCustom}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="-- Chọn Lịch công tác --" />
-                                    </SelectTrigger>
-                                    <SelectContent className="max-h-[300px]">
-                                        {[...schedules]
-                                            .sort((a, b) => {
-                                                const dateA = parseSafeDate(a.startDate)?.getTime() || 0;
-                                                const dateB = parseSafeDate(b.startDate)?.getTime() || 0;
-                                                return dateB - dateA;
-                                            })
-                                            .map(s => (
-                                                <SelectItem key={s.id} value={s.id}>
-                                                    <span className="font-semibold">{s.target}</span> - {s.deviceName} ({toDisplayDate(s.startDate)})
-                                                </SelectItem>
-                                            ))}
-                                    </SelectContent>
-                                </Select>
+                                <SearchableCombobox
+                                    options={scheduleOptions}
+                                    value={formData.scheduleId}
+                                    onChange={(val) => handleScheduleChange(val)}
+                                    placeholder="-- Chọn Lịch công tác --"
+                                    searchPlaceholder="Gõ từ khóa tìm kiếm (Tên ĐD/TBA, đối tượng, đơn vị, ngày)..."
+                                    emptyText="Không tìm thấy lịch công tác phù hợp"
+                                />
                                 {selectedSchedule && (
                                     <div className="mt-2 text-sm text-gray-700 bg-white p-3 rounded-lg border">
                                         <p><strong>Nội dung:</strong> {selectedSchedule.content}</p>
@@ -377,24 +423,15 @@ export function WorkOutlineForm({
                             <div className="flex flex-col gap-4 mt-1">
                                 <div className="flex flex-col gap-2">
                                     <Label className="font-medium text-gray-700">Hợp đồng</Label>
-                                    <Select
+                                    <SearchableCombobox
+                                        options={customContractOptions}
                                         value={formData.customContractId || (formData.customContractName === "" ? "none" : (formData.customContractName ? "other" : ""))}
-                                        onValueChange={handleContractChange}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="-- Chọn Hợp đồng (Tuỳ chọn) --" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="none">-- Không có / Bỏ qua --</SelectItem>
-                                            {contracts.map(c => (
-                                                <SelectItem key={c.id} value={c.id}>
-                                                    {c.code} - {c.name}
-                                                </SelectItem>
-                                            ))}
-                                            <SelectItem value="other">-- Nhập tay --</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    {!formData.customContractId && formData.customContractName !== undefined && (
+                                        onChange={(val) => handleContractChange(val)}
+                                        placeholder="-- Chọn Hợp đồng (Tuỳ chọn) --"
+                                        searchPlaceholder="Gõ tìm mã HĐ, tên HĐ hoặc CĐT..."
+                                        emptyText="Không tìm thấy hợp đồng"
+                                    />
+                                    {(!formData.customContractId && (formData.customContractName !== undefined && formData.customContractName !== "")) && (
                                         <Input
                                             placeholder="Nhập tên hợp đồng / số hợp đồng..."
                                             value={formData.customContractName}

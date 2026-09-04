@@ -5,12 +5,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Contract } from "@/types";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { toDisplayDate, parseSafeDate } from "@/lib/date-utils";
 
 interface ContractFormProps {
     open: boolean;
@@ -28,13 +29,17 @@ export function ContractForm({ open, onOpenChange, initialData, onSubmit }: Cont
         endDate: "",
         investorRep: "",
         operationsManagementUnit: "",
+        status: "Đang thực hiện",
     });
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (open) {
             if (initialData) {
-                setFormData(initialData);
+                setFormData({
+                    ...initialData,
+                    status: initialData.status || "Đang thực hiện",
+                });
             } else {
                 setFormData({
                     code: "",
@@ -44,15 +49,11 @@ export function ContractForm({ open, onOpenChange, initialData, onSubmit }: Cont
                     endDate: "",
                     investorRep: "",
                     operationsManagementUnit: "",
+                    status: "Đang thực hiện",
                 });
             }
         }
     }, [open, initialData]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,22 +70,22 @@ export function ContractForm({ open, onOpenChange, initialData, onSubmit }: Cont
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                    <DialogTitle>{initialData ? "Sửa hợp đồng" : "Thêm hợp đồng mới"}</DialogTitle>
+                    <DialogTitle>{initialData ? "Sửa Hợp Đồng" : "Thêm Hợp Đồng Mới"}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="code" className="text-right">Mã số HĐ</Label>
-                        <Input id="code" name="code" value={formData.code || ""} onChange={handleChange} className="col-span-3" required placeholder="VD: HĐ-2024/01" />
+                        <Label htmlFor="code" className="text-right">Mã số HĐ *</Label>
+                        <Input id="code" name="code" value={formData.code || ""} onChange={(e) => setFormData({ ...formData, code: e.target.value })} className="col-span-3" required placeholder="VD: HĐ-2024/01" />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="name" className="text-right">Tên HĐ</Label>
-                        <Input id="name" name="name" value={formData.name || ""} onChange={handleChange} className="col-span-3" required placeholder="VD: Bảo trì hệ thống..." />
+                        <Label htmlFor="name" className="text-right">Tên hợp đồng *</Label>
+                        <Input id="name" name="name" value={formData.name || ""} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="col-span-3" required placeholder="VD: Bảo trì hệ thống..." />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="value" className="text-right">Giá trị</Label>
-                        <Input id="value" name="value" value={formData.value || ""} onChange={handleChange} className="col-span-3" required placeholder="VD: 500.000.000 VNĐ" />
+                        <Label htmlFor="value" className="text-right">Giá trị HĐ *</Label>
+                        <Input id="value" name="value" value={formData.value || ""} onChange={(e) => setFormData({ ...formData, value: e.target.value })} className="col-span-3" required placeholder="VD: 500.000.000 VNĐ" />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="startDate" className="text-right">Ngày bắt đầu</Label>
@@ -99,7 +100,7 @@ export function ContractForm({ open, onOpenChange, initialData, onSubmit }: Cont
                                         )}
                                     >
                                         {formData.startDate ? (
-                                            format(new Date(formData.startDate), "dd/MM/yyyy")
+                                            toDisplayDate(formData.startDate)
                                         ) : (
                                             <span>Chọn ngày</span>
                                         )}
@@ -109,7 +110,7 @@ export function ContractForm({ open, onOpenChange, initialData, onSubmit }: Cont
                                 <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
                                         mode="single"
-                                        selected={formData.startDate ? new Date(formData.startDate) : undefined}
+                                        selected={parseSafeDate(formData.startDate) || undefined}
                                         onSelect={(date) => {
                                             if (date) {
                                                 const year = date.getFullYear();
@@ -139,7 +140,7 @@ export function ContractForm({ open, onOpenChange, initialData, onSubmit }: Cont
                                         )}
                                     >
                                         {formData.endDate ? (
-                                            format(new Date(formData.endDate), "dd/MM/yyyy")
+                                            toDisplayDate(formData.endDate)
                                         ) : (
                                             <span>Chọn ngày</span>
                                         )}
@@ -149,7 +150,7 @@ export function ContractForm({ open, onOpenChange, initialData, onSubmit }: Cont
                                 <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
                                         mode="single"
-                                        selected={formData.endDate ? new Date(formData.endDate) : undefined}
+                                        selected={parseSafeDate(formData.endDate) || undefined}
                                         onSelect={(date) => {
                                             if (date) {
                                                 const year = date.getFullYear();
@@ -168,11 +169,28 @@ export function ContractForm({ open, onOpenChange, initialData, onSubmit }: Cont
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="investorRep" className="text-right">Đại diện CĐT</Label>
-                        <Input id="investorRep" name="investorRep" value={formData.investorRep || ""} onChange={handleChange} className="col-span-3" placeholder="VD: Nguyễn Văn A" />
+                        <Input id="investorRep" name="investorRep" value={formData.investorRep || ""} onChange={(e) => setFormData(prev => ({ ...prev, investorRep: e.target.value }))} className="col-span-3" placeholder="VD: Nguyễn Văn A" />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="operationsManagementUnit" className="text-right">ĐV QLVH</Label>
-                        <Input id="operationsManagementUnit" name="operationsManagementUnit" value={formData.operationsManagementUnit || ""} onChange={handleChange} className="col-span-3" placeholder="VD: Điện lực Hải Châu" />
+                        <Input id="operationsManagementUnit" name="operationsManagementUnit" value={formData.operationsManagementUnit || ""} onChange={(e) => setFormData(prev => ({ ...prev, operationsManagementUnit: e.target.value }))} className="col-span-3" placeholder="VD: Điện lực Hải Châu" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="status" className="text-right font-semibold">Trạng thái *</Label>
+                        <div className="col-span-3">
+                            <Select
+                                value={formData.status || "Đang thực hiện"}
+                                onValueChange={(val) => setFormData(prev => ({ ...prev, status: val as 'Đang thực hiện' | 'Hoàn thành' }))}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Chọn trạng thái" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Đang thực hiện">Đang thực hiện</SelectItem>
+                                    <SelectItem value="Hoàn thành">Hoàn thành</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button type="submit" disabled={loading}>

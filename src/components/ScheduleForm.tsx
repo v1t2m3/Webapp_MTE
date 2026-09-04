@@ -16,6 +16,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toDisplayDate, parseSafeDate } from "@/lib/date-utils";
+import { SearchableCombobox } from "@/components/ui/combobox";
 
 interface ScheduleFormProps {
     open: boolean;
@@ -69,8 +70,21 @@ export function ScheduleForm({ open, onOpenChange, initialData, onSubmit, contra
     useEffect(() => {
         if (open) {
             if (initialData) {
-                setFormData({ ...initialData });
-                const unitMatch = DEFAULT_UNITS.includes(initialData.unit);
+                setFormData({
+                    ...initialData,
+                    startDate: initialData.startDate || "",
+                    endDate: initialData.endDate || "",
+                    startTime: initialData.startTime || "08:00",
+                    endTime: initialData.endTime || "17:00",
+                    unit: initialData.unit || "",
+                    deviceName: initialData.deviceName || "",
+                    target: initialData.target || "",
+                    content: initialData.content || "",
+                    type: initialData.type || "Cắt điện",
+                    voltage: initialData.voltage || "",
+                    contractId: initialData.contractId || "",
+                });
+                const unitMatch = DEFAULT_UNITS.includes(initialData.unit || "");
                 if (initialData.unit && !unitMatch) {
                     setIsCustomUnit(true);
                     setCustomUnitStr(initialData.unit);
@@ -173,6 +187,15 @@ export function ScheduleForm({ open, onOpenChange, initialData, onSubmit, contra
 
     const isEdit = !!initialData;
     const currentVoltages = formData.voltage ? formData.voltage.split(" | ").map(v => v.trim()) : [];
+
+    const availableContracts = contracts.filter(c => c.status !== 'Hoàn thành' || c.id === formData.contractId);
+    const contractOptions = availableContracts.map(c => ({
+        value: c.id,
+        label: `${c.code} - ${c.name}`,
+        searchValue: `${c.code} ${c.name} ${c.investorRep || ""}`,
+        subtitle: c.investorRep ? `Đại diện CĐT: ${c.investorRep}` : undefined,
+        badge: c.status === 'Hoàn thành' ? 'Hoàn thành' : undefined,
+    }));
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -349,22 +372,14 @@ export function ScheduleForm({ open, onOpenChange, initialData, onSubmit, contra
                         </div>
                         <div className="flex flex-col gap-2">
                             <Label htmlFor="contractId" className="font-semibold text-gray-700">Hợp đồng (Tùy chọn)</Label>
-                            <Select
+                            <SearchableCombobox
+                                options={contractOptions}
                                 value={formData.contractId}
-                                onValueChange={(val) => setFormData({ ...formData, contractId: val === "none" ? "" : val })}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="-- Chọn Hợp đồng liên quan --" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none" className="text-gray-500 italic">-- Không chọn --</SelectItem>
-                                    {contracts.map(c => (
-                                        <SelectItem key={c.id} value={c.id}>
-                                            <span className="font-medium text-blue-800">{c.code}</span> - {c.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                onChange={(val) => setFormData({ ...formData, contractId: val })}
+                                placeholder="-- Chọn Hợp đồng liên quan --"
+                                searchPlaceholder="Gõ mã HĐ, tên HĐ hoặc CĐT..."
+                                emptyText="Không tìm thấy hợp đồng"
+                            />
                         </div>
                         <div className="flex flex-col gap-2">
                             <Label htmlFor="content" className="font-semibold text-gray-700">Nội dung công tác *</Label>

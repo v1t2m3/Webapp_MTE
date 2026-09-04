@@ -14,6 +14,8 @@ import { Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toDisplayDate } from "@/lib/date-utils";
 
+import { cn } from "@/lib/utils";
+
 interface ContractTableProps {
     data: Contract[];
     onEdit?: (contract: Contract) => void;
@@ -34,61 +36,77 @@ export function ContractTable({ data, onEdit, onDelete }: ContractTableProps) {
                         <TableHead>Thời hạn</TableHead>
                         <TableHead>Đại diện CĐT</TableHead>
                         <TableHead>ĐV QLVH</TableHead>
+                        <TableHead>Trạng thái</TableHead>
                         <TableHead className="text-right">Thao tác</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {data.map((item, index) => (
-                        <TableRow
-                            key={item.id}
-                            className="hover:bg-muted/50 transition-colors animate-slide-up"
-                            style={{ animationDelay: `${index * 0.05}s` }}
-                        >
-                            {/* <TableCell className="font-medium">{item.id}</TableCell> */}
-                            <TableCell>
-                                <Badge variant="outline" className="font-mono bg-[#4361ee]/10 text-[#4361ee] border-[#4361ee]/20 whitespace-nowrap">
-                                    {item.code}
-                                </Badge>
-                            </TableCell>
-                            <TableCell className="font-semibold text-primary" title={item.name}>{item.name}</TableCell>
-                            <TableCell className="font-mono whitespace-nowrap">{item.value}</TableCell>
-                            <TableCell className="whitespace-nowrap">
-                                <div className="flex flex-col text-xs text-muted-foreground">
-                                    <span>BĐ: {toDisplayDate(item.startDate)}</span>
-                                    <span>KT: {toDisplayDate(item.endDate)}</span>
-                                </div>
-                            </TableCell>
-                            <TableCell>{item.investorRep}</TableCell>
-                            <TableCell>{item.operationsManagementUnit || ''}</TableCell>
-                            <TableCell className="text-right">
-                                <div className="flex justify-end gap-2">
-                                    {onEdit && (
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-[#4361ee] hover:text-[#3a0ca3] hover:bg-[#4361ee]/10"
-                                            onClick={() => onEdit(item)}
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
-                                    )}
-                                    {onDelete && (
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-[#f72585] hover:text-[#b5179e] hover:bg-[#f72585]/10"
-                                            onClick={() => onDelete(item.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    )}
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    ))}
+                    {data.map((item, index) => {
+                        const isCompleted = item.status === 'Hoàn thành';
+                        return (
+                            <TableRow
+                                key={item.id}
+                                className="hover:bg-muted/50 transition-colors animate-slide-up"
+                                style={{ animationDelay: `${index * 0.05}s` }}
+                            >
+                                <TableCell>
+                                    <Badge variant="outline" className="font-mono bg-[#4361ee]/10 text-[#4361ee] border-[#4361ee]/20 whitespace-nowrap">
+                                        {item.code}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="font-semibold text-primary" title={item.name}>{item.name}</TableCell>
+                                <TableCell className="font-mono whitespace-nowrap">{item.value}</TableCell>
+                                <TableCell className="whitespace-nowrap">
+                                    <div className="flex flex-col text-xs text-muted-foreground">
+                                        <span>BĐ: {toDisplayDate(item.startDate)}</span>
+                                        <span>KT: {toDisplayDate(item.endDate)}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>{item.investorRep}</TableCell>
+                                <TableCell>{item.operationsManagementUnit || ''}</TableCell>
+                                <TableCell>
+                                    <Badge
+                                        variant="outline"
+                                        className={cn(
+                                            "whitespace-nowrap px-2.5 py-0.5 font-medium border text-xs",
+                                            isCompleted
+                                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                                : "bg-blue-50 text-blue-700 border-blue-200"
+                                        )}
+                                    >
+                                        {item.status || "Đang thực hiện"}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <div className="flex justify-end gap-2">
+                                        {onEdit && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-[#4361ee] hover:text-[#3a0ca3] hover:bg-[#4361ee]/10"
+                                                onClick={() => onEdit(item)}
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                        {onDelete && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-[#f72585] hover:text-[#b5179e] hover:bg-[#f72585]/10"
+                                                onClick={() => onDelete(item.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        );
+                    })}
                     {data.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
+                            <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
                                 Chưa có dữ liệu hợp đồng.
                             </TableCell>
                         </TableRow>

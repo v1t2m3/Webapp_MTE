@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Vehicle } from "@/types";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { toDisplayDate, parseSafeDate } from "@/lib/date-utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -117,7 +117,7 @@ export function VehicleForm({ open, onOpenChange, initialData, onSubmit }: Vehic
                                         )}
                                     >
                                         {formData.inspectionExpiry ? (
-                                            format(new Date(formData.inspectionExpiry), "dd/MM/yyyy")
+                                            toDisplayDate(formData.inspectionExpiry)
                                         ) : (
                                             <span>Chọn ngày</span>
                                         )}
@@ -127,7 +127,7 @@ export function VehicleForm({ open, onOpenChange, initialData, onSubmit }: Vehic
                                 <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
                                         mode="single"
-                                        selected={formData.inspectionExpiry ? new Date(formData.inspectionExpiry) : undefined}
+                                        selected={parseSafeDate(formData.inspectionExpiry) || undefined}
                                         onSelect={(date) => {
                                             if (date) {
                                                 const year = date.getFullYear();
@@ -157,7 +157,7 @@ export function VehicleForm({ open, onOpenChange, initialData, onSubmit }: Vehic
                                         )}
                                     >
                                         {formData.insuranceExpiry ? (
-                                            format(new Date(formData.insuranceExpiry), "dd/MM/yyyy")
+                                            toDisplayDate(formData.insuranceExpiry)
                                         ) : (
                                             <span>Chọn ngày</span>
                                         )}
@@ -167,7 +167,7 @@ export function VehicleForm({ open, onOpenChange, initialData, onSubmit }: Vehic
                                 <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
                                         mode="single"
-                                        selected={formData.insuranceExpiry ? new Date(formData.insuranceExpiry) : undefined}
+                                        selected={parseSafeDate(formData.insuranceExpiry) || undefined}
                                         onSelect={(date) => {
                                             if (date) {
                                                 const year = date.getFullYear();

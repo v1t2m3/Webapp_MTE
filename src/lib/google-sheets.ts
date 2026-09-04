@@ -2,7 +2,7 @@ import { google } from 'googleapis';
 import { JWT } from 'google-auth-library';
 
 // Types for our data
-import { Contract, Personnel, Schedule, Vehicle, WorkOutline, SupplementalReport, Equipment, Consumable, CAPA, Document, ConstructionMachine, Standard, Method } from '@/types';
+import { Contract, ContractStatus, Personnel, Schedule, Vehicle, WorkOutline, SupplementalReport, Equipment, Consumable, CAPA, Document, ConstructionMachine, Standard, Method } from '@/types';
 import { toSheetDate, toInputDate, parseSafeDate } from './date-utils';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
@@ -358,7 +358,7 @@ export const googleSheetsService = {
 
             const response = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'HopDong!A2:H',
+                range: 'HopDong!A2:I',
             });
 
             const rows = response.data.values;
@@ -375,6 +375,7 @@ export const googleSheetsService = {
                     endDate: toSheetDate(row[5]),
                     investorRep: row[6],
                     operationsManagementUnit: row[7] || '',
+                    status: (row[8] as ContractStatus) || 'Đang thực hiện',
                 }));
         } catch (error) {
             console.error('Error fetching contracts:', error);
@@ -420,12 +421,13 @@ export const googleSheetsService = {
                     toSheetDate(contract.endDate),
                     contract.investorRep,
                     contract.operationsManagementUnit || '',
+                    contract.status || 'Đang thực hiện',
                 ],
             ];
 
             await sheets.spreadsheets.values.append({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'HopDong!A:H',
+                range: 'HopDong!A:I',
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -456,12 +458,13 @@ export const googleSheetsService = {
                     toSheetDate(contract.endDate),
                     contract.investorRep,
                     contract.operationsManagementUnit || '',
+                    contract.status || 'Đang thực hiện',
                 ],
             ];
 
             await sheets.spreadsheets.values.update({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: `HopDong!A${rowIndex}:H${rowIndex}`,
+                range: `HopDong!A${rowIndex}:I${rowIndex}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -664,6 +667,10 @@ export const googleSheetsService = {
             const client = await getAuthClient();
             const sheets = google.sheets({ version: 'v4', auth: client });
 
+            // Fetch contracts once to map investorRep
+            const contracts = await googleSheetsService.getContracts();
+            const contractMap = new Map(contracts.map(c => [c.id, c.investorRep]));
+
             const response = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
                 range: 'DeCuongCongTac!A2:L',
@@ -674,28 +681,34 @@ export const googleSheetsService = {
 
             return rows
                 .filter(row => row[0])
-                .map((row) => ({
-                    id: row[0] || '',
-                    scheduleId: row[1] || '',
-                    startDate: toSheetDate(row[2]),
-                    startTime: row[3] || '',
-                    endDate: toSheetDate(row[4]),
-                    endTime: row[5] || '',
-                    personnelAssignments: row[6] ? JSON.parse(row[6]) : [],
-                    vehicleAssignments: (row[7] ? JSON.parse(row[7]) : []).map((v: any) =>
-                        typeof v === 'string' ? {
-                            vehicleId: v,
-                            startDate: row[2] || '',
-                            startTime: row[3] || '',
-                            endDate: row[4] || '',
-                            endTime: row[5] || ''
-                        } : v
-                    ),
-                    isCustom: row[8] === 'TRUE' || row[8] === 'true',
-                    customContractId: row[9] || '',
-                    customContractName: row[10] || '',
-                    customContent: row[11] || '',
-                }));
+                .map((row) => {
+                    const customContractId = row[9] || '';
+                    const investorRep = customContractId ? (contractMap.get(customContractId) || '') : '';
+
+                    return {
+                        id: row[0] || '',
+                        scheduleId: row[1] || '',
+                        startDate: toSheetDate(row[2]),
+                        startTime: row[3] || '',
+                        endDate: toSheetDate(row[4]),
+                        endTime: row[5] || '',
+                        personnelAssignments: row[6] ? JSON.parse(row[6]) : [],
+                        vehicleAssignments: (row[7] ? JSON.parse(row[7]) : []).map((v: any) =>
+                            typeof v === 'string' ? {
+                                vehicleId: v,
+                                startDate: row[2] || '',
+                                startTime: row[3] || '',
+                                endDate: row[4] || '',
+                                endTime: row[5] || ''
+                            } : v
+                        ),
+                        isCustom: row[8] === 'TRUE' || row[8] === 'true',
+                        customContractId,
+                        customContractName: row[10] || '',
+                        customContent: row[11] || '',
+                        investorRep,
+                    };
+                });
         } catch (error) {
             console.error('Error fetching work outlines:', error);
             return [];

@@ -134,6 +134,8 @@ export interface Method {
     method: string;
 }
 
+export type ContractStatus = 'Đang thực hiện' | 'Hoàn thành';
+
 export interface Contract {
     id: string;
     code: string; // Mã số hợp đồng
@@ -143,6 +145,7 @@ export interface Contract {
     endDate: string; // Thời hạn kết thúc
     investorRep: string; // Đại diện chủ đầu tư
     operationsManagementUnit?: string; // ĐV QLVH
+    status?: ContractStatus; // Trạng thái hợp đồng
 }
 
 export interface Schedule {
@@ -201,6 +204,7 @@ export interface WorkOutline {
     endTime: string;
     personnelAssignments: PersonnelAssignment[]; // JSON stringified in Sheet
     vehicleAssignments: VehicleAssignment[]; // JSON stringified in Sheet
+    investorRep?: string;
 }
 
 export interface SupplementalReport {

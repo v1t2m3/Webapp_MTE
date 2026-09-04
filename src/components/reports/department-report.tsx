@@ -92,7 +92,7 @@ export function DepartmentReport({ data }: { data: ReportData }) {
                             id: wo.id,
                             startDate: wo.startDate,
                             endDate: wo.endDate,
-                            unit: wo.customContractName || "Tùy chọn",
+                            unit: wo.investorRep || "Tùy chọn",
                             content: wo.customContent || "N/A",
                             type: "Khác",
                             isCustomReport: false,

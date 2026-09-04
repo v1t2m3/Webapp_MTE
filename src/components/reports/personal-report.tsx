@@ -105,7 +105,7 @@ export function PersonalReport({ data, printRef }: { data: ReportData, printRef?
                             id: wo.id,
                             startDate: assignment.startDate || wo.startDate,
                             endDate: assignment.endDate || wo.endDate,
-                            unit: wo.customContractName || "Tùy chọn",
+                            unit: wo.investorRep || "Tùy chọn",
                             content: wo.customContent || "N/A",
                             type: "Khác",
                             isCustomReport: false,
