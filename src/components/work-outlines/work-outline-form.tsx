@@ -351,10 +351,13 @@ export function WorkOutlineForm({
         const displayDate = toDisplayDate(s.startDate);
         const timeA = parseSafeDate(s.startDate)?.getTime() || 0;
         const isFuture = timeA >= todayMs;
+        const truncatedContent = s.content && s.content.length > 55 ? `${s.content.substring(0, 55)}...` : (s.content || "");
+        const subtitle = `${displayDate}${s.startTime ? ` (${s.startTime})` : ""}${truncatedContent ? ` | ND: ${truncatedContent}` : ""}`;
+
         return {
             value: s.id,
             label: `${s.target} - ${s.deviceName}`,
-            subtitle: `${s.unit} | ${displayDate}${s.startTime ? ` (${s.startTime})` : ""} | ND: ${s.content}${c ? ` | HĐ: ${c.code}` : ""}`,
+            subtitle,
             searchValue: `${s.target} ${s.deviceName} ${s.unit} ${s.content} ${displayDate} ${c?.code || ""} ${c?.name || ""}`,
             badge: isFuture ? "Sắp tới" : undefined,
         };

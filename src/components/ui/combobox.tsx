@@ -178,7 +178,7 @@ export function SearchableCombobox({
                                             )}
                                         </div>
                                         {opt.subtitle && (
-                                            <span className="text-xs text-gray-500 truncate">
+                                            <span className="text-xs text-gray-500 truncate" title={opt.subtitle}>
                                                 {opt.subtitle}
                                             </span>
                                         )}
