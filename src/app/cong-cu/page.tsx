@@ -1,17 +1,67 @@
 'use client';
 
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Smartphone, Globe, Apple, MonitorSmartphone, ArrowRight, Share, PlusSquare } from 'lucide-react';
+import { Download, Smartphone, Globe, Apple, MonitorSmartphone, ArrowRight, Share, PlusSquare, UploadCloud, Sparkles, Calendar, HardDrive, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from "@/components/ui/badge";
+import { ApkRelease } from "@/types";
+import { ApkUploadDialog } from "@/components/apk/ApkUploadDialog";
+import { ApkDownloadDialog } from "@/components/apk/ApkDownloadDialog";
+import { toDisplayDate } from "@/lib/date-utils";
 
 export default function AppDownloadPage() {
+    const { data: session } = useSession();
+    const isAdmin = session?.user?.role === "Admin";
+
+    const [releases, setReleases] = useState<ApkRelease[]>([]);
+    const [loadingReleases, setLoadingReleases] = useState(true);
+
+    const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+    const [downloadDialogOpen, setDownloadDialogOpen] = useState(false);
+
+    const fetchReleases = async () => {
+        try {
+            const res = await fetch("/api/apk-releases");
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    setReleases(data);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to fetch APK releases:", error);
+        } finally {
+            setLoadingReleases(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchReleases();
+    }, []);
+
+    const latestRelease = releases.length > 0 ? releases[0] : null;
+
     return (
         <div className="space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto pb-12">
-            <div className="text-center space-y-4 flex flex-col items-center">
-                <div className="relative w-36 h-36 mb-2 drop-shadow-xl overflow-hidden rounded-[1.8rem] border-1  border-slate-100/10 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+            {/* Header Section */}
+            <div className="text-center space-y-4 flex flex-col items-center relative">
+                {isAdmin && (
+                    <div className="md:absolute md:top-0 md:right-0 mb-2">
+                        <Button
+                            onClick={() => setUploadDialogOpen(true)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md transition-all flex items-center gap-2"
+                        >
+                            <UploadCloud className="h-4 w-4" />
+                            Đăng bản phát hành mới (APK)
+                        </Button>
+                    </div>
+                )}
+
+                <div className="relative w-36 h-36 mb-2 drop-shadow-xl overflow-hidden rounded-[1.8rem] border-1 border-slate-100/10 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
                     <Image src="/images/cong-cu/Cal_notes_icon.png" alt="MTE-LAB Cal-Notes Icon" fill className="object-cover" />
                 </div>
                 <h1 className="text-4xl p-2 md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
@@ -22,7 +72,47 @@ export default function AppDownloadPage() {
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+            {/* Latest Release Description Card (Nổi bật bản phát hành mới nhất) */}
+            {latestRelease && (
+                <div className="bg-gradient-to-br from-green-500/10 via-blue-500/5 to-purple-500/10 rounded-[1.8rem] p-6 border-2 border-green-500/30 shadow-lg relative overflow-hidden backdrop-blur-sm">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-green-500/20 pb-4">
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <Badge className="bg-green-600 text-white text-base px-3 py-1 font-bold">
+                                {latestRelease.version}
+                            </Badge>
+                            <Badge className="bg-amber-500 text-white font-semibold text-xs flex items-center gap-1">
+                                <Sparkles className="w-3.5 h-3.5" />
+                                Bản phát hành mới nhất (Khuyến nghị)
+                            </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4 text-blue-600" />
+                                Ngày phát hành: {toDisplayDate(latestRelease.releaseDate)}
+                            </span>
+                            {latestRelease.fileSize && (
+                                <span className="flex items-center gap-1">
+                                    <HardDrive className="w-4 h-4 text-green-600" />
+                                    Dung lượng: {latestRelease.fileSize}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="mt-4 space-y-2">
+                        <h4 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2 text-base">
+                            <CheckCircle2 className="w-5 h-5 text-green-600" />
+                            Tính năng cập nhật & vá lỗi mới nhất:
+                        </h4>
+                        <div className="text-sm text-gray-700 dark:text-gray-300 bg-white/70 dark:bg-slate-900/70 p-4 rounded-xl border border-gray-200/60 whitespace-pre-line leading-relaxed">
+                            {latestRelease.description}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Android & iOS Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
                 {/* Android Card */}
                 <Card className="relative overflow-hidden border-t-4 border-t-green-500 rounded-[1.8rem] shadow-lg hover:shadow-xl transition-all duration-300 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
                     <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -31,6 +121,11 @@ export default function AppDownloadPage() {
                     <CardHeader>
                         <div className="flex items-center gap-2 mb-2">
                             <Badge className="bg-green-500 hover:bg-green-600 text-white">Android</Badge>
+                            {latestRelease && (
+                                <Badge variant="outline" className="border-green-200 text-green-700 font-mono text-xs">
+                                    Bản mới nhất: {latestRelease.version}
+                                </Badge>
+                            )}
                         </div>
                         <CardTitle className="text-2xl font-bold flex items-center gap-2">
                             Tải App Android (APK)
@@ -53,17 +148,19 @@ export default function AppDownloadPage() {
                         </div>
                     </CardContent>
                     <CardFooter className="relative z-10 pt-4">
-                        <Button asChild size="lg" className="w-full h-14 text-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg transition-all group">
-                            <Link href="/apk/MTELAB_CalNotes.apk" target="_blank" download>
-                                <Download className="mr-2 h-5 w-5 group-hover:-translate-y-1 transition-transform" />
-                                Tải file APK (Android)
-                            </Link>
+                        <Button
+                            size="lg"
+                            onClick={() => setDownloadDialogOpen(true)}
+                            className="w-full h-14 text-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-md hover:shadow-lg transition-all group"
+                        >
+                            <Download className="mr-2 h-5 w-5 group-hover:-translate-y-1 transition-transform" />
+                            Tải file APK (Android)
                         </Button>
                     </CardFooter>
                 </Card>
 
                 {/* iOS & Desktop Card */}
-                <Card className="relative overflow-hidden border-t-4 border-t-blue-500 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+                <Card className="relative overflow-hidden border-t-4 border-t-blue-500 shadow-lg hover:shadow-xl transition-all duration-300 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm rounded-[1.8rem]">
                     <div className="absolute top-0 right-0 p-4 opacity-10">
                         <Globe className="w-32 h-32" />
                     </div>
@@ -205,6 +302,23 @@ export default function AppDownloadPage() {
                     *Giao diện trực quan, đồng bộ và chuyên nghiệp trên mọi nền tảng. Thiết kế dành riêng cho kỹ sư thí nghiệm điện.
                 </p>
             </div>
+
+            {/* Dialogs */}
+            {isAdmin && (
+                <ApkUploadDialog
+                    open={uploadDialogOpen}
+                    onOpenChange={setUploadDialogOpen}
+                    onSuccess={(updatedReleases) => {
+                        setReleases(updatedReleases);
+                    }}
+                />
+            )}
+
+            <ApkDownloadDialog
+                open={downloadDialogOpen}
+                onOpenChange={setDownloadDialogOpen}
+                releases={releases}
+            />
         </div>
     );
 }

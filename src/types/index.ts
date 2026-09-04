@@ -260,3 +260,14 @@ export interface User {
     avatarUrl?: string;
     isActive: boolean;
 }
+
+export interface ApkRelease {
+    id: string;
+    version: string;
+    releaseDate: string;
+    fileName: string;
+    fileUrl: string;
+    fileSize?: string;
+    description: string;
+    createdAt: string;
+}
