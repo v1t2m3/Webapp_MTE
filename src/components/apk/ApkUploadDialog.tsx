@@ -65,7 +65,16 @@ export function ApkUploadDialog({ open, onOpenChange, onSuccess }: ApkUploadDial
                 body: formData,
             });
 
-            const data = await res.json();
+            let data: any = {};
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                data = await res.json();
+            } else {
+                if (res.status === 413) {
+                    throw new Error("Dung lượng file APK quá lớn (vượt quá giới hạn máy chủ cho phép).");
+                }
+                throw new Error(`Lỗi máy chủ (Mã HTTP ${res.status}). Vui lòng thử lại.`);
+            }
 
             if (!res.ok) {
                 throw new Error(data.error || "Lỗi khi upload file APK");
