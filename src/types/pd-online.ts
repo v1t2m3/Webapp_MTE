@@ -27,7 +27,10 @@ export interface Transformer110kV {
     oltcType: string; // "VACCUM", "OIL", "MR"
     oltcManufacturer: string; // "MR Reinhausen", "ABB", "EEMC"
     status: "NORMAL" | "WATCH" | "CRITICAL";
-    lastTestedDate?: string;
+    lastTestedDate?: string; // Lần PD online gần nhất (dd/mm/yyyy)
+    pdTestType?: "Định kỳ" | "Lần đầu" | "Sửa chữa" | "Sự cố"; // Tính chất PD online
+    powerCompanyName?: string;
+    substationName?: string;
 }
 
 export interface SensorSetup {

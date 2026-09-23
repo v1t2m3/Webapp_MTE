@@ -77,7 +77,8 @@
       "oltcType": "VACUUM",
       "oltcManufacturer": "MR Reinhausen",
       "status": "WATCH",
-      "lastTestedDate": "2026-09-23"
+      "lastTestedDate": "2026-09-23",
+      "pdTestType": "Định kỳ"
     },
     {
       "id": "mba-lc-t2",
@@ -93,7 +94,8 @@
       "oltcType": "OIL",
       "oltcManufacturer": "ABB",
       "status": "NORMAL",
-      "lastTestedDate": "2026-09-20"
+      "lastTestedDate": "2026-09-20",
+      "pdTestType": "Định kỳ"
     },
     {
       "id": "mba-hk-t1",
@@ -109,7 +111,8 @@
       "oltcType": "VACUUM",
       "oltcManufacturer": "MR Reinhausen",
       "status": "CRITICAL",
-      "lastTestedDate": "2026-09-22"
+      "lastTestedDate": "2026-09-22",
+      "pdTestType": "Sự cố"
     },
     {
       "id": "mba-cl-t1",
@@ -125,7 +128,8 @@
       "oltcType": "OIL",
       "oltcManufacturer": "MR Reinhausen",
       "status": "NORMAL",
-      "lastTestedDate": "2026-09-15"
+      "lastTestedDate": "2026-09-15",
+      "pdTestType": "Định kỳ"
     },
     {
       "id": "mba-bc-t1",
@@ -141,7 +145,8 @@
       "oltcType": "VACUUM",
       "oltcManufacturer": "MR Reinhausen",
       "status": "WATCH",
-      "lastTestedDate": "2026-09-18"
+      "lastTestedDate": "2026-09-18",
+      "pdTestType": "Lần đầu"
     }
   ],
   "records": [

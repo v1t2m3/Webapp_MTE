@@ -67,11 +67,28 @@ export async function POST(req: NextRequest) {
         if (action === "ADD_TRANSFORMER") {
             const newTf: Transformer110kV = {
                 ...payload,
-                id: payload.id || `mba-${Date.now()}`
+                id: payload.id || `${Date.now()}-tsad-${Math.floor(10000 + Math.random() * 90000)}`
             };
             data.transformers = [...(data.transformers || []), newTf];
             saveData(data);
             return NextResponse.json({ message: "Thêm máy biến áp thành công", transformer: newTf, data });
+        }
+
+        if (action === "UPDATE_TRANSFORMER") {
+            const index = data.transformers.findIndex((t: Transformer110kV) => t.id === payload.id);
+            if (index !== -1) {
+                data.transformers[index] = { ...data.transformers[index], ...payload };
+                saveData(data);
+                return NextResponse.json({ message: "Cập nhật máy biến áp thành công", transformer: data.transformers[index], data });
+            }
+            return NextResponse.json({ error: "Không tìm thấy máy biến áp cần cập nhật" }, { status: 404 });
+        }
+
+        if (action === "DELETE_TRANSFORMER") {
+            data.transformers = data.transformers.filter((t: Transformer110kV) => t.id !== payload.id);
+            data.records = data.records.filter((r: PdTestRecord) => r.transformerId !== payload.id);
+            saveData(data);
+            return NextResponse.json({ message: "Xóa máy biến áp thành công", data });
         }
 
         return NextResponse.json({ error: "Action không hợp lệ" }, { status: 400 });
