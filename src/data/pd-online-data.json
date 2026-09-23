@@ -1,0 +1,261 @@
+{
+  "powerCompanies": [
+    {
+      "id": "pc-quang-ninh",
+      "code": "PC-QN",
+      "name": "Công ty Điện lực Quảng Ninh",
+      "region": "Miền Bắc"
+    },
+    {
+      "id": "pc-da-nang",
+      "code": "PC-DN",
+      "name": "Công ty Điện lực Đà Nẵng",
+      "region": "Miền Trung"
+    },
+    {
+      "id": "pc-hai-phong",
+      "code": "PC-HP",
+      "name": "Công ty Điện lực Hải Phòng",
+      "region": "Miền Bắc"
+    },
+    {
+      "id": "pc-thua-thien-hue",
+      "code": "PC-TTH",
+      "name": "Công ty Điện lực Thừa Thiên Huế",
+      "region": "Miền Trung"
+    }
+  ],
+  "substations": [
+    {
+      "id": "tba-lien-chieu",
+      "powerCompanyId": "pc-da-nang",
+      "code": "TBA-110-LC",
+      "name": "TBA 110kV Liên Chiểu",
+      "address": "KCN Liên Chiểu, Q. Liên Chiểu, TP. Đà Nẵng"
+    },
+    {
+      "id": "tba-hoa-khanh",
+      "powerCompanyId": "pc-da-nang",
+      "code": "TBA-110-HK",
+      "name": "TBA 110kV Hòa Khánh",
+      "address": "KCN Hòa Khánh, Q. Liên Chiểu, TP. Đà Nẵng"
+    },
+    {
+      "id": "tba-cam-le",
+      "powerCompanyId": "pc-da-nang",
+      "code": "TBA-110-CL",
+      "name": "TBA 110kV Cẩm Lệ",
+      "address": "P. Hòa Thọ Đông, Q. Cẩm Lệ, TP. Đà Nẵng"
+    },
+    {
+      "id": "tba-bai-chay",
+      "powerCompanyId": "pc-quang-ninh",
+      "code": "TBA-110-BC",
+      "name": "TBA 110kV Bãi Cháy",
+      "address": "P. Bãi Cháy, TP. Hạ Long, T. Quảng Ninh"
+    },
+    {
+      "id": "tba-an-duong",
+      "powerCompanyId": "pc-hai-phong",
+      "code": "TBA-110-AD",
+      "name": "TBA 110kV An Dương",
+      "address": "H. An Dương, TP. Hải Phòng"
+    }
+  ],
+  "transformers": [
+    {
+      "id": "mba-lc-t1",
+      "substationId": "tba-lien-chieu",
+      "code": "T1",
+      "name": "Máy biến áp T1 - TBA 110kV Liên Chiểu",
+      "capacityMva": 63,
+      "voltageRatio": "115/38.5/24 kV",
+      "manufacturer": "EEMC",
+      "manufacturedYear": 2020,
+      "commissionedYear": 2021,
+      "coolingType": "ONAN/ONAF",
+      "oltcType": "VACUUM",
+      "oltcManufacturer": "MR Reinhausen",
+      "status": "WATCH",
+      "lastTestedDate": "2026-09-23"
+    },
+    {
+      "id": "mba-lc-t2",
+      "substationId": "tba-lien-chieu",
+      "code": "T2",
+      "name": "Máy biến áp T2 - TBA 110kV Liên Chiểu",
+      "capacityMva": 40,
+      "voltageRatio": "110/22 kV",
+      "manufacturer": "ABB",
+      "manufacturedYear": 2018,
+      "commissionedYear": 2019,
+      "coolingType": "ONAN/ONAF",
+      "oltcType": "OIL",
+      "oltcManufacturer": "ABB",
+      "status": "NORMAL",
+      "lastTestedDate": "2026-09-20"
+    },
+    {
+      "id": "mba-hk-t1",
+      "substationId": "tba-hoa-khanh",
+      "code": "T1",
+      "name": "Máy biến áp T1 - TBA 110kV Hòa Khánh",
+      "capacityMva": 63,
+      "voltageRatio": "115/38.5/24 kV",
+      "manufacturer": "Hitachi",
+      "manufacturedYear": 2019,
+      "commissionedYear": 2020,
+      "coolingType": "ONAF",
+      "oltcType": "VACUUM",
+      "oltcManufacturer": "MR Reinhausen",
+      "status": "CRITICAL",
+      "lastTestedDate": "2026-09-22"
+    },
+    {
+      "id": "mba-cl-t1",
+      "substationId": "tba-cam-le",
+      "code": "T1",
+      "name": "Máy biến áp T1 - TBA 110kV Cẩm Lệ",
+      "capacityMva": 40,
+      "voltageRatio": "110/22 kV",
+      "manufacturer": "MEE",
+      "manufacturedYear": 2021,
+      "commissionedYear": 2022,
+      "coolingType": "ONAN",
+      "oltcType": "OIL",
+      "oltcManufacturer": "MR Reinhausen",
+      "status": "NORMAL",
+      "lastTestedDate": "2026-09-15"
+    },
+    {
+      "id": "mba-bc-t1",
+      "substationId": "tba-bai-chay",
+      "code": "T1",
+      "name": "Máy biến áp T1 - TBA 110kV Bãi Cháy",
+      "capacityMva": 63,
+      "voltageRatio": "115/38.5/24 kV",
+      "manufacturer": "VEC",
+      "manufacturedYear": 2017,
+      "commissionedYear": 2018,
+      "coolingType": "ONAF",
+      "oltcType": "VACUUM",
+      "oltcManufacturer": "MR Reinhausen",
+      "status": "WATCH",
+      "lastTestedDate": "2026-09-18"
+    }
+  ],
+  "records": [
+    {
+      "id": "MTE-PD-2026-001",
+      "testCode": "MTE-PD-2026-001",
+      "transformerId": "mba-lc-t1",
+      "testDate": "2026-09-23",
+      "oilTempC": 55.0,
+      "ambientTempC": 31.5,
+      "humidityPct": 68.0,
+      "noiseLevelDb": 34.2,
+      "tankDimensions": {
+        "length_m": 4.5,
+        "width_m": 2.2,
+        "height_m": 3.2
+      },
+      "sensorsSetup": [
+        { "sensorId": "HFCT", "channel": 0, "attachedTo": "Dây tiếp địa trung tính / Vỏ máy", "x_m": 0, "y_m": 0, "z_m": 0 },
+        { "sensorId": "AE1", "channel": 1, "attachedTo": "Mặt trước - Góc dưới trái", "x_m": 1.2, "y_m": 0.0, "z_m": 1.5 },
+        { "sensorId": "AE2", "channel": 2, "attachedTo": "Mặt trước - Góc dưới phải", "x_m": 3.8, "y_m": 0.0, "z_m": 1.2 },
+        { "sensorId": "AE3", "channel": 3, "attachedTo": "Mặt sau - Góc trên trái", "x_m": 2.0, "y_m": 2.2, "z_m": 1.8 },
+        { "sensorId": "AE4", "channel": 4, "attachedTo": "Mặt sau - Góc trên phải", "x_m": 4.2, "y_m": 2.2, "z_m": 0.9 }
+      ],
+      "metrics": {
+        "qMaxPc": 850.5,
+        "qAvgPc": 210.3,
+        "pulseCountPerCycle": 14.2
+      },
+      "prpdPoints": [
+        { "phase_deg": 45, "q_pc": 320, "count": 12 },
+        { "phase_deg": 55, "q_pc": 680, "count": 28 },
+        { "phase_deg": 65, "q_pc": 850.5, "count": 45 },
+        { "phase_deg": 75, "q_pc": 510, "count": 19 },
+        { "phase_deg": 85, "q_pc": 290, "count": 8 },
+        { "phase_deg": 225, "q_pc": 380, "count": 15 },
+        { "phase_deg": 235, "q_pc": 720, "count": 31 },
+        { "phase_deg": 245, "q_pc": 810, "count": 42 },
+        { "phase_deg": 255, "q_pc": 490, "count": 17 }
+      ],
+      "inspectorAssessment": {
+        "defectType": "Surface PD",
+        "riskLevel": "WATCH",
+        "notes": "Xung phóng điện xuất hiện rải đều ở chu kỳ dương và âm (góc 45-85 deg và 225-255 deg). Nghi ngờ bề mặt sứ xuyên hoặc tiếp xúc bề mặt cuộn dây pha B.",
+        "inspectorName": "Nguyễn Văn Tám",
+        "reviewedAt": "2026-09-23T10:00:00Z"
+      },
+      "aiDiagnostic": {
+        "predictedDefect": "Surface PD",
+        "confidence": 0.912,
+        "riskLevel": "WATCH",
+        "recommendedAction": "Rút ngắn chu kỳ lấy mẫu DGA về 15 ngày, kiểm tra nồng độ H2, C2H2 và đo lại PD định kỳ."
+      },
+      "localization3D": {
+        "computedCoord": { "x": 2.15, "y": 1.10, "z": 1.65 },
+        "errorMarginM": 0.18,
+        "nearestComponent": "Cuộn dây Pha B - Phía 110kV",
+        "waveVelocityUsedMps": 1410.0,
+        "tdoaDeltasMicrosec": [1250.4, 1890.2, 850.1, 2100.7]
+      }
+    },
+    {
+      "id": "MTE-PD-2026-002",
+      "testCode": "MTE-PD-2026-002",
+      "transformerId": "mba-hk-t1",
+      "testDate": "2026-09-22",
+      "oilTempC": 58.0,
+      "ambientTempC": 33.0,
+      "humidityPct": 72.0,
+      "noiseLevelDb": 38.5,
+      "tankDimensions": {
+        "length_m": 4.8,
+        "width_m": 2.4,
+        "height_m": 3.4
+      },
+      "sensorsSetup": [
+        { "sensorId": "HFCT", "channel": 0, "attachedTo": "Dây tiếp địa trung tính", "x_m": 0, "y_m": 0, "z_m": 0 },
+        { "sensorId": "AE1", "channel": 1, "attachedTo": "Mặt trước - Giữa thùng", "x_m": 2.4, "y_m": 0.0, "z_m": 1.7 },
+        { "sensorId": "AE2", "channel": 2, "attachedTo": "Mặt phải - Trung tâm", "x_m": 4.8, "y_m": 1.2, "z_m": 1.7 },
+        { "sensorId": "AE3", "channel": 3, "attachedTo": "Mặt sau - Giữa thùng", "x_m": 2.4, "y_m": 2.4, "z_m": 1.7 },
+        { "sensorId": "AE4", "channel": 4, "attachedTo": "Mặt trái - Trung tâm", "x_m": 0.0, "y_m": 1.2, "z_m": 1.7 }
+      ],
+      "metrics": {
+        "qMaxPc": 1450.0,
+        "qAvgPc": 480.0,
+        "pulseCountPerCycle": 28.5
+      },
+      "prpdPoints": [
+        { "phase_deg": 50, "q_pc": 800, "count": 25 },
+        { "phase_deg": 60, "q_pc": 1450, "count": 65 },
+        { "phase_deg": 70, "q_pc": 1100, "count": 40 },
+        { "phase_deg": 230, "q_pc": 950, "count": 30 },
+        { "phase_deg": 240, "q_pc": 1380, "count": 58 }
+      ],
+      "inspectorAssessment": {
+        "defectType": "Internal PD",
+        "riskLevel": "CRITICAL",
+        "notes": "Biên độ phóng điện vượt ngưỡng 1000 pC, phát hiện bong bóng bọt khí bên trong cuộn dây cao áp. Cần xử lý gấp.",
+        "inspectorName": "Trần Văn Bình",
+        "reviewedAt": "2026-09-22T14:30:00Z"
+      },
+      "aiDiagnostic": {
+        "predictedDefect": "Internal PD",
+        "confidence": 0.948,
+        "riskLevel": "CRITICAL",
+        "recommendedAction": "Dừng vận hành kiểm tra khẩn cấp, lọc dầu chân không và kiểm tra độ cách điện."
+      },
+      "localization3D": {
+        "computedCoord": { "x": 2.40, "y": 1.20, "z": 2.10 },
+        "errorMarginM": 0.12,
+        "nearestComponent": "Lõi thép & Đệm cách điện Pha C",
+        "waveVelocityUsedMps": 1410.0,
+        "tdoaDeltasMicrosec": [980.5, 1420.1, 760.3, 1890.0]
+      }
+    }
+  ]
+}

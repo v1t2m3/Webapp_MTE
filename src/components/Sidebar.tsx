@@ -35,6 +35,7 @@ import {
     PencilRuler,
     Cable,
     FileCheck,
+    Activity,
     FlaskConical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,6 +80,7 @@ const routes = [
             { label: "Hóa chất (Mục 6.6)", href: "/consumables", icon: FlaskConical },
             { label: "Tài liệu (Mục 8.3)", href: "/documents", icon: FileTextIcon },
             { label: "CAPA (Mục 8.7)", href: "/capa", icon: ShieldCheckIcon },
+            { label: "PD Online 110kV", href: "/pd-online", icon: Activity },
             {
                 label: "Tiện ích",
                 icon: Cable,
