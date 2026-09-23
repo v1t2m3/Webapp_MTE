@@ -39,13 +39,26 @@ export function TransformerTable({
 
     const fullTransformers = transformers.map(getFullTransformer);
 
-    const filtered = fullTransformers.filter(t =>
-        t.code.toLowerCase().includes(search.toLowerCase()) ||
-        t.name.toLowerCase().includes(search.toLowerCase()) ||
-        t.powerCompanyName.toLowerCase().includes(search.toLowerCase()) ||
-        t.substationName.toLowerCase().includes(search.toLowerCase()) ||
-        t.id.toLowerCase().includes(search.toLowerCase())
-    );
+    const searchLower = search.toLowerCase().trim();
+    const filtered = fullTransformers.filter(t => {
+        if (!searchLower) return true;
+        return (
+            t.code.toLowerCase().includes(searchLower) ||
+            t.name.toLowerCase().includes(searchLower) ||
+            t.powerCompanyName.toLowerCase().includes(searchLower) ||
+            t.substationName.toLowerCase().includes(searchLower) ||
+            t.id.toLowerCase().includes(searchLower) ||
+            t.manufacturer.toLowerCase().includes(searchLower) ||
+            (t.oltcManufacturer && t.oltcManufacturer.toLowerCase().includes(searchLower)) ||
+            (t.oltcType && t.oltcType.toLowerCase().includes(searchLower)) ||
+            (t.coolingType && t.coolingType.toLowerCase().includes(searchLower)) ||
+            (t.voltageRatio && t.voltageRatio.toLowerCase().includes(searchLower)) ||
+            (t.pdTestType && t.pdTestType.toLowerCase().includes(searchLower)) ||
+            t.manufacturedYear.toString().includes(searchLower) ||
+            t.commissionedYear.toString().includes(searchLower) ||
+            t.capacityMva.toString().includes(searchLower)
+        );
+    });
 
     const getpdTestTypeBadge = (type?: string) => {
         switch (type) {
@@ -73,11 +86,11 @@ export function TransformerTable({
                 </div>
 
                 <div className="flex items-center space-x-3">
-                    <div className="relative w-64">
+                    <div className="relative w-72">
                         <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
                         <Input
                             type="text"
-                            placeholder="Lọc danh mục MBA..."
+                            placeholder="Lọc theo tên, hãng SX, năm SX/VH..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="pl-8 h-8 text-xs bg-slate-950 border-slate-700 text-white"
@@ -113,24 +126,6 @@ export function TransformerTable({
                             <th className="p-2 border-r border-yellow-500/60 min-w-[130px] text-center">Lần PD online gần nhất</th>
                             <th className="p-2 border-r border-yellow-500/60 min-w-[140px] text-center">Tính chất PD online</th>
                             <th className="p-2 text-center min-w-[100px]">Thao tác</th>
-                        </tr>
-                        {/* Subheader format types */}
-                        <tr className="bg-yellow-300/90 text-yellow-950 text-[10px] italic font-semibold border-b border-yellow-400">
-                            <td className="p-1 text-center border-r border-yellow-400">text</td>
-                            <td className="p-1 text-center border-r border-yellow-400">text</td>
-                            <td className="p-1 text-center border-r border-yellow-400">text</td>
-                            <td className="p-1 text-center border-r border-yellow-400">text</td>
-                            <td className="p-1 text-center border-r border-yellow-400">number</td>
-                            <td className="p-1 text-center border-r border-yellow-400">text</td>
-                            <td className="p-1 text-center border-r border-yellow-400">text</td>
-                            <td className="p-1 text-center border-r border-yellow-400">text</td>
-                            <td className="p-1 text-center border-r border-yellow-400">text</td>
-                            <td className="p-1 text-center border-r border-yellow-400">text</td>
-                            <td className="p-1 text-center border-r border-yellow-400">year</td>
-                            <td className="p-1 text-center border-r border-yellow-400">year</td>
-                            <td className="p-1 text-center border-r border-yellow-400">dd/mm/yyyy</td>
-                            <td className="p-1 text-center border-r border-yellow-400">"Định kỳ"|"Lần đầu"|"Sửa chữa"|"Sự cố"</td>
-                            <td className="p-1 text-center">user action</td>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800 bg-slate-950/60">

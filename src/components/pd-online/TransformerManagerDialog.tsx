@@ -84,9 +84,15 @@ export function TransformerManagerDialog({
             setManufacturer("VEE");
             setOltcType("VVI");
             setOltcManufacturer("MR");
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            const currentDateStr = `${day}/${month}/${year}`;
+
             setManufacturedYear("2019");
             setCommissionedYear("2019");
-            setLastTestedDate("14/05/2025");
+            setLastTestedDate(currentDateStr);
             setPdTestType("Định kỳ");
         }
     }, [transformer, open, powerCompanies, substations]);
@@ -266,7 +272,7 @@ export function TransformerManagerDialog({
                             />
                         </div>
                         <div>
-                            <Label className="text-xs text-amber-300 font-semibold">Lần PD gần nhất (dd/mm/yyyy)</Label>
+                            <Label className="text-xs text-amber-300 font-semibold">Lần PD gần nhất</Label>
                             <Input
                                 type="text"
                                 value={lastTestedDate}
