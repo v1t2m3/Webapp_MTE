@@ -9,7 +9,6 @@ import { Transformer3DViewer } from "@/components/pd-online/Transformer3DViewer"
 import { PdReportModal } from "@/components/pd-online/PdReportModal";
 import { PdTestFormDialog } from "@/components/pd-online/PdTestFormDialog";
 import { exportPowerCompanyExcelReport } from "@/lib/pd-excel-export";
-import AppShell from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -133,8 +132,7 @@ export default function PdOnlinePage() {
     };
 
     return (
-        <AppShell>
-            <div className="p-4 sm:p-6 space-y-6 bg-slate-950 min-h-screen text-white">
+        <div className="space-y-6 bg-slate-950 text-white">
                 {/* Header Title & Actions */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-indigo-900/60 via-slate-900 to-slate-900 p-5 rounded-2xl border border-indigo-500/30 shadow-xl">
                     <div className="space-y-1">
@@ -368,6 +366,5 @@ export default function PdOnlinePage() {
                     />
                 )}
             </div>
-        </AppShell>
     );
 }
