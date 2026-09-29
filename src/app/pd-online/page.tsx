@@ -119,10 +119,21 @@ export default function PdOnlinePage() {
     const currentSubstation = substations.find(s => s.id === selectedSubstationId);
     const currentTransformer = transformers.find(t => t.id === selectedTransformerId);
 
-    // Records for currently selected Transformer, sorted by testDate descending (latest date first)
+    const parseDateToMs = (dateStr?: string) => {
+        if (!dateStr) return 0;
+        if (dateStr.includes("/")) {
+            const parts = dateStr.split("/");
+            if (parts.length === 3) {
+                return new Date(`${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`).getTime() || 0;
+            }
+        }
+        return new Date(dateStr).getTime() || 0;
+    };
+
+    // Records for currently selected Transformer, sorted strictly by testDate descending (newest to oldest)
     const currentRecords = records
         .filter(r => r.transformerId === selectedTransformerId)
-        .sort((a, b) => new Date(b.testDate).getTime() - new Date(a.testDate).getTime());
+        .sort((a, b) => parseDateToMs(b.testDate) - parseDateToMs(a.testDate));
 
     // Active Record Displayed on Dashboard (Selected or Latest by default)
     const displayedRecord = currentRecords.find(r => r.id === selectedRecordId) || (currentRecords.length > 0 ? currentRecords[0] : null);
@@ -343,22 +354,49 @@ export default function PdOnlinePage() {
                                             value={displayedRecord?.id || ""}
                                             onValueChange={(val) => setSelectedRecordId(val)}
                                         >
-                                            <SelectTrigger className="w-full sm:w-80 bg-slate-950 border-indigo-500/40 text-xs text-white h-9 font-semibold">
-                                                <SelectValue placeholder="Chọn đợt đo thử nghiệm" />
+                                            <SelectTrigger className="w-full sm:w-96 bg-slate-950 border-indigo-500/40 text-xs text-white h-9 font-semibold">
+                                                <SelectValue placeholder="Chọn đợt đo thử nghiệm">
+                                                    {displayedRecord && (
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-bold text-indigo-300">
+                                                                Ngày {displayedRecord.testDate}
+                                                            </span>
+                                                            <span className="font-mono text-rose-300">({displayedRecord.metrics?.qMaxPc} pC)</span>
+                                                            <Badge className={`text-[9px] px-1.5 py-0 font-bold ${displayedRecord.inspectorAssessment?.riskLevel === 'CRITICAL'
+                                                                ? 'bg-red-500 text-white'
+                                                                : displayedRecord.inspectorAssessment?.riskLevel === 'WATCH'
+                                                                    ? 'bg-amber-500 text-slate-950'
+                                                                    : 'bg-emerald-600 text-white'
+                                                                }`}>
+                                                                {displayedRecord.inspectorAssessment?.riskLevel}
+                                                            </Badge>
+                                                        </div>
+                                                    )}
+                                                </SelectValue>
                                             </SelectTrigger>
                                             <SelectContent className="bg-slate-900 border-slate-700 text-white text-xs max-h-64">
                                                 {currentRecords.map((r, idx) => (
                                                     <SelectItem key={r.id} value={r.id} className="text-xs cursor-pointer focus:bg-indigo-600 focus:text-white">
                                                         <div className="flex items-center justify-between gap-3 w-full">
-                                                            <span className="font-mono text-rose-300">({r.metrics?.qMaxPc} pC)</span>
-                                                            <Badge className={`text-[9px] px-1.5 py-0 font-bold ${r.inspectorAssessment?.riskLevel === 'CRITICAL'
-                                                                ? 'bg-red-500 text-white'
-                                                                : r.inspectorAssessment?.riskLevel === 'WATCH'
-                                                                    ? 'bg-amber-500 text-slate-950'
-                                                                    : 'bg-emerald-600 text-white'
-                                                                }`}>
-                                                                {r.inspectorAssessment?.riskLevel}
-                                                            </Badge>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span className="font-bold text-indigo-300">
+                                                                    Ngày {r.testDate}
+                                                                </span>
+                                                                {idx === 0 && (
+                                                                    <span className="text-[10px] text-emerald-400 font-semibold">(Mới nhất)</span>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-mono text-rose-300">({r.metrics?.qMaxPc} pC)</span>
+                                                                <Badge className={`text-[9px] px-1.5 py-0 font-bold ${r.inspectorAssessment?.riskLevel === 'CRITICAL'
+                                                                    ? 'bg-red-500 text-white'
+                                                                    : r.inspectorAssessment?.riskLevel === 'WATCH'
+                                                                        ? 'bg-amber-500 text-slate-950'
+                                                                        : 'bg-emerald-600 text-white'
+                                                                    }`}>
+                                                                    {r.inspectorAssessment?.riskLevel}
+                                                                </Badge>
+                                                            </div>
                                                         </div>
                                                     </SelectItem>
                                                 ))}
