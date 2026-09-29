@@ -36,7 +36,9 @@ export function TransformerSpecCard({ transformer, substationName, powerCompanyN
                                 {powerCompanyName} &bull; {substationName}
                             </div>
                             <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
-                                {transformer.name} <span className="text-indigo-400 text-base font-mono">({transformer.code})</span>
+                                {transformer.name} {!transformer.name.includes(transformer.code) && (
+                                    <span className="text-indigo-400 text-base font-mono">({transformer.code})</span>
+                                )}
                             </CardTitle>
                         </div>
                     </div>

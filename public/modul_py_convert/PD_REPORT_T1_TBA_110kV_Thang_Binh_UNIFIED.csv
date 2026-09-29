@@ -1,0 +1,22 @@
+﻿# SECTION,METADATA
+Transformer_Code,T1
+Transformer_Name,Máy biến áp 110kV T1
+Substation_Name,TBA 110kV Thang Binh
+Power_Company,Công ty Điện lực Quảng Nam
+Test_Date,25/02/2024
+Inspector_Name,KTV Thí nghiệm PD
+Total_PWA_Files_Parsed,4
+
+# SECTION,METRICS_SUMMARY
+Qmax_pC,878.7
+Qavg_pC,0.0
+Total_Pulse_Count,0
+Pulse_Per_Cycle,0.0
+AI_Defect_Diagnosis,Internal Arc (Phóng điện nội bộ nghiêm trọng)
+Risk_Level,CRITICAL
+3D_Location_X_m,2.15
+3D_Location_Y_m,1.1
+3D_Location_Z_m,1.65
+
+# SECTION,PRPD_MATRIX
+Phase_Deg,Q_pC,Pulse_Count,Face_Number

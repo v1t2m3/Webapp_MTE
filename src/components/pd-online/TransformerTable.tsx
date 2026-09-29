@@ -14,6 +14,7 @@ interface TransformerTableProps {
     onEdit: (transformer: Transformer110kV) => void;
     onDelete: (id: string) => void;
     onAddNew: () => void;
+    onExportExcel?: () => void;
 }
 
 export function TransformerTable({
@@ -22,7 +23,8 @@ export function TransformerTable({
     powerCompanies,
     onEdit,
     onDelete,
-    onAddNew
+    onAddNew,
+    onExportExcel
 }: TransformerTableProps) {
     const [search, setSearch] = useState("");
 
@@ -32,8 +34,8 @@ export function TransformerTable({
 
         return {
             ...t,
-            powerCompanyName: comp ? comp.name : (t.powerCompanyName || "Công ty Điện lực Đà Nẵng"),
-            substationName: sub ? sub.name : (t.substationName || "TBA 110kV Liên Chiểu")
+            powerCompanyName: t.powerCompanyName || (comp ? comp.name : "Điện lực Đà Nẵng"),
+            substationName: t.substationName || (sub ? sub.name : "TBA 110kV Liên Chiểu")
         };
     };
 
@@ -76,7 +78,7 @@ export function TransformerTable({
     return (
         <div className="space-y-3 bg-slate-900/90 p-4 rounded-xl border border-amber-500/20 shadow-xl">
             {/* Table Action Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-800">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-800">
                 <div className="flex items-center space-x-2">
                     <Zap className="h-5 w-5 text-amber-400" />
                     <h3 className="text-base font-bold text-white">
@@ -85,8 +87,8 @@ export function TransformerTable({
                     <span className="text-xs text-slate-400 font-mono">({filtered.length} máy)</span>
                 </div>
 
-                <div className="flex items-center space-x-3">
-                    <div className="relative w-72">
+                <div className="flex flex-wrap items-center gap-2.5">
+                    <div className="relative w-64 sm:w-72">
                         <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
                         <Input
                             type="text"
@@ -100,8 +102,16 @@ export function TransformerTable({
                         onClick={onAddNew}
                         className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs h-8 shadow-md"
                     >
-                        <Plus className="h-3.5 w-3.5 mr-1" /> Thêm MBA mới
+                        <Plus className="h-3.5 w-3.5 mr-1" /> Thêm MBA 110kV mới
                     </Button>
+                    {onExportExcel && (
+                        <Button
+                            onClick={onExportExcel}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-8 shadow-md"
+                        >
+                            Xuất Excel (PC-DN)
+                        </Button>
+                    )}
                 </div>
             </div>
 

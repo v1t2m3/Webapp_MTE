@@ -52,6 +52,7 @@ export interface PrpdPoint {
     phase_deg: number; // 0 to 360
     q_pc: number; // PD amplitude in pC or mV
     count: number; // pulse repetition count
+    face?: number; // 1..4
 }
 
 export interface WaveformPoint {

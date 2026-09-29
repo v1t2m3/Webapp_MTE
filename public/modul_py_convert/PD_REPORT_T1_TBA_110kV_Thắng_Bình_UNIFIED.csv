@@ -1,0 +1,22 @@
+﻿# SECTION,METADATA
+Transformer_Code,T1
+Transformer_Name,Máy biến áp 110kV T1
+Substation_Name,TBA 110kV Thắng Bình
+Power_Company,Công ty Điện lực Quảng Nam
+Test_Date,28/09/2026
+Inspector_Name,KTV Thí nghiệm PD
+Total_PWA_Files_Parsed,4
+
+# SECTION,METRICS_SUMMARY
+Qmax_pC,878.7
+Qavg_pC,0.0
+Total_Pulse_Count,0
+Pulse_Per_Cycle,0.0
+AI_Defect_Diagnosis,Corona / Surface PD
+Risk_Level,WATCH
+3D_Location_X_m,1.85
+3D_Location_Y_m,0.95
+3D_Location_Z_m,2.1
+
+# SECTION,PRPD_MATRIX
+Phase_Deg,Q_pC,Pulse_Count,Face_Number

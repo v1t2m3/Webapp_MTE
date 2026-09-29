@@ -174,7 +174,7 @@ export function Transformer3DViewer({
                 ctx.fillText(s.sensorId, sp.x + 8, sp.y + 4);
             });
 
-            // Draw Glowing 3D PD Hotspot (TDOA Acoustic Calculated Location)
+            // Draw Glowing 3D PD Hotspot (TDOA Acoustic Calculated Location - Pulsing dot only)
             const pdCoord = localization3D.computedCoord;
             const pdp = project(pdCoord.x, pdCoord.y, pdCoord.z);
 
@@ -201,14 +201,6 @@ export function Transformer3DViewer({
             ctx.strokeStyle = "#ffffff";
             ctx.lineWidth = 2;
             ctx.stroke();
-
-            // Label PD Hotspot Coordinates
-            ctx.fillStyle = "#fef08a";
-            ctx.font = "bold 12px Inter, sans-serif";
-            ctx.fillText(`PD Hotspot (${pdCoord.x}m, ${pdCoord.y}m, ${pdCoord.z}m)`, pdp.x + 12, pdp.y - 12);
-            ctx.fillStyle = "#94a3b8";
-            ctx.font = "10px Inter, sans-serif";
-            ctx.fillText(`Vị trí: ${localization3D.nearestComponent} (Sai số ±${localization3D.errorMarginM}m)`, pdp.x + 12, pdp.y + 4);
 
             animationFrameId = requestAnimationFrame(render);
         };

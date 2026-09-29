@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Zap, Save, Plus, Edit } from "lucide-react";
+import { Save, Plus, Edit } from "lucide-react";
 
 interface TransformerManagerDialogProps {
     open: boolean;
@@ -29,20 +29,23 @@ export function TransformerManagerDialog({
     const isEdit = !!transformer;
 
     const [id, setId] = useState("");
+    const [selectedCompanyId, setSelectedCompanyId] = useState("");
     const [companyName, setCompanyName] = useState("");
+    const [selectedSubstationId, setSelectedSubstationId] = useState("");
     const [substationName, setSubstationName] = useState("");
-    const [substationId, setSubstationId] = useState("");
-    const [code, setCode] = useState("");
+    const [isCustomSubstation, setIsCustomSubstation] = useState(false);
+
+    const [code, setCode] = useState("T1");
     const [name, setName] = useState("");
     const [capacityMva, setCapacityMva] = useState("63");
     const [voltageRatio, setVoltageRatio] = useState("115/38,5/24kV");
     const [coolingType, setCoolingType] = useState("ONAF");
-    const [manufacturer, setManufacturer] = useState("VEE");
-    const [oltcType, setOltcType] = useState("VVI");
+    const [manufacturer, setManufacturer] = useState("EEMC");
+    const [oltcType, setOltcType] = useState("VACUUM");
     const [oltcManufacturer, setOltcManufacturer] = useState("MR");
     const [manufacturedYear, setManufacturedYear] = useState("2019");
     const [commissionedYear, setCommissionedYear] = useState("2019");
-    const [lastTestedDate, setLastTestedDate] = useState("14/05/2025");
+    const [lastTestedDate, setLastTestedDate] = useState("29/09/2026");
     const [pdTestType, setPdTestType] = useState<"Định kỳ" | "Lần đầu" | "Sửa chữa" | "Sự cố">("Định kỳ");
     const [loading, setLoading] = useState(false);
 
@@ -50,81 +53,138 @@ export function TransformerManagerDialog({
         if (transformer) {
             setId(transformer.id);
             const targetSub = substations.find(s => s.id === transformer.substationId);
-            const targetCompany = targetSub ? powerCompanies.find(c => c.id === targetSub.powerCompanyId) : null;
+            const targetComp = targetSub
+                ? powerCompanies.find(c => c.id === targetSub.powerCompanyId)
+                : powerCompanies.find(c => c.name === transformer.powerCompanyName);
 
-            setSubstationId(transformer.substationId);
-            setSubstationName(targetSub ? targetSub.name : transformer.substationName || "");
-            setCompanyName(targetCompany ? targetCompany.name : transformer.powerCompanyName || "");
+            const compId = targetComp ? targetComp.id : (powerCompanies[0]?.id || "");
+            const compName = targetComp ? targetComp.name : (transformer.powerCompanyName || powerCompanies[0]?.name || "Điện lực Đà Nẵng");
+
+            setSelectedCompanyId(compId);
+            setCompanyName(compName);
+
+            const subId = targetSub ? targetSub.id : (transformer.substationId || "");
+            const subName = targetSub ? targetSub.name : (transformer.substationName || "TBA 110kV Liên Chiểu");
+
+            setSelectedSubstationId(subId);
+            setSubstationName(subName);
+
             setCode(transformer.code || "T1");
             setName(transformer.name || "");
             setCapacityMva(transformer.capacityMva?.toString() || "63");
             setVoltageRatio(transformer.voltageRatio || "115/38,5/24kV");
             setCoolingType(transformer.coolingType || "ONAF");
-            setManufacturer(transformer.manufacturer || "VEE");
-            setOltcType(transformer.oltcType || "VVI");
+            setManufacturer(transformer.manufacturer || "EEMC");
+            setOltcType(transformer.oltcType || "VACUUM");
             setOltcManufacturer(transformer.oltcManufacturer || "MR");
             setManufacturedYear(transformer.manufacturedYear?.toString() || "2019");
             setCommissionedYear(transformer.commissionedYear?.toString() || "2019");
-            setLastTestedDate(transformer.lastTestedDate || "14/05/2025");
+            setLastTestedDate(transformer.lastTestedDate || "29/09/2026");
             setPdTestType(transformer.pdTestType || "Định kỳ");
         } else {
             // Defaults for Create
-            const defaultId = `${Math.floor(1000 + Math.random() * 9000)}-tsad-${Math.floor(10000 + Math.random() * 90000)}`;
+            const defaultId = `mba-${Math.floor(1000 + Math.random() * 9000)}-tsad-${Math.floor(10000 + Math.random() * 90000)}`;
             setId(defaultId);
-            const firstCompany = powerCompanies[0]?.name || "Công ty Điện lực Đà Nẵng";
-            const firstSub = substations[0];
-            setCompanyName(firstCompany);
-            setSubstationId(firstSub?.id || "tba-lien-chieu");
-            setSubstationName(firstSub?.name || "TBA 110kV Liên Chiểu");
+
+            const defaultCompany = powerCompanies[0] || { id: "pc-da-nang", name: "Điện lực Đà Nẵng" };
+            setSelectedCompanyId(defaultCompany.id);
+            setCompanyName(defaultCompany.name);
+
+            const companySubs = substations.filter(s => s.powerCompanyId === defaultCompany.id);
+            const defaultSub = companySubs[0] || substations[0] || { id: "tba-lien-chieu", name: "TBA 110kV Liên Chiểu" };
+
+            setSelectedSubstationId(defaultSub.id);
+            setSubstationName(defaultSub.name);
+            setIsCustomSubstation(false);
+
             setCode("T1");
             setName("Máy biến áp T1");
             setCapacityMva("63");
             setVoltageRatio("115/38,5/24kV");
             setCoolingType("ONAF");
-            setManufacturer("VEE");
-            setOltcType("VVI");
+            setManufacturer("EEMC");
+            setOltcType("VACUUM");
             setOltcManufacturer("MR");
+            setManufacturedYear("2019");
+            setCommissionedYear("2019");
+
             const today = new Date();
             const day = String(today.getDate()).padStart(2, '0');
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const year = today.getFullYear();
-            const currentDateStr = `${day}/${month}/${year}`;
-
-            setManufacturedYear("2019");
-            setCommissionedYear("2019");
-            setLastTestedDate(currentDateStr);
+            setLastTestedDate(`${day}/${month}/${year}`);
             setPdTestType("Định kỳ");
         }
     }, [transformer, open, powerCompanies, substations]);
+
+    // Handle Power Company Selection Change
+    const handleCompanyChange = (companyId: string) => {
+        setSelectedCompanyId(companyId);
+        const comp = powerCompanies.find(c => c.id === companyId);
+        if (comp) {
+            setCompanyName(comp.name);
+        }
+        const companySubs = substations.filter(s => s.powerCompanyId === companyId);
+        if (companySubs.length > 0) {
+            setSelectedSubstationId(companySubs[0].id);
+            setSubstationName(companySubs[0].name);
+            setIsCustomSubstation(false);
+        } else {
+            setSelectedSubstationId("");
+            setSubstationName("");
+            setIsCustomSubstation(true);
+        }
+    };
+
+    // Handle Substation Selection Change
+    const handleSubstationChange = (subId: string) => {
+        if (subId === "CUSTOM_NEW_SUBSTATION") {
+            setIsCustomSubstation(true);
+            setSelectedSubstationId("");
+            setSubstationName("");
+        } else {
+            setIsCustomSubstation(false);
+            setSelectedSubstationId(subId);
+            const sub = substations.find(s => s.id === subId);
+            if (sub) {
+                setSubstationName(sub.name);
+            }
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
-        const payload: Transformer110kV = {
-            id: id || `${Math.floor(1000 + Math.random() * 9000)}-tsad-${Math.floor(10000 + Math.random() * 90000)}`,
-            substationId: substationId || (substations[0]?.id || "tba-lien-chieu"),
-            code: code.trim(),
-            name: name.trim() || `Máy biến áp ${code} - ${substationName}`,
+        const finalSubstationName = substationName.trim() || "TBA 110kV Mới";
+        const finalCompanyName = companyName.trim() || "Điện lực Đà Nẵng";
+
+        const payload = {
+            id: id.trim() || `mba-${Math.floor(1000 + Math.random() * 9000)}-tsad-${Math.floor(10000 + Math.random() * 90000)}`,
+            substationId: selectedSubstationId,
+            code: code.trim() || "T1",
+            name: name.trim() || `Máy biến áp ${code} - ${finalSubstationName}`,
             capacityMva: parseFloat(capacityMva) || 63,
-            voltageRatio: voltageRatio.trim(),
-            coolingType: coolingType.trim(),
-            manufacturer: manufacturer.trim(),
-            oltcType: oltcType.trim(),
-            oltcManufacturer: oltcManufacturer.trim(),
+            voltageRatio: voltageRatio.trim() || "115/38,5/24kV",
+            coolingType: coolingType.trim() || "ONAF",
+            manufacturer: manufacturer.trim() || "EEMC",
+            oltcType: oltcType.trim() || "VACUUM",
+            oltcManufacturer: oltcManufacturer.trim() || "MR",
             manufacturedYear: parseInt(manufacturedYear) || 2019,
             commissionedYear: parseInt(commissionedYear) || 2019,
-            lastTestedDate: lastTestedDate.trim(),
+            lastTestedDate: lastTestedDate.trim() || "29/09/2026",
             pdTestType,
             status: "NORMAL",
-            powerCompanyName: companyName,
-            substationName
+            powerCompanyName: finalCompanyName,
+            substationName: finalSubstationName
         };
 
         await onSubmit(payload, isEdit);
         setLoading(false);
         onClose();
     };
+
+    const availableSubstations = substations.filter(s => s.powerCompanyId === selectedCompanyId);
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
@@ -145,29 +205,54 @@ export function TransformerManagerDialog({
                                 type="text"
                                 value={id}
                                 onChange={(e) => setId(e.target.value)}
-                                placeholder="1221-tsad-43113"
-                                className="bg-slate-950 border-slate-700 text-xs text-amber-300 font-mono"
+                                placeholder="mba-t1-bch"
+                                className="bg-slate-950 border-slate-700 text-xs text-amber-300 font-mono font-bold"
                             />
                         </div>
+
                         <div>
-                            <Label className="text-xs text-slate-300">Công ty Điện lực</Label>
-                            <Input
-                                type="text"
-                                value={companyName}
-                                onChange={(e) => setCompanyName(e.target.value)}
-                                placeholder="Công ty Điện lực Đà Nẵng"
-                                className="bg-slate-950 border-slate-700 text-xs text-white"
-                            />
+                            <Label className="text-xs text-slate-300 font-semibold">Công ty Điện lực</Label>
+                            <Select value={selectedCompanyId} onValueChange={handleCompanyChange}>
+                                <SelectTrigger className="bg-slate-950 border-slate-700 text-xs text-white">
+                                    <SelectValue placeholder="Chọn Công ty Điện lực" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-slate-900 border-slate-700 text-white text-xs max-h-60">
+                                    {powerCompanies.map(pc => (
+                                        <SelectItem key={pc.id} value={pc.id} className="text-xs cursor-pointer">
+                                            {pc.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
+
                         <div>
-                            <Label className="text-xs text-slate-300">Trạm biến áp</Label>
-                            <Input
-                                type="text"
-                                value={substationName}
-                                onChange={(e) => setSubstationName(e.target.value)}
-                                placeholder="TBA 110kV Liên Chiểu"
-                                className="bg-slate-950 border-slate-700 text-xs text-white"
-                            />
+                            <Label className="text-xs text-slate-300 font-semibold">Trạm biến áp 110kV</Label>
+                            {!isCustomSubstation && availableSubstations.length > 0 ? (
+                                <Select value={selectedSubstationId} onValueChange={handleSubstationChange}>
+                                    <SelectTrigger className="bg-slate-950 border-slate-700 text-xs text-white">
+                                        <SelectValue placeholder="Chọn Trạm biến áp" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-slate-900 border-slate-700 text-white text-xs max-h-60">
+                                        {availableSubstations.map(sub => (
+                                            <SelectItem key={sub.id} value={sub.id} className="text-xs cursor-pointer">
+                                                {sub.name}
+                                            </SelectItem>
+                                        ))}
+                                        <SelectItem value="CUSTOM_NEW_SUBSTATION" className="text-xs text-cyan-300 font-bold border-t border-slate-800 cursor-pointer">
+                                            + Nhập tên Trạm biến áp mới...
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <Input
+                                    type="text"
+                                    value={substationName}
+                                    onChange={(e) => setSubstationName(e.target.value)}
+                                    placeholder="TBA 110kV Liên Chiểu"
+                                    className="bg-slate-950 border-slate-700 text-xs text-white"
+                                />
+                            )}
                         </div>
                     </div>
 
@@ -277,7 +362,7 @@ export function TransformerManagerDialog({
                                 type="text"
                                 value={lastTestedDate}
                                 onChange={(e) => setLastTestedDate(e.target.value)}
-                                placeholder="14/05/2025"
+                                placeholder="29/09/2026"
                                 className="bg-slate-950 border-slate-700 text-xs text-emerald-300 font-mono"
                             />
                         </div>
