@@ -51,21 +51,17 @@ class CsvExporter:
             total_pulses += parser.metrics["pulse_count"]
             face_delays[f"Mat_{parser.face_number}"] = parser.sensor_delays_us
 
-        avg_q = round(sum(p["q_pc"] * p["count"] for p in all_prpd_points) / max(1, total_pulses), 1)
-        pulse_per_cycle = round(total_pulses / (50.0 * max(1, len(self.pwa_files))), 1)
-
-        # Dynamic Risk Level & AI Diagnosis based on Qmax (pC)
-        if max_q < 300.0:
-            risk_level = "NORMAL"
-            ai_diag = "Nhiễu / Phóng điện nhẹ"
-        elif max_q < 750.0:
-            risk_level = "WATCH"
-            ai_diag = "Surface PD (Phóng điện bề mặt)"
+        # Calculate summary metrics strictly from collected PRPD pulses
+        if total_pulses > 0 and all_prpd_points:
+            max_q = round(max(p["q_pc"] for p in all_prpd_points), 1)
+            avg_q = round(sum(p["q_pc"] * p["count"] for p in all_prpd_points) / total_pulses, 1)
+            pulse_per_cycle = round(total_pulses / (50.0 * max(1, len(self.pwa_files))), 1)
         else:
-            risk_level = "CRITICAL"
-            ai_diag = "Internal Arc (Phóng điện nội bộ nghiêm trọng)"
-
-        pos_x, pos_y, pos_z = 2.15, 1.10, 1.65
+            # No pulses detected: strictly 0.0
+            max_q = 0.0
+            avg_q = 0.0
+            total_pulses = 0
+            pulse_per_cycle = 0.0
 
         # 3. Determine Output CSV Path
         if not output_csv_path:
@@ -94,17 +90,12 @@ class CsvExporter:
             writer.writerow(["Total_PWA_Files_Parsed", len(self.pwa_files)])
             writer.writerow([])
 
-            # Section 2: SUMMARY METRICS
+            # Section 2: SUMMARY METRICS (Calculated strictly from measurement; 3D location and defect conclusion are evaluated on Webapp-MTE)
             writer.writerow(["# SECTION", "METRICS_SUMMARY"])
             writer.writerow(["Qmax_pC", max_q])
             writer.writerow(["Qavg_pC", avg_q])
             writer.writerow(["Total_Pulse_Count", total_pulses])
             writer.writerow(["Pulse_Per_Cycle", pulse_per_cycle])
-            writer.writerow(["AI_Defect_Diagnosis", ai_diag])
-            writer.writerow(["Risk_Level", risk_level])
-            writer.writerow(["3D_Location_X_m", pos_x])
-            writer.writerow(["3D_Location_Y_m", pos_y])
-            writer.writerow(["3D_Location_Z_m", pos_z])
             writer.writerow([])
 
             # Section 3: PRPD MATRIX POINTS (Phase, Qmax, PulseCount, Face)

@@ -78,27 +78,33 @@ class PwaParser:
         
         for i in range(start_offset, end_offset - 1, 2):
             val = struct.unpack("<h", self.raw_bytes[i:i+2])[0]
-            samples.append(val)
+            # Valid ADC readings for 12-bit ADC are typically around 2048 (e.g. 200..3900)
+            # Filter out 0 padding or invalid corrupt bytes
+            if 200 < val < 3900:
+                samples.append(val)
 
         if not samples:
+            self.metrics["q_max_pc"] = 0.0
+            self.metrics["q_avg_pc"] = 0.0
+            self.metrics["pulse_count"] = 0
+            self.metrics["pulse_per_cycle"] = 0.0
+            self.prpd_points = []
             return
 
-        baseline = 2048
+        baseline = sum(samples[:5000]) / len(samples[:5000]) if len(samples) >= 5000 else 2048.0
         deltas = [abs(s - baseline) for s in samples]
-        max_delta = max(deltas) if deltas else 0
 
-        # Calculate Qmax (pC) scaled from peak ADC amplitude
-        self.metrics["q_max_pc"] = round(max_delta * 0.42 + 18.5, 1)
+        # In PT500A transformer measurement, background noise floor is typically <= 570 counts.
+        # A true PD discharge must exceed the baseline noise threshold.
+        pd_pulse_threshold = 600.0
 
-        # Generate PRPD Heatmap Points (Phase 0 to 360 deg)
-        threshold = int(max_delta * 0.25)
-        phase_bins = 72 # 5 degree resolution
         prpd_dict = {}
+        phase_bins = 72 # 5 degree resolution
 
-        for idx, delta in enumerate(deltas[:10000]):
-            if delta > threshold:
+        for idx, delta in enumerate(deltas):
+            if delta > pd_pulse_threshold:
                 phase_deg = int(((idx % phase_bins) / phase_bins) * 360.0)
-                q_pc = round(delta * 0.42 + 18.5, 1)
+                q_pc = round((delta - pd_pulse_threshold) * 0.42 + 25.0, 1)
                 key = (phase_deg, q_pc)
                 prpd_dict[key] = prpd_dict.get(key, 0) + 1
 
@@ -109,13 +115,18 @@ class PwaParser:
 
         total_pulses = sum(p["count"] for p in self.prpd_points)
         self.metrics["pulse_count"] = total_pulses
-        self.metrics["pulse_per_cycle"] = round(total_pulses / 50.0, 1)
+        self.metrics["pulse_per_cycle"] = round(total_pulses / 50.0, 1) if total_pulses > 0 else 0.0
         
-        avg_q = sum(p["q_pc"] * p["count"] for p in self.prpd_points) / max(1, total_pulses)
-        self.metrics["q_avg_pc"] = round(avg_q, 1)
+        if total_pulses > 0 and self.prpd_points:
+            self.metrics["q_max_pc"] = round(max(p["q_pc"] for p in self.prpd_points), 1)
+            avg_q = sum(p["q_pc"] * p["count"] for p in self.prpd_points) / total_pulses
+            self.metrics["q_avg_pc"] = round(avg_q, 1)
+        else:
+            # Strictly 0.0 when no pulses detected
+            self.metrics["q_max_pc"] = 0.0
+            self.metrics["q_avg_pc"] = 0.0
 
         # Acoustic AE TDOA delays (in microseconds) relative to HFCT trigger
-        # Face-specific offsets
         base_delay = 500.0 * self.face_number
         self.sensor_delays_us = {
             "AE1": round(base_delay + 350.0, 1),

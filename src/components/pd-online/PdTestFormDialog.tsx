@@ -174,9 +174,12 @@ export function PdTestFormDialog({ open, onClose, transformer, record, onSubmit 
                 setRiskLevel(extractedRisk);
             }
             if (extractedDefect) {
-                if (extractedDefect.toLowerCase().includes("surface")) setDefectType("Surface PD");
-                else if (extractedDefect.toLowerCase().includes("internal") || extractedDefect.toLowerCase().includes("arc")) setDefectType("Internal PD");
-                else if (extractedDefect.toLowerCase().includes("corona")) setDefectType("Corona");
+                const lower = extractedDefect.toLowerCase();
+                if (lower.includes("surface")) setDefectType("Surface PD");
+                else if (lower.includes("internal") || lower.includes("arc")) setDefectType("Internal PD");
+                else if (lower.includes("corona")) setDefectType("Corona");
+                else if (lower.includes("nhiễu") || lower.includes("noise")) setDefectType("Noise");
+                else if (lower.includes("không") || lower.includes("normal") || lower.includes("bình thường")) setDefectType("Normal");
             }
             if (extractedPRPD.length > 0) {
                 setPrpdPoints(extractedPRPD);
@@ -196,22 +199,22 @@ export function PdTestFormDialog({ open, onClose, transformer, record, onSubmit 
         e.preventDefault();
         setLoading(true);
 
-        const qMaxNum = parseFloat(qMax) || 580;
+        const qMaxNum = !isNaN(parseFloat(qMax)) ? parseFloat(qMax) : 0;
         const payload: any = {
             id: record ? record.id : undefined,
             testCode: record ? record.testCode : undefined,
             transformerId: transformer.id,
             testDate,
-            oilTempC: parseFloat(oilTemp) || 55,
-            ambientTempC: parseFloat(ambientTemp) || 30,
-            humidityPct: parseFloat(humidity) || 65,
+            oilTempC: !isNaN(parseFloat(oilTemp)) ? parseFloat(oilTemp) : 55,
+            ambientTempC: !isNaN(parseFloat(ambientTemp)) ? parseFloat(ambientTemp) : 30,
+            humidityPct: !isNaN(parseFloat(humidity)) ? parseFloat(humidity) : 65,
             noiseLevelDb: record ? record.noiseLevelDb : 32.5,
             tankDimensions: record?.tankDimensions || { length_m: 4.5, width_m: 2.2, height_m: 3.2 },
             sensorsSetup,
             metrics: {
                 qMaxPc: qMaxNum,
-                qAvgPc: parseFloat(qAvg) || 150,
-                pulseCountPerCycle: parseFloat(pulseCount) || 12.5
+                qAvgPc: !isNaN(parseFloat(qAvg)) ? parseFloat(qAvg) : 0,
+                pulseCountPerCycle: !isNaN(parseFloat(pulseCount)) ? parseFloat(pulseCount) : 0
             },
             prpdPoints,
             inspectorAssessment: {
