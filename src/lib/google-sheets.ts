@@ -760,9 +760,17 @@ export const googleSheetsService = {
                 ],
             ];
 
-            await sheets.spreadsheets.values.append({
+            // Explicitly scan Column A to determine the exact next available row
+            // This prevents Google Sheets API heuristics from shifting data to columns L:W
+            const colARes = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'DeCuongCongTac!A:L',
+                range: 'DeCuongCongTac!A:A',
+            });
+            const nextRow = (colARes.data.values?.length || 0) + 1;
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `DeCuongCongTac!A${nextRow}:L${nextRow}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });

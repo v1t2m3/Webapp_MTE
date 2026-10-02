@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Schedule, Contract, Personnel, Vehicle, WorkOutline, PersonnelAssignment } from "@/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -384,6 +384,9 @@ export function WorkOutlineForm({
                     <DialogTitle className="text-2xl font-bold text-[#3a0ca3] border-b pb-2">
                         {isEdit ? "Cập nhật Đề cương" : "Lập Đề cương công tác"}
                     </DialogTitle>
+                    <DialogDescription className="text-sm text-slate-500">
+                        {isEdit ? "Chỉnh sửa thông tin phân công nhân sự và phương tiện cho đề cương công tác" : "Lập đề cương công tác mới từ lịch công tác hoặc tuỳ chọn"}
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="grid gap-6 py-4">
                     {/* General Schedule Info */}
