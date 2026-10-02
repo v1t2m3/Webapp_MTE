@@ -26,6 +26,8 @@ class PwaParser:
             "pulse_per_cycle": 0.0
         }
         self.prpd_points = []
+        self.waveform_slice_mv = []
+        self.max_delta = 0.0
         self.sensor_delays_us = {
             "AE1": 0.0,
             "AE2": 0.0,
@@ -117,6 +119,23 @@ class PwaParser:
         self.metrics["pulse_count"] = total_pulses
         self.metrics["pulse_per_cycle"] = round(total_pulses / 50.0, 1) if total_pulses > 0 else 0.0
         
+        # Extract peak pulse waveform slice (in mV) around maximum discharge event
+        self.max_delta = max(deltas) if deltas else 0.0
+        if deltas and self.max_delta > pd_pulse_threshold:
+            peak_idx = deltas.index(self.max_delta)
+            start_s = max(0, peak_idx - 50)
+            self.waveform_slice_mv = [
+                round((samples[start_s + k] - baseline) * 0.488, 1) if start_s + k < len(samples) else 0.0
+                for k in range(350)
+            ]
+        elif samples:
+            self.waveform_slice_mv = [
+                round((samples[k] - baseline) * 0.488, 1)
+                for k in range(min(350, len(samples)))
+            ]
+        else:
+            self.waveform_slice_mv = [0.0] * 350
+
         if total_pulses > 0 and self.prpd_points:
             self.metrics["q_max_pc"] = round(max(p["q_pc"] for p in self.prpd_points), 1)
             avg_q = sum(p["q_pc"] * p["count"] for p in self.prpd_points) / total_pulses

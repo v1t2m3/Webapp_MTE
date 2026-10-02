@@ -110,6 +110,7 @@ export interface PdTestRecord {
     sensorsSetup: SensorSetup[];
     metrics: PdMetrics;
     prpdPoints: PrpdPoint[];
+    waveformPoints?: WaveformPoint[];
     inspectorAssessment: InspectorAssessment;
     aiDiagnostic: AIDiagnostic;
     localization3D: Localization3D;

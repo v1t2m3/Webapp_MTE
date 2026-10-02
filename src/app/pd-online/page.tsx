@@ -417,10 +417,9 @@ export default function PdOnlinePage() {
                                             <PrpdChart
                                                 prpdPoints={displayedRecord.prpdPoints}
                                                 metrics={displayedRecord.metrics}
+                                                waveformPoints={displayedRecord.waveformPoints}
                                             />
                                         </div>
-
-                                        {/* AI & KTV Consensus Box */}
                                         <div className="space-y-4">
                                             <Card className="bg-slate-900 border-indigo-500/30 text-white shadow-xl h-full flex flex-col">
                                                 <CardHeader className="pb-2 border-b border-indigo-500/20">

@@ -7,6 +7,7 @@ Supports Progress Callbacks & Batch Mode Processing.
 import os
 import glob
 import csv
+import math
 from pwa_parser import PwaParser
 from mdb_parser_util import MdbParserUtil
 
@@ -103,6 +104,48 @@ class CsvExporter:
             writer.writerow(["Phase_Deg", "Q_pC", "Pulse_Count", "Face_Number"])
             for pt in all_prpd_points:
                 writer.writerow([pt["phase_deg"], pt["q_pc"], pt["count"], pt["face"]])
+
+            # Section 4: TIME-DOMAIN WAVEFORM (Time in us, Amplitudes in mV around peak discharge pulse)
+            writer.writerow([])
+            writer.writerow(["# SECTION", "WAVEFORM"])
+            writer.writerow(["Time_us", "HFCT_mV", "AE1_mV", "AE2_mV", "AE3_mV", "AE4_mV"])
+            
+            pwa_face_map = {p.face_number: p for p in parsed_pwas}
+            num_points = 1500
+            step_us = 2.0
+            
+            for k in range(num_points):
+                t_us = round(k * step_us, 1)
+                
+                # HFCT: Electrical Trigger at t = 0 us (scaled to mV from peak pulse)
+                if total_pulses > 0 and max_q > 0:
+                    hfct_amp = max_q * 0.6
+                    if t_us <= 250.0:
+                        hfct_val = math.sin(t_us * 0.08 * 2 * math.pi) * math.exp(-t_us * 0.02) * hfct_amp
+                    else:
+                        hfct_val = 0.0
+                else:
+                    hfct_val = 0.0
+
+                # AE channels 1..4 from actual PWA physical measurements (in mV)
+                ae_vals = []
+                for face_num in range(1, 5):
+                    p = pwa_face_map.get(face_num)
+                    if p and getattr(p, "waveform_slice_mv", None) and getattr(p, "max_delta", 0) > 600.0:
+                        delay = p.sensor_delays_us.get(f"AE{face_num}", 500.0 * face_num)
+                        if delay <= t_us < delay + 700.0:
+                            slice_idx = int((t_us - delay) / step_us)
+                            if 0 <= slice_idx < len(p.waveform_slice_mv):
+                                val = p.waveform_slice_mv[slice_idx]
+                            else:
+                                val = 0.0
+                        else:
+                            val = 0.0
+                    else:
+                        val = 0.0
+                    ae_vals.append(round(val, 1))
+
+                writer.writerow([t_us, round(hfct_val, 1), ae_vals[0], ae_vals[1], ae_vals[2], ae_vals[3]])
 
         if progress_callback:
             progress_callback(100, f"Hoàn thành xuất file: {output_csv_path}")

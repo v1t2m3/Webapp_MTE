@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Transformer110kV, SensorSetup, PrpdPoint, PdTestRecord } from "@/types/pd-online";
+import { Transformer110kV, SensorSetup, PrpdPoint, WaveformPoint, PdTestRecord } from "@/types/pd-online";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,7 @@ export function PdTestFormDialog({ open, onClose, transformer, record, onSubmit 
         { phase_deg: 65, q_pc: 650, count: 35, face: 2 },
         { phase_deg: 225, q_pc: 520, count: 22, face: 3 }
     ]);
+    const [waveformPoints, setWaveformPoints] = useState<WaveformPoint[]>([]);
 
     // User editable AE Sensor setup
     const [sensorsSetup, setSensorsSetup] = useState<SensorSetup[]>([
@@ -66,6 +67,7 @@ export function PdTestFormDialog({ open, onClose, transformer, record, onSubmit 
             if (record.prpdPoints && record.prpdPoints.length > 0) {
                 setPrpdPoints(record.prpdPoints);
             }
+            setWaveformPoints(record.waveformPoints || []);
             if (record.sensorsSetup && record.sensorsSetup.length > 0) {
                 setSensorsSetup(record.sensorsSetup);
             }
@@ -120,9 +122,11 @@ export function PdTestFormDialog({ open, onClose, transformer, record, onSubmit 
             let extractedRisk = "";
             let extractedDefect = "";
             const extractedPRPD: PrpdPoint[] = [];
+            const extractedWaveform: WaveformPoint[] = [];
 
             const lines = text.split("\n");
             let inPrpdSection = false;
+            let inWaveformSection = false;
 
             for (const line of lines) {
                 const trimmed = line.trim();
@@ -130,6 +134,13 @@ export function PdTestFormDialog({ open, onClose, transformer, record, onSubmit 
 
                 if (trimmed.includes("PRPD_MATRIX")) {
                     inPrpdSection = true;
+                    inWaveformSection = false;
+                    continue;
+                }
+
+                if (trimmed.includes("WAVEFORM")) {
+                    inWaveformSection = true;
+                    inPrpdSection = false;
                     continue;
                 }
 
@@ -141,6 +152,21 @@ export function PdTestFormDialog({ open, onClose, transformer, record, onSubmit 
                             q_pc: parseFloat(parts[1]),
                             count: parseInt(parts[2]) || 1,
                             face: parseInt(parts[3]) || 1
+                        });
+                    }
+                    continue;
+                }
+
+                if (inWaveformSection) {
+                    const parts = trimmed.split(",");
+                    if (parts.length >= 6 && !isNaN(parseFloat(parts[0]))) {
+                        extractedWaveform.push({
+                            time_us: parseFloat(parts[0]),
+                            hfct_mv: parseFloat(parts[1]) || 0,
+                            ae1_mv: parseFloat(parts[2]) || 0,
+                            ae2_mv: parseFloat(parts[3]) || 0,
+                            ae3_mv: parseFloat(parts[4]) || 0,
+                            ae4_mv: parseFloat(parts[5]) || 0
                         });
                     }
                     continue;
@@ -184,7 +210,11 @@ export function PdTestFormDialog({ open, onClose, transformer, record, onSubmit 
             if (extractedPRPD.length > 0) {
                 setPrpdPoints(extractedPRPD);
             }
-            setNotes(`Đã bóc tách tự động ${extractedPRPD.length} điểm ma trận PRPD từ file ${file.name}.`);
+            if (extractedWaveform.length > 0) {
+                setWaveformPoints(extractedWaveform);
+            }
+            const waveMsg = extractedWaveform.length > 0 ? ` & ${extractedWaveform.length} mẫu Waveform` : "";
+            setNotes(`Đã bóc tách tự động ${extractedPRPD.length} điểm ma trận PRPD${waveMsg} từ file ${file.name}.`);
         };
         reader.readAsText(file);
     };
@@ -217,6 +247,7 @@ export function PdTestFormDialog({ open, onClose, transformer, record, onSubmit 
                 pulseCountPerCycle: !isNaN(parseFloat(pulseCount)) ? parseFloat(pulseCount) : 0
             },
             prpdPoints,
+            waveformPoints: waveformPoints.length > 0 ? waveformPoints : (record?.waveformPoints || []),
             inspectorAssessment: {
                 defectType,
                 riskLevel,
