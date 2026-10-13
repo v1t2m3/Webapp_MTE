@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
             targetPath = path.join(PDF_DIR, finalFileName);
         }
 
-        fs.writeFileSync(targetPath, buffer);
+        fs.writeFileSync(targetPath, buffer, { mode: 0o666 });
 
         const fileSizeMb = (file.size / (1024 * 1024)).toFixed(1) + " MB";
 
