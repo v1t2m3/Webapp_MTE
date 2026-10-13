@@ -44,3 +44,7 @@ next-env.d.ts
 __pycache__/
 *.pyc
 
+# user uploads
+public/pdfs/*
+!public/pdfs/GCN_KDHC_MTE_25.pdf
+
