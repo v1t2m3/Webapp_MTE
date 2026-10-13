@@ -126,9 +126,15 @@ export const googleSheetsService = {
                 ],
             ];
 
-            await sheets.spreadsheets.values.append({
+            const colARes = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'NhanSu!A:L',
+                range: 'NhanSu!A:A',
+            });
+            const nextRow = (colARes.data.values?.length || 0) + 1;
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `NhanSu!A${nextRow}:L${nextRow}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -277,9 +283,15 @@ export const googleSheetsService = {
                 ],
             ];
 
-            await sheets.spreadsheets.values.append({
+            const colARes = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'XeThietBi!A:H',
+                range: 'XeThietBi!A:A',
+            });
+            const nextRow = (colARes.data.values?.length || 0) + 1;
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `XeThietBi!A${nextRow}:H${nextRow}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -425,9 +437,15 @@ export const googleSheetsService = {
                 ],
             ];
 
-            await sheets.spreadsheets.values.append({
+            const colARes = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'HopDong!A:I',
+                range: 'HopDong!A:A',
+            });
+            const nextRow = (colARes.data.values?.length || 0) + 1;
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `HopDong!A${nextRow}:I${nextRow}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -583,9 +601,15 @@ export const googleSheetsService = {
                 ],
             ];
 
-            await sheets.spreadsheets.values.append({
+            const colARes = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'LichCT!A:M',
+                range: 'LichCT!A:A',
+            });
+            const nextRow = (colARes.data.values?.length || 0) + 1;
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `LichCT!A${nextRow}:M${nextRow}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -903,9 +927,15 @@ export const googleSheetsService = {
                     requestBody: { values },
                 });
             } else {
-                await sheets.spreadsheets.values.append({
+                const colARes = await sheets.spreadsheets.values.get({
                     spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                    range: 'BC_BoSung!A:G',
+                    range: 'BC_BoSung!A:A',
+                });
+                const nextRow = (colARes.data.values?.length || 0) + 1;
+
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                    range: `BC_BoSung!A${nextRow}:G${nextRow}`,
                     valueInputOption: 'USER_ENTERED',
                     requestBody: { values },
                 });
@@ -1028,9 +1058,15 @@ export const googleSheetsService = {
                 ],
             ];
 
-            await sheets.spreadsheets.values.append({
+            const colARes = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'Equipments!A:K',
+                range: 'Equipments!A:A',
+            });
+            const nextRow = (colARes.data.values?.length || 0) + 1;
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Equipments!A${nextRow}:K${nextRow}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -1184,9 +1220,15 @@ export const googleSheetsService = {
                 ],
             ];
 
-            await sheets.spreadsheets.values.append({
+            const colARes = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'Personel!A:H',
+                range: 'Personel!A:A',
+            });
+            const nextRow = (colARes.data.values?.length || 0) + 1;
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Personel!A${nextRow}:H${nextRow}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -1370,11 +1412,17 @@ export const googleSheetsService = {
                 data.linkFile
             ];
 
-            await sheets.spreadsheets.values.append({
+            const colARes = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'CAPA!A2:K2',
+                range: 'CAPA!A:A',
+            });
+            const nextRow = (colARes.data.values?.length || 0) + 1;
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `CAPA!A${nextRow}:K${nextRow}`,
                 valueInputOption: 'USER_ENTERED',
-                requestBody: { values: [values] }
+                requestBody: { values: [values] },
             });
 
             return { id: newId, ...data };
@@ -1531,9 +1579,15 @@ export const googleSheetsService = {
                 doc.changeReason || '',
             ]];
 
-            await sheets.spreadsheets.values.append({
+            const colARes = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'Documents!A:N',
+                range: 'Documents!A:A',
+            });
+            const nextRow = (colARes.data.values?.length || 0) + 1;
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Documents!A${nextRow}:N${nextRow}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -1674,9 +1728,15 @@ export const googleSheetsService = {
                 ],
             ];
 
-            await sheets.spreadsheets.values.append({
+            const colARes = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'Cons_Machin!A:E',
+                range: 'Cons_Machin!A:A',
+            });
+            const nextRow = (colARes.data.values?.length || 0) + 1;
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Cons_Machin!A${nextRow}:E${nextRow}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
@@ -1803,9 +1863,15 @@ export const googleSheetsService = {
                 standard.description || '',
                 standard.fileLink || '',
             ]];
-            await sheets.spreadsheets.values.append({
+            const colARes = await sheets.spreadsheets.values.get({
                 spreadsheetId: process.env.GOOGLE_SHEET_ID,
-                range: 'Standards!A:G',
+                range: 'Standards!A:A',
+            });
+            const nextRow = (colARes.data.values?.length || 0) + 1;
+
+            await sheets.spreadsheets.values.update({
+                spreadsheetId: process.env.GOOGLE_SHEET_ID,
+                range: `Standards!A${nextRow}:G${nextRow}`,
                 valueInputOption: 'USER_ENTERED',
                 requestBody: { values },
             });
